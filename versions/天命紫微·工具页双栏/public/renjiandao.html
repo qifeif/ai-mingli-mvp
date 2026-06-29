@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>心易 · 人间道 六爻卦象</title>
+<link rel="stylesheet" href="/theme.css" />
+<style>
+  a { color:inherit; text-decoration:none; }
+  .shell { max-width:1140px; margin:0 auto; padding:30px 24px 100px; position:relative; }
+
+  .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .top .logo { display:flex; align-items:center; gap:9px; }
+  .top .logo .seal-mini { width:27px; height:27px; border-radius:6px; background:var(--cinnabar); color:#F3EAD8;
+    font-family:"Songti SC","Noto Serif SC",serif; font-size:15px; font-weight:700; display:grid; place-items:center;
+    box-shadow:0 2px 8px -2px rgba(178,58,46,.5); }
+  .top .logo .lt { font-family:"Songti SC","Noto Serif SC",serif; font-size:20px; font-weight:700; letter-spacing:4px; color:var(--accent); }
+  .top .nav { display:flex; gap:18px; font-size:14px; color:var(--muted); align-items:center; flex-wrap:wrap; }
+  .top .nav a:hover { color:var(--ink); }
+  .top .nav a.on { color:var(--accent); font-weight:600; }
+  .langtog { border:1px solid var(--line); border-radius:999px; padding:4px 12px; font-size:12px; color:var(--muted);
+    cursor:pointer; background:var(--card); letter-spacing:1px; }
+  .langtog:hover { color:var(--ink); border-color:var(--accent-2); }
+
+  .lead { text-align:center; max-width:760px; margin:30px auto 46px; }
+  .lead .kick { font-family:var(--mono); font-size:12px; letter-spacing:3px; color:var(--cinnabar);
+    text-transform:uppercase; display:inline-flex; align-items:center; gap:8px; }
+  .lead .kick .dot { width:6px; height:6px; border-radius:50%; background:var(--accent-2); box-shadow:0 0 10px var(--glow); }
+  .lead .kick .cn { font-family:var(--serif); letter-spacing:4px; color:var(--muted); }
+  .lead h1 { font-family:"Songti SC","Noto Serif SC",serif; font-size:clamp(36px,6.4vw,56px); font-weight:600;
+    letter-spacing:10px; margin:14px 0 0; background:var(--grad); -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; }
+  .lead .lede { color:var(--muted); font-size:16px; line-height:2; margin:18px auto 0; max-width:600px; }
+  .lead .lede b { color:var(--ink); font-weight:600; }
+
+  .studio { display:grid; grid-template-columns:minmax(0,1.42fr) minmax(0,1fr); gap:26px; align-items:start; }
+
+  form { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px; box-shadow:var(--shadow); }
+  .form-cap { display:flex; align-items:baseline; gap:10px; margin-bottom:20px; }
+  .form-cap h2 { font-family:"Songti SC","Noto Serif SC",serif; font-size:19px; letter-spacing:3px; color:var(--accent); margin:0; }
+  .form-cap span { font-size:12px; color:var(--faint); letter-spacing:.5px; }
+  label { display:block; font-size:12px; color:var(--muted); margin-bottom:8px; letter-spacing:1px; }
+  input,textarea { width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:11px;
+    background:var(--bg-2); color:var(--ink); font-family:inherit; font-size:15px; transition:border-color .2s,box-shadow .2s; }
+  textarea { resize:vertical; min-height:96px; line-height:1.7; }
+  input:focus,textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(42,38,32,.14); }
+  .ritual-note { font-size:12px; color:var(--faint); margin:10px 2px 18px; line-height:1.7; }
+
+  button.go { width:100%; margin-top:8px; padding:15px; border:none; border-radius:12px; background:var(--grad);
+    color:#fff; font-family:inherit; font-size:16px; font-weight:600; letter-spacing:4px; cursor:pointer;
+    box-shadow:0 10px 34px -10px var(--glow); transition:filter .2s,transform .1s,opacity .2s; }
+  button.go:hover:not(:disabled){ filter:brightness(1.08); } button.go:active:not(:disabled){ transform:translateY(1px); }
+  button.go:disabled { opacity:.55; cursor:default; }
+  button.ghost { background:transparent; color:var(--accent-2); border:1px solid var(--line); box-shadow:none; }
+  button.ghost:hover:not(:disabled){ border-color:var(--accent-2); filter:none; }
+
+  /* 侧栏 */
+  .aside { display:flex; flex-direction:column; gap:16px; position:sticky; top:24px; }
+  .cardx { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px 22px 20px; box-shadow:var(--shadow-soft); }
+  .cardx .xh { display:flex; align-items:center; gap:11px; margin-bottom:14px; }
+  .cardx .xh .ico { width:36px; height:36px; border-radius:10px; display:grid; place-items:center; background:var(--bg-2); border:1px solid var(--line); flex:none; }
+  .cardx .xh .ico svg { width:21px; height:21px; stroke:var(--accent); fill:none; stroke-width:1.4; }
+  .cardx .xh h4 { font-family:"Songti SC","Noto Serif SC",serif; font-size:16px; letter-spacing:2px; color:var(--accent); margin:0; }
+  .cardx p { font-size:13.5px; color:var(--muted); line-height:1.95; margin:0; } .cardx p b { color:var(--ink); font-weight:600; }
+  .steps { list-style:none; margin:0; padding:0; display:grid; gap:13px; }
+  .steps li { display:flex; gap:12px; font-size:13.5px; color:var(--muted); line-height:1.7; }
+  .steps li .n { flex:none; width:24px; height:24px; border-radius:50%; background:var(--bg-2); border:1px solid var(--line);
+    color:var(--accent-2); font-family:var(--mono); font-size:12px; display:grid; place-items:center; margin-top:1px; }
+  .steps li b { color:var(--ink); font-weight:600; }
+  .cross { display:grid; gap:10px; }
+  .xlink { display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--line); border-radius:12px;
+    background:var(--bg-2); transition:border-color .2s, transform .2s; }
+  .xlink:hover { border-color:var(--bronze); transform:translateX(2px); }
+  .xlink .ico { width:38px; height:38px; border-radius:50%; background:var(--bg); border:1px solid var(--line); display:grid; place-items:center; flex:none; }
+  .xlink .ico svg { width:21px; height:21px; stroke:var(--accent); fill:none; stroke-width:1.4; }
+  .xlink .xt b { display:block; font-family:"Songti SC","Noto Serif SC",serif; color:var(--accent); letter-spacing:1px; font-size:14px; }
+  .xlink .xt span { color:var(--faint); font-size:12px; }
+  .xlink .arr { margin-left:auto; color:var(--faint); font-size:18px; }
+
+  /* 结果区(整宽) */
+  #result { margin-top:30px; }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px; box-shadow:var(--shadow); margin-bottom:20px; }
+  .panel .t { font-size:12px; color:var(--accent-2); letter-spacing:2px; margin-bottom:16px; }
+
+  /* 卦象区 */
+  .castwrap { display:flex; gap:36px; align-items:center; justify-content:center; flex-wrap:wrap; }
+  .hexcol { text-align:center; }
+  .hexcol .gname { font-family:"Songti SC",serif; font-size:24px; letter-spacing:2px; margin-bottom:4px;
+    background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hexcol .gtri { font-size:11px; color:var(--faint); letter-spacing:1px; margin-bottom:14px; }
+  .hex { display:flex; flex-direction:column-reverse; gap:9px; }
+  .yao { position:relative; height:15px; display:flex; gap:11px; justify-content:center; opacity:0; transform:translateY(6px);
+    animation:rise .5s ease forwards; }
+  .yao .bar { width:48px; height:100%; border-radius:3px; background:linear-gradient(90deg,#2A2620,#46403A); box-shadow:0 1px 3px rgba(42,38,32,.2); }
+  .yao.yin .bar { width:20px; }
+  .yao.moving .bar { background:linear-gradient(90deg,#B23A2E,#C8553D); box-shadow:0 1px 6px var(--gold-glow); }
+  .yao .mk { position:absolute; right:-22px; top:-3px; font-size:13px; color:var(--gold); }
+  @keyframes rise { to { opacity:1; transform:translateY(0); } }
+  .arrow { font-size:24px; color:var(--faint); }
+  .castmeta { margin-top:18px; text-align:center; font-size:13px; color:var(--muted); line-height:1.9; }
+  .castmeta b { color:var(--ink); } .castmeta .gold { color:var(--gold); }
+  .rule { margin-top:12px; font-size:12px; color:var(--faint); text-align:center; }
+
+  .reading { white-space:pre-wrap; font-size:15px; line-height:2; color:var(--ink); }
+  .err { color:var(--cinnabar); font-size:14px; }
+  .loading { text-align:center; color:var(--muted); padding:46px; letter-spacing:3px; animation:pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+  .hint-foot { text-align:center; color:var(--faint); font-size:12px; margin-top:28px; letter-spacing:.5px; }
+
+  @media (max-width:900px){
+    .studio { grid-template-columns:1fr; }
+    .aside { position:static; }
+  }
+  @media (max-width:560px){
+    .lead h1{letter-spacing:7px;} .shell{padding:24px 16px 76px;} form,.panel{padding:22px;} .top .nav{gap:13px; font-size:13px;}
+  }
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"></div>
+<div class="shell">
+  <div class="top">
+    <a href="/" class="logo"><span class="seal-mini">易</span><span class="lt">心易</span></a>
+    <div class="nav">
+      <a href="/app" data-i18n="nav.tianming">天命</a>
+      <a href="/diyun" data-i18n="nav.diyun">地运</a>
+      <a href="/renjiandao" class="on" data-i18n="nav.renjiandao">人间道</a>
+      <a href="/#pricing" data-i18n="nav.pricing">定价</a>
+      <span class="langtog" id="langtog">EN</span>
+    </div>
+  </div>
+
+  <header class="lead">
+    <div class="kick"><span class="dot"></span><span data-i18n="hero.badge">人间道 · 周易六爻 · 卦图象解</span>　<span class="cn" data-i18n="hero.kickcn">观象悟辞</span></div>
+    <h1 data-i18n="hero.title">人 间 道</h1>
+    <p class="lede"><b data-i18n="hero.motto">人事尽其为。</b><span data-i18n="hero.sub">心中默念所问之事,摇一卦——观此刻处境之象、宜动宜静之时机,给的是视角不是定数。</span></p>
+  </header>
+
+  <div class="studio">
+    <form id="f">
+      <div class="form-cap"><h2 data-i18n="form.cap">所问之事</h2><span data-i18n="form.capsub">一事一卦 · 心诚则灵</span></div>
+      <label data-i18n="form.qlabel">你要问的事(一事一问，越具体越好)</label>
+      <textarea name="question" data-i18n-ph="form.qph" placeholder="例：手上这个新机会，现在该接还是再等等？"></textarea>
+      <div class="ritual-note" data-i18n="form.ritual">起卦讲究心诚则灵：请先把问题在心里想清楚、默念一遍，再摇卦。一事一卦，不重复摇同一件事。</div>
+      <button type="submit" class="go" id="btn" data-i18n="form.cast">摇 卦</button>
+    </form>
+
+    <aside class="aside">
+      <div class="cardx">
+        <div class="xh">
+          <span class="ico"><svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round"><path d="M5 7h14M5 12h6M13 12h6M5 17h14"/></svg></span>
+          <h4 data-i18n="aside.about.t">人间道这一道</h4>
+        </div>
+        <p data-i18n="aside.about.p">周易六爻摇出一卦,以<b>卦图之象</b>映照你此刻所问的处境——本卦看当下,动爻与变卦看走向。它给的是<b>看待时机的视角</b>,不是写死的结局。</p>
+      </div>
+      <div class="cardx">
+        <div class="xh">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9" stroke-linecap="round"/></svg></span>
+          <h4 data-i18n="aside.steps.t">怎么用</h4>
+        </div>
+        <ol class="steps">
+          <li><span class="n">1</span><span data-i18n="aside.s1">把要问的<b>一件事</b>在心里默念清楚,再写下来。</span></li>
+          <li><span class="n">2</span><span data-i18n="aside.s2">点「摇卦」,模拟三铜钱六摇,定出<b>本卦与动爻</b>。</span></li>
+          <li><span class="n">3</span><span data-i18n="aside.s3">让它<b>观象悟辞</b>,把卦象翻成此刻处境与时机的人话。</span></li>
+        </ol>
+      </div>
+      <div class="cardx">
+        <div class="xh">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 .7 1-5.5-4-3.9 5.5-.8z" stroke-linejoin="round"/></svg></span>
+          <h4 data-i18n="aside.cross.t">三道互参</h4>
+        </div>
+        <div class="cross">
+          <a class="xlink" href="/app">
+            <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke-linecap="round"/></svg></span>
+            <span class="xt"><b data-i18n="cross.tianming">天命 · 看你的势</b><span data-i18n="cross.tianming.d">八字四柱,读性格倾向与能量节奏</span></span>
+            <span class="arr">→</span>
+          </a>
+          <a class="xlink" href="/diyun">
+            <span class="ico"><svg viewBox="0 0 24 24"><polygon points="12,3 17,5.5 19.5,12 17,18.5 12,21 7,18.5 4.5,12 7,5.5"/><circle cx="12" cy="12" r="2.6"/></svg></span>
+            <span class="xt"><b data-i18n="cross.diyun">地运 · 调你的场</b><span data-i18n="cross.diyun.d">八宅方位,把居所调到帮你的那一面</span></span>
+            <span class="arr">→</span>
+          </a>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div id="result"></div>
+  <div class="hint-foot" data-i18n="foot">六爻所示为处境之象与时机参考，给的是视角不是定数，决定权始终在你手里。</div>
+</div>
+
+<script>
+const I18N = {
+  zh: {
+    'nav.tianming':'天命','nav.diyun':'地运','nav.renjiandao':'人间道','nav.pricing':'定价',
+    'hero.badge':'人间道 · 周易六爻 · 卦图象解','hero.kickcn':'观象悟辞','hero.title':'人 间 道',
+    'hero.motto':'人事尽其为。','hero.sub':'心中默念所问之事,摇一卦——观此刻处境之象、宜动宜静之时机,给的是视角不是定数。',
+    'form.cap':'所问之事','form.capsub':'一事一卦 · 心诚则灵',
+    'form.qlabel':'你要问的事(一事一问，越具体越好)',
+    'form.qph':'例：手上这个新机会，现在该接还是再等等？',
+    'form.ritual':'起卦讲究心诚则灵：请先把问题在心里想清楚、默念一遍，再摇卦。一事一卦，不重复摇同一件事。',
+    'form.cast':'摇 卦','foot':'六爻所示为处境之象与时机参考，给的是视角不是定数，决定权始终在你手里。',
+    'casting':'铜钱落定中…','bengua':'本卦','biangua':'变卦','nobian':'六爻不动·无变卦',
+    'moving':'动爻','none':'无','interpret':'请它为你解读','reading_load':'正在观象悟辞…',
+    'recast':'重新摇一卦','need_q':'先写下你要问的事',
+    'aside.about.t':'人间道这一道','aside.about.p':'周易六爻摇出一卦,以卦图之象映照你此刻所问的处境——本卦看当下,动爻与变卦看走向。它给的是看待时机的视角,不是写死的结局。',
+    'aside.steps.t':'怎么用','aside.s1':'把要问的一件事在心里默念清楚,再写下来。','aside.s2':'点「摇卦」,模拟三铜钱六摇,定出本卦与动爻。','aside.s3':'让它观象悟辞,把卦象翻成此刻处境与时机的人话。',
+    'aside.cross.t':'三道互参','cross.tianming':'天命 · 看你的势','cross.tianming.d':'八字四柱,读性格倾向与能量节奏','cross.diyun':'地运 · 调你的场','cross.diyun.d':'八宅方位,把居所调到帮你的那一面',
+  },
+  en: {
+    'nav.tianming':'Tian Ming','nav.diyun':'Di Yun','nav.renjiandao':'Ren Jian Dao','nav.pricing':'Pricing',
+    'hero.badge':'Ren Jian Dao · I Ching Six Lines · Image Reading','hero.kickcn':'Read the image','hero.title':'R E N　J I A N　D A O',
+    'hero.motto':'Do your utmost in human affairs.','hero.sub':'Hold your question in mind and cast — read the image of this moment and whether to move or wait. A perspective, not a verdict.',
+    'form.cap':'Your question','form.capsub':'One matter, one cast · sincerity matters',
+    'form.qlabel':'What do you want to ask? (one question at a time, be specific)',
+    'form.qph':'e.g. This new opportunity — take it now or wait?',
+    'form.ritual':'Sincerity matters: settle your question in mind and recite it once before casting. One matter, one cast — don\'t re-cast the same question.',
+    'form.cast':'C A S T','foot':'The six lines show the image of your situation and its timing — a perspective, not a verdict. The decision stays with you.',
+    'casting':'The coins are settling…','bengua':'Primary','biangua':'Changing','nobian':'No moving lines · no changing hexagram',
+    'moving':'Moving lines','none':'none','interpret':'Ask for a reading','reading_load':'Reading the image…',
+    'recast':'Cast again','need_q':'Write your question first',
+    'aside.about.t':'About Ren Jian Dao','aside.about.p':'Cast a hexagram by the I Ching\'s six lines to mirror the situation you\'re asking about — the primary hexagram shows the now, moving lines and the changing hexagram show where it tends. A way to read timing, not a fixed ending.',
+    'aside.steps.t':'How to use','aside.s1':'Settle the one thing you want to ask in your mind, then write it down.','aside.s2':'Tap Cast to simulate three coins over six throws — set the primary hexagram and moving lines.','aside.s3':'Ask for a reading to turn the image into plain words about this moment and its timing.',
+    'aside.cross.t':'Cross-reference','cross.tianming':'Tian Ming · read your force','cross.tianming.d':'BaZi four pillars — tendencies and rhythm','cross.diyun':'Di Yun · tune your space','cross.diyun.d':'Eight Mansions — set your home to the side that helps you',
+  },
+};
+let LANG = localStorage.getItem('lang') || 'zh';
+function t(k){ return (I18N[LANG]&&I18N[LANG][k]) || (I18N.zh[k]||k); }
+function applyI18n(){
+  document.documentElement.lang = LANG==='en' ? 'en' : 'zh-CN';
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.placeholder = t(el.getAttribute('data-i18n-ph')); });
+  document.getElementById('langtog').textContent = LANG==='en' ? '中' : 'EN';
+}
+document.getElementById('langtog').addEventListener('click', ()=>{
+  LANG = LANG==='en' ? 'zh' : 'en'; localStorage.setItem('lang', LANG); applyI18n();
+});
+applyI18n();
+
+const f = document.getElementById('f');
+const btn = document.getElementById('btn');
+const result = document.getElementById('result');
+let lastCast = null, lastQuestion = '';
+
+f.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const q = new FormData(f).get('question').trim();
+  if (!q) { result.innerHTML = `<div class="panel"><span class="err">${esc(t('need_q'))}</span></div>`; return; }
+  lastQuestion = q;
+  btn.disabled = true; btn.textContent = t('casting');
+  result.innerHTML = `<div class="loading">${esc(t('casting'))}</div>`;
+  try {
+    const res = await fetch('/api/liuyao', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'cast failed');
+    lastCast = data.cast;
+    result.innerHTML = renderCast(data.cast);
+    document.getElementById('interpretBtn')?.addEventListener('click', interpret);
+  } catch (err) {
+    result.innerHTML = `<div class="panel"><span class="err">${esc(err.message)}</span></div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = t('form.cast');
+  }
+});
+
+function hexColumn(hex, movingSet, label){
+  // hex.bits: [初..上] 1=阳0=阴;column-reverse 让初爻在底
+  const yaos = hex.bits.map((b,i)=>{
+    const moving = movingSet.has(i+1);
+    const mk = moving ? (b? '○':'×') : '';
+    return `<div class="yao ${b?'yang':'yin'} ${moving?'moving':''}" style="animation-delay:${i*0.12}s">
+      <span class="bar"></span>${b?'':'<span class="bar"></span>'}${mk?`<span class="mk">${mk}</span>`:''}</div>`;
+  }).join('');
+  return `<div class="hexcol"><div class="gname">${esc(hex.name)}</div>
+    <div class="gtri">${esc(hex.symbol)}　上${esc(hex.upper)}下${esc(hex.lower)}</div>
+    <div class="hex">${yaos}</div><div class="rule" style="margin-top:10px">${esc(label)}</div></div>`;
+}
+
+function renderCast(c){
+  const moving = new Set(c.动爻||[]);
+  const ben = hexColumn(c.本卦, moving, t('bengua'));
+  const bian = c.变卦 ? hexColumn(c.变卦, new Set(), t('biangua')) : '';
+  const arrow = c.变卦 ? `<div class="arrow">→</div>` : '';
+  const movTxt = (c.动爻&&c.动爻.length) ? c.动爻.map(p=>`第${p}爻`).join('、') : t('none');
+  return `
+  <div class="panel">
+    <div class="t" data-static>${esc(t('hero.badge'))}</div>
+    <div class="castwrap">${ben}${arrow}${bian}</div>
+    <div class="castmeta">
+      <b>${esc(c.本卦.name)}</b>${c.变卦?` <span class="gold">→</span> <b>${esc(c.变卦.name)}</b>`:` · ${esc(t('nobian'))}`}<br>
+      ${esc(t('moving'))}：<span class="gold">${esc(movTxt)}</span>
+    </div>
+    <div class="rule">${esc(c.取辞规则||'')}</div>
+    <div style="display:flex; gap:12px; margin-top:22px">
+      <button class="go" id="interpretBtn" style="flex:2">${esc(t('interpret'))}</button>
+      <button class="go ghost" style="flex:1" onclick="document.getElementById('f').requestSubmit()">${esc(t('recast'))}</button>
+    </div>
+  </div>`;
+}
+
+async function interpret(){
+  const ibtn = document.getElementById('interpretBtn');
+  if (ibtn) { ibtn.disabled = true; ibtn.textContent = t('reading_load'); }
+  const block = document.createElement('div');
+  block.innerHTML = `<div class="loading">${esc(t('reading_load'))}</div>`;
+  result.appendChild(block);
+  try {
+    const res = await fetch('/api/renjiandao', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ question: lastQuestion, cast: lastCast, lang: LANG }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'reading failed');
+    block.innerHTML = `<div class="panel"><div class="t">${esc(t('hero.title'))}</div><div class="reading">${esc(data.text||'')}</div></div>`;
+  } catch (err) {
+    block.innerHTML = `<div class="panel"><span class="err">${esc(err.message)}</span></div>`;
+  } finally {
+    if (ibtn) { ibtn.disabled = false; ibtn.textContent = t('interpret'); }
+  }
+}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+</script>
+<script src="/ink.js" defer></script>
+</body>
+</html>

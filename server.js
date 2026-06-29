@@ -1,0 +1,189 @@
+/**
+ * 最小 Web UI 服务(零依赖,Node 内置 http)
+ * ------------------------------------------------------------
+ * GET  /              → 落地页 public/landing.html(营销 + 定价)
+ * GET  /app           → 解读工具 public/index.html
+ * POST /api/consult   → 调用 runConsultation,返回解读 JSON
+ *
+ * 运行:  ANTHROPIC_API_KEY=sk-ant-... npm run web
+ *        然后浏览器打开 http://localhost:3000
+ */
+import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { runConsultation } from './src/pipeline.js';
+import { makeClient, hasModelConfig } from './src/llm.js';
+import { computeChart } from './src/bazi.js';
+import { recommendDirections, GOALS } from './src/bazhai.js';
+import { analyzeFloorplan } from './src/fengshui.js';
+import { castHexagram } from './src/liuyao.js';
+import { runRenjiandao } from './src/renjiandao.js';
+import { runZiwei } from './src/ziwei.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const PORT = process.env.PORT || 3000;
+
+// 复用同一个 client(避免每请求新建)
+const client = hasModelConfig() ? makeClient() : null;
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', (c) => { data += c; if (data.length > 12e6) req.destroy(); }); // 12MB,容户型图
+    req.on('end', () => resolve(data));
+    req.on('error', reject);
+  });
+}
+
+function sendJSON(res, status, obj) {
+  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify(obj));
+}
+
+// 简单静态路由表(只服务 public 下的 .html,零依赖)
+const PAGES = {
+  '/': 'landing.html',
+  '/index.html': 'landing.html',
+  '/landing.html': 'landing.html',
+  '/app': 'index.html',
+  '/app.html': 'index.html',
+  // 地运(原地脉道):/diyun 为新名,/fengshui 保留为别名
+  '/diyun': 'fengshui.html',
+  '/diyun.html': 'fengshui.html',
+  '/fengshui': 'fengshui.html',
+  '/fengshui.html': 'fengshui.html',
+  // 人间道(六爻)
+  '/renjiandao': 'renjiandao.html',
+  '/renjiandao.html': 'renjiandao.html',
+  // 新中式风格预览(临时,定稿前不动 landing)
+  '/preview': 'preview.html',
+  '/preview.html': 'preview.html',
+};
+
+const server = createServer(async (req, res) => {
+  try {
+    if (req.method === 'GET' && PAGES[req.url]) {
+      const html = await readFile(join(__dirname, 'public', PAGES[req.url]));
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      return res.end(html);
+    }
+
+    // 静态资源(css/svg/png 等),限定 public 目录,防目录穿越
+    if (req.method === 'GET' && /^\/[\w./-]+\.(css|js|svg|png|jpe?g|webp|ico|woff2?)$/.test(req.url)) {
+      const rel = req.url.replace(/^\/+/, '');
+      const full = join(__dirname, 'public', rel);
+      if (full.startsWith(join(__dirname, 'public'))) {
+        try {
+          const buf = await readFile(full);
+          const ext = rel.split('.').pop();
+          const TYPES = { css: 'text/css', js: 'text/javascript', svg: 'image/svg+xml', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', ico: 'image/x-icon', woff: 'font/woff', woff2: 'font/woff2' };
+          res.writeHead(200, { 'Content-Type': `${TYPES[ext] || 'application/octet-stream'}; charset=utf-8` });
+          return res.end(buf);
+        } catch { /* 落到 404 */ }
+      }
+    }
+
+    // 纯排盘接口:只跑 computeChart,零依赖 LLM / API Key,可独立调用
+    if (req.method === 'POST' && req.url === '/api/chart') {
+      const input = JSON.parse(await readBody(req) || '{}');
+      if (!input.datetime || !input.gender) {
+        return sendJSON(res, 400, { error: '缺少必填项:性别 / 出生时间' });
+      }
+      try {
+        return sendJSON(res, 200, { type: 'chart', chart: computeChart(input) });
+      } catch (e) {
+        return sendJSON(res, 400, { error: `排盘失败:${e.message}` });
+      }
+    }
+
+    // 天命 · 紫微斗数排盘:十二宫 + 三方四正(纯计算,无需 Key);带问题且有 Key 时叠加 AI 深化 + 危机前置
+    if (req.method === 'POST' && req.url === '/api/ziwei') {
+      const input = JSON.parse(await readBody(req) || '{}');
+      if (!input.datetime || !input.gender) {
+        return sendJSON(res, 400, { error: '缺少必填项:性别 / 出生时间' });
+      }
+      try {
+        return sendJSON(res, 200, await runZiwei(client, input));
+      } catch (e) {
+        return sendJSON(res, 400, { error: `排盘失败:${e.message}` });
+      }
+    }
+
+    // 地脉道 · 方位推荐:本命卦+八方位(纯函数,无需Key);带户型图且有Key时叠加视觉解读
+    if (req.method === 'POST' && req.url === '/api/fengshui') {
+      const input = JSON.parse(await readBody(req) || '{}');
+      if (!input.datetime || !input.gender) {
+        return sendJSON(res, 400, { error: '缺少必填项:性别 / 出生年月' });
+      }
+      let rec;
+      try {
+        rec = recommendDirections(input);
+      } catch (e) {
+        return sendJSON(res, 400, { error: `排盘失败:${e.message}` });
+      }
+      const out = {
+        type: 'fengshui',
+        命卦: rec.命卦, 诉求: rec.诉求, 八方位: rec.八方位,
+        吉方: rec.吉方, 凶方: rec.凶方, 首选: rec.首选, 诉求方位: rec.诉求方位, 摘要: rec.摘要,
+      };
+      // 有户型图 + 有 Key → 叠加视觉解读
+      if (input.image && client) {
+        try {
+          const goal = GOALS.find((g) => g.key === input.goal) || GOALS[0];
+          out.户型解读 = await analyzeFloorplan(client, {
+            mingGua: rec.命卦, dirs: rec.八方位, goal,
+            facing: input.facing, imageDataUrl: input.image, lang: input.lang,
+          });
+        } catch (e) {
+          out.户型解读错误 = `视觉解读失败:${e.message}`;
+        }
+      } else if (input.image && !client) {
+        out.户型解读错误 = '户型图视觉解读需配置 ANTHROPIC_API_KEY 或 LLM_API_KEY;以下为本命卦方位通用指南。';
+      }
+      return sendJSON(res, 200, out);
+    }
+
+    // 人间道 · 起卦:模拟三枚铜钱摇六次(纯函数,无需 Key),返回本卦/动爻/变卦
+    if (req.method === 'POST' && req.url === '/api/liuyao') {
+      await readBody(req); // 可有可无的 body,读掉即可
+      return sendJSON(res, 200, { type: 'liuyao', cast: castHexagram() });
+    }
+
+    // 人间道 · 解读:危机前置 → 用前端已摇 cast(或后端摇)→ 模型解读(需 Key)
+    if (req.method === 'POST' && req.url === '/api/renjiandao') {
+      if (!client) {
+        return sendJSON(res, 500, { error: '服务端未配置 ANTHROPIC_API_KEY 或 LLM_API_KEY' });
+      }
+      const input = JSON.parse(await readBody(req) || '{}');
+      if (!input.question) {
+        return sendJSON(res, 400, { error: '缺少必填项:你要问的事' });
+      }
+      const result = await runRenjiandao(client, input);
+      return sendJSON(res, 200, result);
+    }
+
+    if (req.method === 'POST' && req.url === '/api/consult') {
+      if (!client) {
+        return sendJSON(res, 500, { error: '服务端未配置 ANTHROPIC_API_KEY 或 LLM_API_KEY' });
+      }
+      const input = JSON.parse(await readBody(req) || '{}');
+      if (!input.question || !input.datetime || !input.gender) {
+        return sendJSON(res, 400, { error: '缺少必填项:性别 / 出生时间 / 问题' });
+      }
+      const result = await runConsultation(client, input);
+      return sendJSON(res, 200, result);
+    }
+
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Not Found');
+  } catch (e) {
+    console.error(e);
+    sendJSON(res, 500, { error: e.message });
+  }
+});
+
+server.listen(PORT, () => {
+  console.log(`\n  心易 MVP 已启动 →  http://localhost:${PORT}`);
+  if (!client) console.warn('  ⚠ 未设置 ANTHROPIC_API_KEY / LLM_API_KEY,模型解读接口会报错。先配置 .env 再启动。\n');
+});

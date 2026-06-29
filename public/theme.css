@@ -1,0 +1,94 @@
+/* 心易 · 新中式主题(米白·胡桃木·墨绿·赭石·朱砂印,山水留白) */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@500;600;700;900&display=swap');
+
+:root {
+  /* 米白宣纸 */
+  --bg: #EFE9DB;            /* 米白 */
+  --bg-2: #E7DECB;          /* 略深分区/输入底 */
+  --card: #F8F3E9;          /* 暖米白卡 */
+  /* 墨褐文字(浓淡分层) */
+  --ink: #3A2E22;           /* 墨褐·正文 */
+  --ink-strong: #2A1D12;    /* 浓·标题 */
+  --muted: #6E5F4C;         /* 淡褐 */
+  --faint: #9C8C75;         /* 远褐 */
+  /* 木线 */
+  --line: rgba(59,42,30,.16);
+  --line-soft: rgba(59,42,30,.08);
+  /* 主色=胡桃木,点睛=朱砂印,辅=墨绿/赭石/黛青 */
+  --accent: #3B2A1E;        /* 胡桃木(标题/按钮/结构) */
+  --accent-2: #33453A;      /* 墨绿(小型强调) */
+  --cinnabar: #B23A2E;      /* 朱砂印 */
+  --cinnabar-soft: rgba(178,58,46,.10);
+  --green: #2F4034; --ochre: #A85E33; --dai: #4F6873; --bronze: #9C7B3F;
+  --glow: rgba(59,42,30,.16);
+  --grad: linear-gradient(160deg, #2A1C12, #4A3525);  /* 浓→淡胡桃木 */
+  /* 吉=墨绿 / 凶=赭石 */
+  --good: #4E6B52; --good-bg: rgba(78,107,82,.12); --good-line: rgba(78,107,82,.34);
+  --bad: #A85E33;  --bad-bg: rgba(168,94,51,.10);  --bad-line: rgba(168,94,51,.34);
+  /* 动爻=朱砂 */
+  --gold: #B23A2E; --gold-glow: rgba(178,58,46,.4);
+  /* 字体 */
+  --sans: "Geist", -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  --serif: "Songti SC", "Noto Serif SC", "STSong", serif;
+  --kai: "Ma Shan Zheng", "Kaiti SC", "STKaiti", "Noto Serif SC", serif; /* 书法 */
+  --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Monaco, monospace;
+  /* 圆角 */
+  --r-card: 8px; --r-panel: 12px; --r-large: 22px; --r-pill: 999px;
+  /* 阴影:暖墨极淡 */
+  --shadow: 0 1px 2px rgba(59,42,30,.05), 0 16px 40px -24px rgba(59,42,30,.26);
+  --shadow-soft: 0 1px 2px rgba(59,42,30,.04), 0 10px 26px -16px rgba(59,42,30,.18);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; color: var(--ink); background: var(--bg);
+  font-family: var(--sans);
+  line-height: 1.82; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  position: relative; overflow-x: hidden;
+}
+/* 宣纸纤维纹(极淡) */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none; opacity: .3;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.28'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+body::after { content: none !important; }
+a { color: inherit; }
+
+/* 暖墨晕封面(工具页顶部;落地页用山水 hero 覆盖此层) */
+.aurora {
+  position: absolute; top: 0; left: 0; right: 0; height: 720px;
+  z-index: -1; pointer-events: none; overflow: hidden;
+}
+.aurora::before, .aurora::after {
+  content: ""; position: absolute; inset: -30% -14% 0;
+  -webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent 92%);
+  mask-image: linear-gradient(to bottom, #000 50%, transparent 92%);
+}
+.aurora::before {
+  background:
+    radial-gradient(56% 46% at 50% 20%, rgba(248,243,233,.72), transparent 72%),  /* 米白透光 */
+    radial-gradient(42% 50% at 84% 10%, rgba(59,42,30,.13), transparent 66%),     /* 胡桃木云 */
+    radial-gradient(38% 46% at 14% 16%, rgba(59,42,30,.08), transparent 70%),     /* 远墨云 */
+    radial-gradient(22% 30% at 66% 4%, rgba(178,58,46,.06), transparent 70%);     /* 朱砂晕 */
+  filter: blur(58px);
+}
+.aurora::after {
+  background:
+    radial-gradient(30% 40% at 72% 24%, rgba(59,42,30,.10), transparent 72%),
+    radial-gradient(22% 30% at 24% 8%, rgba(178,58,46,.05), transparent 70%);
+  filter: blur(72px);
+  animation: inkDrift 26s ease-in-out infinite alternate;
+}
+@keyframes inkDrift {
+  from { transform: translate3d(0,0,0) scale(1); }
+  to   { transform: translate3d(-3%,2%,0) scale(1.08); }
+}
+@media (prefers-reduced-motion: reduce) { .aurora::after { animation: none; } }
+
+/* 鼠标墨迹拖尾画布 */
+#ink-canvas {
+  position: fixed; inset: 0; z-index: 60; pointer-events: none;
+  mix-blend-mode: multiply;
+}

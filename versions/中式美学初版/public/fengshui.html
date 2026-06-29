@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>心易 · 地运 方位推荐</title>
+<link rel="stylesheet" href="/theme.css" />
+<style>
+  a { color:inherit; text-decoration:none; }
+  .wrap { max-width:760px; margin:0 auto; padding:40px 24px 96px; }
+
+  .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:34px; }
+  .top .logo { font-family:"Songti SC","Noto Serif SC",serif; font-size:20px; letter-spacing:4px;
+    background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .top .nav { display:flex; gap:18px; font-size:14px; color:var(--muted); align-items:center; }
+  .top .nav a:hover { color:var(--ink); }
+  .langtog { border:1px solid var(--line); border-radius:999px; padding:4px 12px; font-size:12px; color:var(--muted);
+    cursor:pointer; background:var(--card); letter-spacing:1px; }
+  .langtog:hover { color:var(--ink); border-color:var(--accent-2); }
+
+  header.hero { text-align:center; margin-bottom:36px; }
+  .badge { display:inline-flex; align-items:center; gap:7px; font-size:12px; letter-spacing:2px; color:var(--muted);
+    border:1px solid var(--line); border-radius:999px; padding:6px 14px; margin-bottom:20px; background:var(--card); }
+  .badge .dot { width:6px; height:6px; border-radius:50%; background:var(--accent-2); box-shadow:0 0 10px var(--glow); }
+  h1 { font-family:"Songti SC","Noto Serif SC",serif; font-size:40px; font-weight:600; letter-spacing:8px; margin:0 0 12px;
+    background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    filter:none; }
+  .sub { color:var(--muted); font-size:15px; letter-spacing:1px; }
+
+  form { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px;
+    box-shadow:var(--shadow); }
+  .row { display:flex; gap:16px; margin-bottom:18px; } .row>div { flex:1; }
+  label { display:block; font-size:12px; color:var(--muted); margin-bottom:8px; letter-spacing:1px; }
+  input,select { width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:11px;
+    background:var(--bg-2); color:var(--ink); font-family:inherit; font-size:15px; transition:border-color .2s,box-shadow .2s; }
+  input:focus,select:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(42,38,32,.14); }
+  select option { background:#fff; }
+
+  .upload { border:1.5px dashed var(--line); border-radius:14px; padding:24px; text-align:center; cursor:pointer;
+    color:var(--muted); transition:border-color .2s,background .2s; background:var(--bg-2); }
+  .upload:hover { border-color:var(--accent-2); background:rgba(59,130,246,.06); }
+  .upload .big { font-size:30px; margin-bottom:8px; }
+  .upload .hint { font-size:12px; color:var(--faint); margin-top:6px; }
+  .upload img { max-width:100%; max-height:280px; border-radius:10px; margin-top:6px; }
+  #file { display:none; }
+
+  button.go { width:100%; margin-top:8px; padding:15px; border:none; border-radius:12px; background:var(--grad);
+    color:#fff; font-family:inherit; font-size:16px; font-weight:600; letter-spacing:4px; cursor:pointer;
+    box-shadow:0 10px 34px -10px var(--glow); transition:filter .2s,transform .1s,opacity .2s; }
+  button.go:hover:not(:disabled){ filter:brightness(1.08); } button.go:active:not(:disabled){ transform:translateY(1px); }
+  button.go:disabled { opacity:.55; cursor:default; }
+
+  #result { margin-top:30px; }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px;
+    box-shadow:var(--shadow); margin-bottom:20px; }
+  .panel .t { font-size:12px; color:var(--accent-2); letter-spacing:2px; margin-bottom:16px; }
+
+  /* 命卦头 */
+  .gua-head { display:flex; align-items:center; gap:16px; }
+  .gua-head .gchar { font-family:"Songti SC",serif; font-size:46px; line-height:1;
+    background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .gua-head .gtxt { font-size:14px; color:var(--muted); } .gua-head .gtxt b { color:var(--ink); }
+  .gua-head .gpill { display:inline-block; font-size:11px; padding:2px 10px; border-radius:999px;
+    border:1px solid var(--line); color:var(--accent-2); margin-left:6px; }
+  .summary { margin-top:18px; padding:16px 18px; border:1px solid var(--good-line); border-radius:13px;
+    background:var(--good-bg); font-size:14px; color:var(--ink); line-height:1.8; }
+
+  /* 九宫罗盘 */
+  .luopan { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:4px; }
+  .cell { border:1px solid var(--line); border-radius:13px; padding:14px 8px; text-align:center;
+    background:var(--bg-2); min-height:96px; display:flex; flex-direction:column; justify-content:center; gap:3px; }
+  .cell.good { border-color:var(--good-line); background:var(--good-bg); }
+  .cell.bad { border-color:var(--bad-line); background:var(--bad-bg); }
+  .cell.center { border-color:rgba(165,180,252,.5); box-shadow:0 0 22px -6px var(--glow); background:#fff; }
+  .cell .dir { font-size:11px; color:var(--faint); letter-spacing:1px; }
+  .cell .star { font-family:"Songti SC",serif; font-size:20px; letter-spacing:1px; }
+  .cell.good .star { color:var(--good); } .cell.bad .star { color:var(--bad); }
+  .cell .lv { font-size:10px; letter-spacing:1px; } .cell.good .lv { color:var(--good); } .cell.bad .lv { color:var(--bad); }
+  .cell.center .gc { font-family:"Songti SC",serif; font-size:26px;
+    background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .cell.center .gl { font-size:10px; color:var(--muted); }
+  .legend { display:flex; gap:18px; justify-content:center; margin-top:14px; font-size:11px; color:var(--faint); }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:middle; }
+  .legend .g i { background:var(--good); } .legend .b i { background:var(--bad); }
+
+  /* 吉凶清单 */
+  .dirlist { display:grid; gap:8px; }
+  .di { display:flex; gap:10px; align-items:baseline; font-size:13px; border-top:1px solid var(--line); padding-top:8px; }
+  .di:first-child { border-top:none; padding-top:0; }
+  .di .d-dir { width:34px; flex:none; color:var(--faint); }
+  .di .d-star { width:44px; flex:none; }
+  .di.g .d-star { color:var(--good); } .di.b .d-star { color:var(--bad); }
+  .di .d-hua { color:var(--muted); }
+
+  .reading { white-space:pre-wrap; font-size:15px; line-height:2; color:var(--ink); }
+  .err { color:var(--cinnabar); font-size:14px; }
+  .note { font-size:12px; color:var(--faint); margin-top:8px; }
+  .loading { text-align:center; color:var(--muted); padding:46px; letter-spacing:3px; animation:pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+  .hint-foot { text-align:center; color:var(--faint); font-size:12px; margin-top:28px; letter-spacing:.5px; }
+
+  @media (max-width:520px){ .row{flex-direction:column; gap:16px;} h1{font-size:32px; letter-spacing:5px;} .wrap{padding:32px 16px 72px;} }
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"></div>
+<div class="wrap">
+  <div class="top">
+    <a href="/" class="logo">心易</a>
+    <div class="nav">
+      <a href="/app" data-i18n="nav.tianming">天命</a>
+      <a href="/diyun" data-i18n="nav.diyun">地运</a>
+      <a href="/renjiandao" data-i18n="nav.renjiandao">人间道</a>
+      <a href="/#pricing" data-i18n="nav.pricing">定价</a>
+      <span class="langtog" id="langtog">EN</span>
+    </div>
+  </div>
+
+  <header class="hero">
+    <div class="badge"><span class="dot"></span><span data-i18n="hero.badge">地运 · 东西四命 · 八宅方位</span></div>
+    <h1 data-i18n="hero.title">方 位 推 荐</h1>
+    <div class="sub" data-i18n="hero.sub">报出生与身份,上传户型图 —— 看你该睡哪个方位</div>
+  </header>
+
+  <form id="f">
+    <div class="row">
+      <div>
+        <label data-i18n="f.gender">性别</label>
+        <select name="gender"><option value="女" data-i18n="f.female">女</option><option value="男" data-i18n="f.male">男</option></select>
+      </div>
+      <div>
+        <label data-i18n="f.date">出生日期(定本命卦)</label>
+        <input type="date" name="date" value="1996-08-12" />
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label data-i18n="f.goal">身份定位 · 主要诉求</label>
+        <select name="goal">
+          <option value="wealth" data-i18n="f.g_wealth">求财运 · 拼事业</option>
+          <option value="health" data-i18n="f.g_health">求健康 · 保平安</option>
+          <option value="love" data-i18n="f.g_love">求姻缘 · 旺人际</option>
+          <option value="stable" data-i18n="f.g_stable">求安稳 · 利学业</option>
+        </select>
+      </div>
+      <div>
+        <label data-i18n="f.facing">户型图「正上方」朝向</label>
+        <select name="facing">
+          <option value="北" data-i18n="dir.N">北</option><option value="东北" data-i18n="dir.NE">东北</option><option value="东" data-i18n="dir.E">东</option><option value="东南" data-i18n="dir.SE">东南</option>
+          <option value="南" data-i18n="dir.S">南</option><option value="西南" data-i18n="dir.SW">西南</option><option value="西" data-i18n="dir.W">西</option><option value="西北" data-i18n="dir.NW">西北</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:18px">
+      <label data-i18n="f.upload">户型图(可选 · 上传后给出逐间方位点评)</label>
+      <div class="upload" id="drop">
+        <div id="ph"><div class="big">🗺️</div><span data-i18n="f.upload_cta">点此上传 / 拖入户型图</span><div class="hint" data-i18n="f.upload_hint">支持 PNG / JPG · 看不清的图建议标注指北针</div></div>
+        <img id="preview" style="display:none" />
+      </div>
+      <input type="file" id="file" accept="image/*" />
+    </div>
+    <button type="submit" class="go" id="btn" data-i18n="f.submit">勘 定 方 位</button>
+  </form>
+
+  <div id="result"></div>
+  <div class="hint-foot" data-i18n="foot">本方位建议依八宅东西四命体系推算,仅供居家参考与自我调整,不构成任何确定性预测。</div>
+</div>
+
+<script>
+const I18N = {
+  zh: {
+    'nav.tianming':'天命','nav.diyun':'地运','nav.renjiandao':'人间道','nav.pricing':'定价',
+    'hero.badge':'地运 · 东西四命 · 八宅方位','hero.title':'方 位 推 荐','hero.sub':'报出生与身份,上传户型图 —— 看你该睡哪个方位',
+    'f.gender':'性别','f.female':'女','f.male':'男','f.date':'出生日期(定本命卦)','f.goal':'身份定位 · 主要诉求',
+    'f.g_wealth':'求财运 · 拼事业','f.g_health':'求健康 · 保平安','f.g_love':'求姻缘 · 旺人际','f.g_stable':'求安稳 · 利学业',
+    'f.facing':'户型图「正上方」朝向','f.upload':'户型图(可选 · 上传后给出逐间方位点评)','f.upload_cta':'点此上传 / 拖入户型图',
+    'f.upload_hint':'支持 PNG / JPG · 看不清的图建议标注指北针','f.submit':'勘 定 方 位','f.loading_btn':'勘 定 中…',
+    'dir.N':'北','dir.NE':'东北','dir.E':'东','dir.SE':'东南','dir.S':'南','dir.SW':'西南','dir.W':'西','dir.NW':'西北',
+    'loading':'正在为你勘定地脉方位…','err':'出错了：','foot':'本方位建议依八宅东西四命体系推算,仅供居家参考与自我调整,不构成任何确定性预测。',
+    'p.benming':'本命卦','p.luopan':'你的八方位吉凶罗盘(图纸北方在上)','p.details':'八方位详解(吉→凶)','p.vision':'户型逐间方位点评','p.vision_label':'户型解读',
+    'lg.good':'吉方 · 宜卧室/书房/大门','lg.bad':'凶方 · 宜厕所/厨房压制',
+  },
+  en: {
+    'nav.tianming':'Tian Ming','nav.diyun':'Di Yun','nav.renjiandao':'Ren Jian Dao','nav.pricing':'Pricing',
+    'hero.badge':'Di Yun · East-West Life · Eight Mansions','hero.title':'D I R E C T I O N S','hero.sub':'Enter your birth & role, upload a floor plan — see which direction to sleep in',
+    'f.gender':'Gender','f.female':'Female','f.male':'Male','f.date':'Birth date (sets your life-trigram)','f.goal':'Role · main aim',
+    'f.g_wealth':'Wealth · career','f.g_health':'Health · safety','f.g_love':'Love · relationships','f.g_stable':'Stability · study',
+    'f.facing':'Direction at the TOP of the plan','f.upload':'Floor plan (optional · per-room direction notes)','f.upload_cta':'Click / drop a floor plan here',
+    'f.upload_hint':'PNG / JPG · mark a compass north if unclear','f.submit':'F I N D   D I R E C T I O N','f.loading_btn':'Surveying…',
+    'dir.N':'N','dir.NE':'NE','dir.E':'E','dir.SE':'SE','dir.S':'S','dir.SW':'SW','dir.W':'W','dir.NW':'NW',
+    'loading':'Surveying your eight directions…','err':'Error: ','foot':'Directions are derived from the Eight Mansions / East-West Life system — for home reference and self-adjustment only, not a definite prediction.',
+    'p.benming':'Your life-trigram','p.luopan':'Your eight-direction luck compass (plan-north on top)','p.details':'Eight directions in detail (best→worst)','p.vision':'Per-room direction notes','p.vision_label':'Floor-plan reading',
+    'lg.good':'Auspicious · bedroom/study/door','lg.bad':'Inauspicious · suppress with bath/kitchen',
+  },
+};
+let LANG = localStorage.getItem('lang') || 'zh';
+function t(k){ return (I18N[LANG]&&I18N[LANG][k]) || (I18N.zh[k]||k); }
+function applyI18n(){
+  document.documentElement.lang = LANG==='en'?'en':'zh-CN';
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.getAttribute('data-i18n')); });
+  document.getElementById('langtog').textContent = LANG==='en'?'中':'EN';
+}
+document.getElementById('langtog').addEventListener('click', ()=>{ LANG = LANG==='en'?'zh':'en'; localStorage.setItem('lang',LANG); applyI18n(); });
+applyI18n();
+
+const f = document.getElementById('f');
+const btn = document.getElementById('btn');
+const result = document.getElementById('result');
+const fileInput = document.getElementById('file');
+const drop = document.getElementById('drop');
+const preview = document.getElementById('preview');
+const ph = document.getElementById('ph');
+let imageDataUrl = '';
+
+drop.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
+['dragover','dragenter'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.style.borderColor = 'var(--accent-2)'; }));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.style.borderColor = ''; }));
+drop.addEventListener('drop', e => { if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+function handleFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = () => { imageDataUrl = reader.result; preview.src = reader.result; preview.style.display = 'block'; ph.style.display = 'none'; };
+  reader.readAsDataURL(file);
+}
+
+f.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const d = Object.fromEntries(new FormData(f));
+  const payload = { gender: d.gender, datetime: `${d.date} 12:00`, goal: d.goal, facing: d.facing, lang: LANG };
+  if (imageDataUrl) payload.image = imageDataUrl;
+
+  btn.disabled = true; btn.textContent = t('f.loading_btn');
+  result.innerHTML = `<div class="loading">${esc(t('loading'))}</div>`;
+  try {
+    const res = await fetch('/api/fengshui', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || '请求失败');
+    result.innerHTML = render(data);
+  } catch (err) {
+    result.innerHTML = `<div class="panel"><span class="err">${esc(t('err'))}${esc(err.message)}</span></div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = t('f.submit');
+  }
+});
+
+// 九宫格位置(北上)→ data.八方位 里的方位名
+const GRID = ['西北','北','东北','西','中','东','西南','南','东南'];
+
+function render(d) {
+  const byDir = {}; (d.八方位||[]).forEach(x => byDir[x.方位] = x);
+  const g = d.命卦 || {};
+
+  const cells = GRID.map(dir => {
+    if (dir === '中') {
+      return `<div class="cell center"><div class="gc">${esc(g.卦||'')}</div>
+        <div class="gl">${esc(g.命组||'')}</div></div>`;
+    }
+    const x = byDir[dir]; if (!x) return `<div class="cell"></div>`;
+    const cls = x.good ? 'good' : 'bad';
+    return `<div class="cell ${cls}" title="${esc(x.白话||'')}">
+      <div class="dir">${dir}</div><div class="star">${esc(x.星)}</div><div class="lv">${esc(x.吉凶)}</div></div>`;
+  }).join('');
+
+  const list = (d.八方位||[]).slice().sort((a,b)=> (b.rank)-(a.rank)).map(x => `
+    <div class="di ${x.good?'g':'b'}"><span class="d-dir">${esc(x.方位)}</span>
+      <span class="d-star">${esc(x.星)}</span><span class="d-hua">${esc(x.主)} —— ${esc(x.白话)}</span></div>`).join('');
+
+  let visionHtml = '';
+  if (d.户型解读) {
+    visionHtml = `<div class="panel"><div class="t">${esc(t('p.vision'))}</div><div class="reading">${esc(d.户型解读)}</div></div>`;
+  } else if (d.户型解读错误) {
+    visionHtml = `<div class="panel"><div class="t">${esc(t('p.vision_label'))}</div><span class="note">${esc(d.户型解读错误)}</span></div>`;
+  }
+
+  return `
+  <div class="panel">
+    <div class="t">${esc(t('p.benming'))}</div>
+    <div class="gua-head">
+      <div class="gchar">${esc(g.卦||'')}</div>
+      <div class="gtxt"><b>${esc(g.卦||'')}命</b><span class="gpill">${esc(g.命组||'')}</span>
+        <span class="gpill">${esc(g.五行||'')}</span><br>${esc(g.白话||'')}</div>
+    </div>
+    <div class="summary">${esc(d.摘要||'')}</div>
+    <div class="note">${esc(g.备注||'')}</div>
+  </div>
+
+  <div class="panel">
+    <div class="t">${esc(t('p.luopan'))}</div>
+    <div class="luopan">${cells}</div>
+    <div class="legend"><span class="g"><i></i>${esc(t('lg.good'))}</span><span class="b"><i></i>${esc(t('lg.bad'))}</span></div>
+  </div>
+
+  <div class="panel">
+    <div class="t">${esc(t('p.details'))}</div>
+    <div class="dirlist">${list}</div>
+  </div>
+
+  ${visionHtml}`;
+}
+
+function esc(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+</script>
+<script src="/ink.js" defer></script>
+</body>
+</html>
