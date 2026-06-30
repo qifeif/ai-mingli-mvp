@@ -19,9 +19,11 @@
   .top .nav { display:flex; gap:18px; font-size:14px; color:var(--muted); align-items:center; flex-wrap:wrap; }
   .top .nav a:hover { color:var(--ink); }
   .top .nav a.on { color:var(--accent); font-weight:600; }
-  .langtog { border:1px solid var(--line); border-radius:999px; padding:4px 12px; font-size:12px; color:var(--muted);
-    cursor:pointer; background:var(--card); letter-spacing:1px; }
+  .langtog { border:1px solid var(--line); border-radius:999px; padding:6px 13px; font-size:12px; color:var(--muted);
+    cursor:pointer; background:var(--card); letter-spacing:1px; font-family:inherit; display:inline-flex;
+    align-items:center; min-height:34px; }
   .langtog:hover { color:var(--ink); border-color:var(--accent-2); }
+  .langtog:focus-visible { outline:2px solid var(--accent-2); outline-offset:2px; }
 
   /* 编辑式 HERO */
   .lead { text-align:center; max-width:760px; margin:30px auto 46px; }
@@ -187,6 +189,34 @@
   .zw-legend .fan i { background:var(--bad-bg); border:1px solid var(--bad-line); }
   .zw-legend .ming i { background:var(--card); box-shadow:inset 0 0 0 1.5px var(--cinnabar); }
 
+  /* 当前大限宫 高亮(古铜框+晕光) */
+  .zw-cell.dalim { box-shadow:inset 0 0 0 1.5px var(--bronze), 0 0 22px -10px rgba(156,123,63,.5); }
+  .zw-cell.dalim .range { color:var(--bronze) !important; font-weight:700; }
+  /* 四化主星名 着色 */
+  .zw-star.hua-lu { color:var(--good) !important; }
+  .zw-star.hua-quan { color:var(--bronze) !important; }
+  .zw-star.hua-ke { color:var(--dai) !important; }
+  .zw-star.hua-ji { color:var(--bad) !important; }
+  /* 四化 badge 放大 */
+  .zw-hua { font-size:11px; padding:2px 5px; font-weight:700; border-radius:4px; }
+  /* 化忌宫 微警底色 */
+  .zw-cell.has-ji { background:rgba(168,94,51,.06) !important; }
+  /* 四化速查 & 当前大限 信息条 */
+  .zw-info-row { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; font-size:12px; }
+  .zw-mutagens { flex:1; min-width:0; display:flex; gap:8px 14px; flex-wrap:wrap; padding:9px 13px;
+    background:var(--bg-2); border-radius:9px; border:1px solid var(--line); align-items:center; }
+  .zw-mut-tag { display:inline-flex; align-items:baseline; gap:4px; }
+  .zw-mut-tag .lbl { color:var(--faint); font-size:11px; }
+  .zw-mut-tag .star-n { font-family:"Songti SC",serif; font-weight:700; font-size:13px; }
+  .zw-mut-tag.lu .star-n { color:var(--good); }
+  .zw-mut-tag.quan .star-n { color:var(--bronze); }
+  .zw-mut-tag.ke .star-n { color:var(--dai); }
+  .zw-mut-tag.ji .star-n { color:var(--bad); }
+  .zw-mut-tag .gong-n { color:var(--muted); font-size:11px; }
+  .zw-dalim-bar { padding:9px 13px; background:rgba(156,123,63,.08); border-radius:9px;
+    border:1px solid rgba(156,123,63,.3); color:var(--muted); white-space:nowrap; }
+  .zw-dalim-bar b { color:var(--bronze); font-weight:700; }
+
   /* 三方四正 解读 */
   .sfsz { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px; box-shadow:var(--shadow); margin-bottom:22px; }
   .sfsz > .t { font-size:12px; color:var(--accent-2); letter-spacing:2px; margin-bottom:14px; }
@@ -231,7 +261,7 @@
       <a href="/diyun" data-i18n="nav.diyun">地运</a>
       <a href="/renjiandao" data-i18n="nav.renjiandao">人间道</a>
       <a href="/#pricing" data-i18n="nav.pricing">定价</a>
-      <span class="langtog" id="langtog">EN</span>
+      <button class="langtog" id="langtog" type="button" aria-label="切换中英文 / Switch language">EN</button>
     </div>
   </div>
 
@@ -253,23 +283,23 @@
           </div>
         </div>
         <div>
-          <label data-i18n="f.place">出生地</label>
-          <input name="place" value="杭州" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
+          <label for="f-place" data-i18n="f.place">出生地</label>
+          <input id="f-place" name="place" value="杭州" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
         </div>
       </div>
       <div class="row">
         <div>
-          <label data-i18n="f.date">出生日期</label>
-          <input type="date" name="date" value="1996-08-12" />
+          <label for="f-date" data-i18n="f.date">出生日期</label>
+          <input id="f-date" type="date" name="date" value="1996-08-12" />
         </div>
         <div>
-          <label data-i18n="f.time">出生时间</label>
-          <input type="time" name="time" value="14:30" />
+          <label for="f-time" data-i18n="f.time">出生时间</label>
+          <input id="f-time" type="time" name="time" value="14:30" />
         </div>
       </div>
       <div style="margin-bottom:18px">
-        <label data-i18n="f.q">此刻的纠结</label>
-        <textarea name="question" data-i18n-ph="f.q_ph" placeholder="把你正在纠结的事说出来,越具体越好…">工作三年了很迷茫,要不要辞职去考研?</textarea>
+        <label for="f-question" data-i18n="f.q">此刻的纠结</label>
+        <textarea id="f-question" name="question" data-i18n-ph="f.q_ph" placeholder="把你正在纠结的事说出来,越具体越好…">工作三年了很迷茫,要不要辞职去考研?</textarea>
       </div>
       <div class="row" style="align-items:flex-end; margin-bottom:0">
         <div>
@@ -424,17 +454,42 @@ const HUA = { lu: '禄', quan: '权', ke: '科', ji: '忌' };
 
 function renderZiwei(c) {
   const en = LANG === 'en';
+
+  // 收集全盘四化位置(用于速查条)
+  const mutMap = { lu: [], quan: [], ke: [], ji: [] };
+  (c.十二宫 || []).forEach((P) => {
+    [...(P.主星 || []), ...(P.辅星 || [])].forEach((s) => {
+      if (s.化 && mutMap[s.化]) mutMap[s.化].push({ star: s.名, gong: P.宫 });
+    });
+  });
+
   const cells = (c.十二宫 || []).map((P) => {
     const pos = P.pos || [1, 1];
+    // 该宫含哪些四化类型 → 用于 cell 级样式
+    const cellHuas = new Set([...(P.主星 || []), ...(P.辅星 || [])].map((s) => s.化).filter(Boolean));
+    const cls = [
+      P.在三方四正 ? 'fan' : '',
+      P.命宫 ? 'ming' : '',
+      P.当前大限 ? 'dalim' : '',
+      ...Array.from(cellHuas).map((h) => `has-${h}`),
+    ].filter(Boolean).join(' ');
+
+    // 主星:有化则给星名上色
     const majors = (P.主星 || []).map((s) =>
-      `<span class="zw-star main">${esc(s.名)}${s.亮 ? `<span class="b">${esc(s.亮)}</span>` : ''}${s.化 ? `<span class="zw-hua ${s.化}">${HUA[s.化]}</span>` : ''}</span>`).join('');
+      `<span class="zw-star main${s.化 ? ` hua-${s.化}` : ''}">${esc(s.名)}${s.亮 ? `<span class="b">${esc(s.亮)}</span>` : ''}${s.化 ? `<span class="zw-hua ${s.化}">${HUA[s.化]}</span>` : ''}</span>`).join('');
     const empty = majors ? '' : `<span class="zw-star" style="color:var(--faint)">${en ? '(empty)' : '空宫'}</span>`;
     const minor = (P.辅星 || []).slice(0, 6).map((s) =>
       `${esc(s.名)}${s.化 ? `<span class="zw-hua ${s.化}" style="margin-left:1px">${HUA[s.化]}</span>` : ''}`).join(' · ');
-    return `<div class="zw-cell ${P.在三方四正 ? 'fan' : ''} ${P.命宫 ? 'ming' : ''}" style="grid-column:${pos[0]};grid-row:${pos[1]}">
+
+    // 当前大限宫显示 ◉ 前缀
+    const rangeHtml = P.当前大限
+      ? `<span class="range">◉ ${esc(P.大限)}</span>`
+      : `<span class="range">${esc(P.大限 || '')}</span>`;
+
+    return `<div class="zw-cell ${cls}" style="grid-column:${pos[0]};grid-row:${pos[1]}">
       <div class="zw-stars">${majors}${empty}</div>
       ${minor ? `<div class="zw-minor">${minor}</div>` : ''}
-      <div class="zw-foot"><span class="gname">${esc(P.宫)}${P.身宫 ? '<span class="shen">身</span>' : ''}</span><span class="range">${esc(P.大限 || '')}</span><span class="gz">${esc(P.天干)}${esc(P.地支)}</span></div>
+      <div class="zw-foot"><span class="gname">${esc(P.宫)}${P.身宫 ? '<span class="shen">身</span>' : ''}</span>${rangeHtml}<span class="gz">${esc(P.天干)}${esc(P.地支)}</span></div>
     </div>`;
   }).join('');
 
@@ -453,11 +508,44 @@ function renderZiwei(c) {
   const title = en ? 'Zi Wei Chart' : '紫 微 命 盘';
   const lgMing = en ? 'Life palace' : '命宫';
   const lgFan = en ? 'Triad & opposition' : '三方四正(命·迁·财·官)';
+  const lgDalim = en ? 'Current decade' : '当前大限';
+
+  // 四化速查条
+  const mutLbls = en
+    ? { lu: 'Lu', quan: 'Quan', ke: 'Ke', ji: 'Ji' }
+    : { lu: '化禄', quan: '化权', ke: '化科', ji: '化忌' };
+  const mutTags = ['lu', 'quan', 'ke', 'ji'].flatMap((key) =>
+    mutMap[key].map(({ star, gong }) =>
+      `<span class="zw-mut-tag ${key}"><span class="lbl">${mutLbls[key]}</span><span class="star-n">${esc(star)}</span><span class="gong-n">· ${esc(gong)}</span></span>`
+    )
+  );
+
+  // 当前大限条
+  const curDalim = (c.十二宫 || []).find((P) => P.当前大限);
+  const age = c.当前年龄;
+  let dalimBar = '';
+  if (curDalim) {
+    dalimBar = en
+      ? `<div class="zw-dalim-bar">Current decade: <b>${esc(curDalim.宫)}</b> (${esc(curDalim.大限)} yrs) · ${esc(curDalim.天干)}${esc(curDalim.地支)}</div>`
+      : `<div class="zw-dalim-bar">当前大限 · <b>${esc(curDalim.宫)}</b>（${esc(curDalim.大限)} 岁）· ${esc(curDalim.天干)}${esc(curDalim.地支)}</div>`;
+  } else if (age !== undefined) {
+    dalimBar = en
+      ? `<div class="zw-dalim-bar">Pre-cycle (童限) · age ${age}, decade not yet active</div>`
+      : `<div class="zw-dalim-bar">童限（起限前）· 当前 ${age} 岁，大限尚未起运</div>`;
+  }
+
+  const infoRow = (mutTags.length || dalimBar)
+    ? `<div class="zw-info-row">${mutTags.length ? `<div class="zw-mutagens">${mutTags.join('<span style="color:var(--line);margin:0 3px">·</span>')}</div>` : ''}${dalimBar}</div>`
+    : '';
 
   return `<div class="zw-panel">
     <div class="zw-cap"><h3>${title}</h3><span class="zw-demo" style="color:var(--faint);border-color:var(--line)">${esc(corr)}</span></div>
     <div class="zw-grid">${cells}${center}</div>
-    <div class="zw-legend"><span class="ming"><i></i>${lgMing}</span><span class="fan"><i></i>${lgFan}</span></div>
+    <div class="zw-legend">
+      <span class="ming"><i></i>${lgMing}</span>
+      <span class="fan"><i></i>${lgFan}</span>
+      <span style="display:inline-flex;align-items:center;gap:5px"><i style="width:11px;height:11px;border-radius:3px;display:inline-block;border:1.5px solid var(--bronze);background:rgba(156,123,63,.12)"></i>${lgDalim}</span>
+    </div>${infoRow}
   </div>`;
 }
 

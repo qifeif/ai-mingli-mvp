@@ -62,6 +62,11 @@ export function computeZiwei(input) {
   // 2) iztro 安星(用校正后的真太阳时)
   const a = astro.bySolar(solarStr, timeIndex, gender, true, 'zh-CN');
 
+  // 当前年龄 → 标注当前大限宫
+  const _now = new Date();
+  let currentAge = _now.getFullYear() - Y;
+  if ((_now.getMonth() + 1 < M) || (_now.getMonth() + 1 === M && _now.getDate() < D)) currentAge--;
+
   // 3) 三方四正(命宫):本宫 + 对宫(迁移) + 两三合宫(财帛、官禄)
   const sp = a.surroundedPalaces('命宫');
   const fanBranches = new Set([sp.target, sp.opposite, sp.wealth, sp.career].map((P) => P.earthlyBranch));
@@ -79,6 +84,7 @@ export function computeZiwei(input) {
     辅星: [...(P.minorStars || []), ...(P.adjectiveStars || [])]
       .map((s) => ({ 名: s.name, 化: MUTAGEN_KEY[s.mutagen] || '' })),
     大限: P.decadal?.range ? `${P.decadal.range[0]}-${P.decadal.range[1]}` : '',
+    当前大限: P.decadal?.range ? currentAge >= P.decadal.range[0] && currentAge <= P.decadal.range[1] : false,
   }));
 
   const fan = (P) => ({
@@ -106,6 +112,7 @@ export function computeZiwei(input) {
     星座: a.sign,
     命宫地支: a.earthlyBranchOfSoulPalace,
     身宫地支: a.earthlyBranchOfBodyPalace,
+    当前年龄: currentAge,
     十二宫,
     三方四正: { 命宫: fan(sp.target), 迁移: fan(sp.opposite), 财帛: fan(sp.wealth), 官禄: fan(sp.career) },
   };

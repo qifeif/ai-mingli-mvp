@@ -20,6 +20,7 @@ import { analyzeFloorplan } from './src/fengshui.js';
 import { castHexagram } from './src/liuyao.js';
 import { runRenjiandao } from './src/renjiandao.js';
 import { runZiwei } from './src/ziwei.js';
+import { streamChat, castHexagram as castHex } from './src/chat.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -56,6 +57,9 @@ const PAGES = {
   // 人间道(六爻)
   '/renjiandao': 'renjiandao.html',
   '/renjiandao.html': 'renjiandao.html',
+  // 对话页
+  '/chat': 'chat.html',
+  '/chat.html': 'chat.html',
   // 新中式风格预览(临时,定稿前不动 landing)
   '/preview': 'preview.html',
   '/preview.html': 'preview.html',
@@ -161,6 +165,44 @@ const server = createServer(async (req, res) => {
       }
       const result = await runRenjiandao(client, input);
       return sendJSON(res, 200, result);
+    }
+
+    // 对话聊天(流式 SSE)
+    if (req.method === 'POST' && req.url === '/api/chat') {
+      if (!client) {
+        return sendJSON(res, 500, { error: '服务端未配置 LLM API Key' });
+      }
+      const body = JSON.parse(await readBody(req) || '{}');
+      const { messages = [], profile, mode = 'suiwen', lang = 'zh' } = body;
+      let { extras = {} } = body;
+
+      // 人间道首轮自动起卦
+      if (mode === 'renjiandao' && !extras.hexagram &&
+          messages.filter(m => m.role === 'user').length <= 1) {
+        extras = { ...extras, hexagram: castHex() };
+      }
+
+      res.writeHead(200, {
+        'Content-Type':  'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        'Connection':    'keep-alive',
+      });
+
+      // 把起好的卦先发给前端（前端存入 session）
+      if (extras.hexagram) {
+        res.write(`data: ${JSON.stringify({ type: 'hexagram', data: extras.hexagram })}\n\n`);
+      }
+
+      try {
+        for await (const chunk of streamChat(client, { messages, profile, mode, lang, extras })) {
+          res.write(`data: ${JSON.stringify({ type: 'delta', text: chunk })}\n\n`);
+        }
+      } catch (e) {
+        res.write(`data: ${JSON.stringify({ type: 'error', text: e.message })}\n\n`);
+      }
+
+      res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+      return res.end();
     }
 
     if (req.method === 'POST' && req.url === '/api/consult') {
