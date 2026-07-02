@@ -53,3 +53,40 @@ test('computeZiwei:坏输入抛错(性别/格式)', () => {
   assert.throws(() => computeZiwei({ gender: 'x', datetime: '1996-08-12 14:30' }), /gender/);
   assert.throws(() => computeZiwei({ gender: '女', datetime: 'bad' }), /datetime/);
 });
+
+test('computeZiwei:运限(大限/流年)四化各 4 颗星', () => {
+  const c = computeZiwei(SAMPLE);
+  assert.equal(c.运限.大限.mutagen.length, 4, '大限四化应有 4 颗星(禄权科忌)');
+  assert.equal(c.运限.流年.mutagen.length, 4, '流年四化应有 4 颗星(禄权科忌)');
+  assert.ok(Array.isArray(c.运限.大限.起止) && c.运限.大限.起止.length === 2, '大限应有起止年龄区间');
+  assert.ok(Number.isInteger(c.运限.流年.年份), '流年应带年份');
+});
+
+test('computeZiwei:三方四正表 覆盖全部十二宫,各宫四正地支互异', () => {
+  const c = computeZiwei(SAMPLE);
+  const 宫名列表 = c.十二宫.map((p) => p.宫);
+  assert.deepEqual(Object.keys(c.三方四正表).sort(), 宫名列表.slice().sort(), '三方四正表应覆盖十二宫全部宫名');
+  for (const 宫名 of 宫名列表) {
+    const S = c.三方四正表[宫名];
+    const zhis = [S.命宫.地支, S.迁移.地支, S.财帛.地支, S.官禄.地支];
+    assert.equal(new Set(zhis).size, 4, `${宫名} 的三方四正四宫地支应互异`);
+  }
+});
+
+test('computeZiwei:当前大限流年 地支能在十二宫中找到匹配', () => {
+  const c = computeZiwei(SAMPLE);
+  const branches = new Set(c.十二宫.map((p) => p.地支));
+  assert.ok(branches.has(c.当前大限流年.大限宫地支), '大限宫地支应能匹配到某个本命宫位');
+  assert.ok(branches.has(c.当前大限流年.流年宫地支), '流年宫地支应能匹配到某个本命宫位');
+});
+
+test('summarizeSanFang:可对任意宫位生成解读,含空宫(借对宫)回退文案', () => {
+  const c = computeZiwei(SAMPLE);
+  for (const 宫名 of Object.keys(c.三方四正表)) {
+    for (const lang of ['zh', 'en']) {
+      const s = summarizeSanFang(c, lang, 宫名);
+      assert.equal(s.chips.length, 4, `${宫名}(${lang}) 应有 4 枚 chip`);
+      assert.equal(s.段落.length, 3, `${宫名}(${lang}) 应有 3 段解读`);
+    }
+  }
+});

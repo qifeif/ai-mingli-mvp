@@ -217,6 +217,20 @@
     border:1px solid rgba(156,123,63,.3); color:var(--muted); white-space:nowrap; }
   .zw-dalim-bar b { color:var(--bronze); font-weight:700; }
 
+  /* 宫位可点选(命盘从静态展示升级为可探索) */
+  .zw-cell { cursor:pointer; transition:box-shadow .15s ease, background-color .15s ease; }
+  .zw-cell:hover { box-shadow:inset 0 0 0 1.5px var(--accent-2); }
+  /* 大限/流年 运化 标记(与本命 .hua-* 文字染色区分:角标+细边框,不抢主星名颜色) */
+  .zw-run-badge { font-size:8px; font-weight:700; border-radius:3px; padding:0 3px; margin-left:1px; vertical-align:2px; border:1px solid; }
+  .zw-run-badge.dec-lu, .zw-run-badge.yr-lu { color:var(--good); border-color:var(--good); }
+  .zw-run-badge.dec-quan, .zw-run-badge.yr-quan { color:var(--bronze); border-color:var(--bronze); }
+  .zw-run-badge.dec-ke, .zw-run-badge.yr-ke { color:var(--dai); border-color:var(--dai); }
+  .zw-run-badge.dec-ji, .zw-run-badge.yr-ji { color:var(--bad); border-color:var(--bad); }
+  /* 当前流年宫 高亮(与大限 .dalim 的古铜晕光区分,用靛色虚线框) */
+  .zw-cell.yr-cur { box-shadow:inset 0 0 0 1.5px var(--accent-2); }
+  .zw-cell.yr-cur.dalim { box-shadow:inset 0 0 0 1.5px var(--bronze), inset 0 0 0 4px rgba(79,104,115,.35); }
+  .zw-mut-tag.dec .star-n, .zw-mut-tag.yr .star-n { font-family:"Songti SC",serif; }
+
   /* 三方四正 解读 */
   .sfsz { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px; box-shadow:var(--shadow); margin-bottom:22px; }
   .sfsz > .t { font-size:12px; color:var(--accent-2); letter-spacing:2px; margin-bottom:14px; }
@@ -407,6 +421,10 @@ const f = document.getElementById('f');
 const btn = document.getElementById('btn');
 const result = document.getElementById('result');
 
+// 最近一次排盘结果(供点选宫位联动三方四正用,纯前端读取,不再发请求)
+let lastZiweiData = null;
+let lastQuestion = '';
+
 f.addEventListener('submit', async (e) => {
   e.preventDefault();
   const d = Object.fromEntries(new FormData(f));
@@ -430,11 +448,14 @@ f.addEventListener('submit', async (e) => {
 
     // 危机短路:只给温柔陪伴,不展示命盘
     if (data.type === 'crisis') {
+      lastZiweiData = null;
       result.innerHTML = `<div class="reading crisis">${esc(data.text)}</div>`;
       return;
     }
 
     // 真排盘 + 三方四正恒展示;AI 深化有则附下方,无 Key 则降级提示
+    lastZiweiData = data;
+    lastQuestion = payload.question;
     let html = renderZiwei(data.chart) + renderSanFang(data.sanfang, payload.question);
     if (data.text) {
       html += `<div class="reading"><div class="meta">${esc(t('airead'))}</div>${esc(data.text)}</div>`;
@@ -443,10 +464,33 @@ f.addEventListener('submit', async (e) => {
     }
     result.innerHTML = html;
   } catch (err) {
+    lastZiweiData = null;
     result.innerHTML = `<div class="reading"><span class="err">${esc(t('err'))}${esc(err.message)}</span></div>`;
   } finally {
     btn.disabled = false; btn.textContent = t('f.submit');
   }
+});
+
+// 宫位点选:事件委托到 #result,点任意 .zw-cell 高亮其三方四正 + 切换解读文案(纯前端,不发请求)
+result.addEventListener('click', (e) => {
+  const cell = e.target.closest('.zw-cell[data-gong]');
+  if (!cell || !lastZiweiData) return;
+  const gong = cell.getAttribute('data-gong');
+  const chart = lastZiweiData.chart;
+  const fanSet = chart?.三方四正表?.[gong];
+  if (!fanSet) return;
+
+  // .fan 类代表"当前选中的三方四正高亮":先清空旧的四宫,再点亮新的四宫
+  const fanBranches = new Set([fanSet.命宫, fanSet.迁移, fanSet.财帛, fanSet.官禄].map((P) => P.地支));
+  result.querySelectorAll('.zw-cell').forEach((el) => {
+    const branch = chart.十二宫.find((P) => P.宫 === el.getAttribute('data-gong'))?.地支;
+    el.classList.toggle('fan', fanBranches.has(branch));
+  });
+
+  // 切换三方四正解读面板内容(复用 renderSanFang,只替换 .sfsz 容器)
+  const sanfang = lastZiweiData.三方四正解读表?.[gong];
+  const sfszEl = result.querySelector('.sfsz');
+  if (sanfang && sfszEl) sfszEl.outerHTML = renderSanFang(sanfang, lastQuestion);
 });
 
 // ===== 紫微斗数 命盘渲染(消费 /api/ziwei 真排盘数据) =====
@@ -463,6 +507,9 @@ function renderZiwei(c) {
     });
   });
 
+  const 流年地支 = c.当前大限流年?.流年宫地支;
+  const runLbl = en ? { 大限: 'D', 流年: 'Y' } : { 大限: '大', 流年: '流' };
+
   const cells = (c.十二宫 || []).map((P) => {
     const pos = P.pos || [1, 1];
     // 该宫含哪些四化类型 → 用于 cell 级样式
@@ -471,22 +518,32 @@ function renderZiwei(c) {
       P.在三方四正 ? 'fan' : '',
       P.命宫 ? 'ming' : '',
       P.当前大限 ? 'dalim' : '',
+      P.地支 === 流年地支 ? 'yr-cur' : '',
       ...Array.from(cellHuas).map((h) => `has-${h}`),
     ].filter(Boolean).join(' ');
 
+    // 运限四化(大限/流年)角标:与本命 化 各自独立展示,不覆盖本命颜色
+    const runBadges = (s) => {
+      if (!s.运化) return '';
+      let out = '';
+      if (s.运化.大限) out += `<span class="zw-run-badge dec-${s.运化.大限}" title="${en ? 'Decade' : '大限'}${HUA[s.运化.大限]}">${runLbl.大限}${HUA[s.运化.大限]}</span>`;
+      if (s.运化.流年) out += `<span class="zw-run-badge yr-${s.运化.流年}" title="${en ? 'Yearly' : '流年'}${HUA[s.运化.流年]}">${runLbl.流年}${HUA[s.运化.流年]}</span>`;
+      return out;
+    };
+
     // 主星:有化则给星名上色
     const majors = (P.主星 || []).map((s) =>
-      `<span class="zw-star main${s.化 ? ` hua-${s.化}` : ''}">${esc(s.名)}${s.亮 ? `<span class="b">${esc(s.亮)}</span>` : ''}${s.化 ? `<span class="zw-hua ${s.化}">${HUA[s.化]}</span>` : ''}</span>`).join('');
+      `<span class="zw-star main${s.化 ? ` hua-${s.化}` : ''}">${esc(s.名)}${s.亮 ? `<span class="b">${esc(s.亮)}</span>` : ''}${s.化 ? `<span class="zw-hua ${s.化}">${HUA[s.化]}</span>` : ''}${runBadges(s)}</span>`).join('');
     const empty = majors ? '' : `<span class="zw-star" style="color:var(--faint)">${en ? '(empty)' : '空宫'}</span>`;
     const minor = (P.辅星 || []).slice(0, 6).map((s) =>
-      `${esc(s.名)}${s.化 ? `<span class="zw-hua ${s.化}" style="margin-left:1px">${HUA[s.化]}</span>` : ''}`).join(' · ');
+      `${esc(s.名)}${s.化 ? `<span class="zw-hua ${s.化}" style="margin-left:1px">${HUA[s.化]}</span>` : ''}${runBadges(s)}`).join(' · ');
 
     // 当前大限宫显示 ◉ 前缀
     const rangeHtml = P.当前大限
       ? `<span class="range">◉ ${esc(P.大限)}</span>`
       : `<span class="range">${esc(P.大限 || '')}</span>`;
 
-    return `<div class="zw-cell ${cls}" style="grid-column:${pos[0]};grid-row:${pos[1]}">
+    return `<div class="zw-cell ${cls}" data-gong="${esc(P.宫)}" style="grid-column:${pos[0]};grid-row:${pos[1]}">
       <div class="zw-stars">${majors}${empty}</div>
       ${minor ? `<div class="zw-minor">${minor}</div>` : ''}
       <div class="zw-foot"><span class="gname">${esc(P.宫)}${P.身宫 ? '<span class="shen">身</span>' : ''}</span>${rangeHtml}<span class="gz">${esc(P.天干)}${esc(P.地支)}</span></div>
@@ -510,7 +567,7 @@ function renderZiwei(c) {
   const lgFan = en ? 'Triad & opposition' : '三方四正(命·迁·财·官)';
   const lgDalim = en ? 'Current decade' : '当前大限';
 
-  // 四化速查条
+  // 四化速查条(本命)
   const mutLbls = en
     ? { lu: 'Lu', quan: 'Quan', ke: 'Ke', ji: 'Ji' }
     : { lu: '化禄', quan: '化权', ke: '化科', ji: '化忌' };
@@ -519,6 +576,22 @@ function renderZiwei(c) {
       `<span class="zw-mut-tag ${key}"><span class="lbl">${mutLbls[key]}</span><span class="star-n">${esc(star)}</span><span class="gong-n">· ${esc(gong)}</span></span>`
     )
   );
+
+  // 大限/流年 四化速查条:星名 → 所在本命宫位(反查十二宫)
+  const starGong = {};
+  (c.十二宫 || []).forEach((P) => [...(P.主星 || []), ...(P.辅星 || [])].forEach((s) => { starGong[s.名] = P.宫; }));
+  const runMutTags = (mutagen, cls) => (mutagen || []).map((star, i) => {
+    const key = ['lu', 'quan', 'ke', 'ji'][i];
+    const gong = starGong[star];
+    return `<span class="zw-mut-tag ${cls} ${key}"><span class="lbl">${mutLbls[key]}</span><span class="star-n">${esc(star)}</span>${gong ? `<span class="gong-n">· ${esc(gong)}</span>` : ''}</span>`;
+  }).join('');
+  const 运限 = c.运限 || {};
+  const decLbl = en ? 'Decade mutagens' : '大限四化';
+  const yrLbl = en ? 'Yearly mutagens' : '流年四化';
+  const decBar = 运限.大限?.mutagen?.length
+    ? `<div class="zw-mutagens"><span class="lbl" style="margin-right:2px">${decLbl}·</span>${runMutTags(运限.大限.mutagen, 'dec')}</div>` : '';
+  const yrBar = 运限.流年?.mutagen?.length
+    ? `<div class="zw-mutagens"><span class="lbl" style="margin-right:2px">${yrLbl}(${esc(运限.流年.年份 || '')})·</span>${runMutTags(运限.流年.mutagen, 'yr')}</div>` : '';
 
   // 当前大限条
   const curDalim = (c.十二宫 || []).find((P) => P.当前大限);
@@ -537,6 +610,9 @@ function renderZiwei(c) {
   const infoRow = (mutTags.length || dalimBar)
     ? `<div class="zw-info-row">${mutTags.length ? `<div class="zw-mutagens">${mutTags.join('<span style="color:var(--line);margin:0 3px">·</span>')}</div>` : ''}${dalimBar}</div>`
     : '';
+  const runInfoRow = (decBar || yrBar) ? `<div class="zw-info-row">${decBar}${yrBar}</div>` : '';
+
+  const hint = en ? 'Click any palace to see its own triad & opposition' : '点击任意宫位,查看该宫的三方四正';
 
   return `<div class="zw-panel">
     <div class="zw-cap"><h3>${title}</h3><span class="zw-demo" style="color:var(--faint);border-color:var(--line)">${esc(corr)}</span></div>
@@ -545,7 +621,9 @@ function renderZiwei(c) {
       <span class="ming"><i></i>${lgMing}</span>
       <span class="fan"><i></i>${lgFan}</span>
       <span style="display:inline-flex;align-items:center;gap:5px"><i style="width:11px;height:11px;border-radius:3px;display:inline-block;border:1.5px solid var(--bronze);background:rgba(156,123,63,.12)"></i>${lgDalim}</span>
-    </div>${infoRow}
+      <span style="display:inline-flex;align-items:center;gap:5px"><i style="width:11px;height:11px;border-radius:3px;display:inline-block;border:1.5px solid var(--accent-2)"></i>${en ? 'Current year' : '今年流年'}</span>
+    </div>${infoRow}${runInfoRow}
+    <div class="hint" style="margin-top:10px;font-size:11px">${hint}</div>
   </div>`;
 }
 

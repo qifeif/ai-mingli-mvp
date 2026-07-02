@@ -71,7 +71,35 @@ export function computeZiwei(input) {
   const sp = a.surroundedPalaces('命宫');
   const fanBranches = new Set([sp.target, sp.opposite, sp.wealth, sp.career].map((P) => P.earthlyBranch));
 
+  // 3.5) 大限/流年 四化飞星(运限维度,与本命四化各自独立不复用同一 key)
+  const hs = a.horoscope(new Date());
+  const MUTAGEN_ORDER = ['lu', 'quan', 'ke', 'ji']; // horoscope().mutagen 固定顺序:禄权科忌
+  const decadalMutStar = {}; // 星名 → 'lu'|'quan'|'ke'|'ji'(大限)
+  hs.decadal.mutagen.forEach((star, i) => { decadalMutStar[star] = MUTAGEN_ORDER[i]; });
+  const yearlyMutStar = {}; // 星名 → 'lu'|'quan'|'ke'|'ji'(流年)
+  hs.yearly.mutagen.forEach((star, i) => { yearlyMutStar[star] = MUTAGEN_ORDER[i]; });
+  const yearNow = Number(String(hs.solarDate).match(/^\d+/)?.[0]) || new Date().getFullYear();
+  const decadalPalace = a.palaces[hs.decadal.index];
+  const yearlyPalace = a.palaces[hs.yearly.index];
+
+  // 3.6) 三方四正表:12 个真实宫位各自的三方四正(供点选宫位联动用)
+  const fan = (P) => ({
+    宫: P.name, 地支: P.earthlyBranch,
+    主星: P.majorStars.map((s) => ({ 名: s.name, 亮: s.brightness || '', 化: MUTAGEN_KEY[s.mutagen] || '' })),
+  });
+  const 三方四正表 = {};
+  for (const P of a.palaces) {
+    const s = a.surroundedPalaces(P.name);
+    三方四正表[P.name] = { 命宫: fan(s.target), 迁移: fan(s.opposite), 财帛: fan(s.wealth), 官禄: fan(s.career) };
+  }
+
   // 4) 归一化十二宫
+  const withMut = (s) => {
+    const 运化 = {};
+    if (decadalMutStar[s.name]) 运化.大限 = decadalMutStar[s.name];
+    if (yearlyMutStar[s.name]) 运化.流年 = yearlyMutStar[s.name];
+    return Object.keys(运化).length ? 运化 : undefined;
+  };
   const 十二宫 = a.palaces.map((P) => ({
     宫: P.name,
     天干: P.heavenlyStem,
@@ -80,17 +108,12 @@ export function computeZiwei(input) {
     命宫: P.name === '命宫',
     身宫: !!P.isBodyPalace,
     在三方四正: fanBranches.has(P.earthlyBranch),
-    主星: P.majorStars.map((s) => ({ 名: s.name, 亮: s.brightness || '', 化: MUTAGEN_KEY[s.mutagen] || '' })),
+    主星: P.majorStars.map((s) => ({ 名: s.name, 亮: s.brightness || '', 化: MUTAGEN_KEY[s.mutagen] || '', 运化: withMut(s) })),
     辅星: [...(P.minorStars || []), ...(P.adjectiveStars || [])]
-      .map((s) => ({ 名: s.name, 化: MUTAGEN_KEY[s.mutagen] || '' })),
+      .map((s) => ({ 名: s.name, 化: MUTAGEN_KEY[s.mutagen] || '', 运化: withMut(s) })),
     大限: P.decadal?.range ? `${P.decadal.range[0]}-${P.decadal.range[1]}` : '',
     当前大限: P.decadal?.range ? currentAge >= P.decadal.range[0] && currentAge <= P.decadal.range[1] : false,
   }));
-
-  const fan = (P) => ({
-    宫: P.name, 地支: P.earthlyBranch,
-    主星: P.majorStars.map((s) => ({ 名: s.name, 亮: s.brightness || '', 化: MUTAGEN_KEY[s.mutagen] || '' })),
-  });
 
   return {
     基本: {
@@ -115,6 +138,22 @@ export function computeZiwei(input) {
     当前年龄: currentAge,
     十二宫,
     三方四正: { 命宫: fan(sp.target), 迁移: fan(sp.opposite), 财帛: fan(sp.wealth), 官禄: fan(sp.career) },
+    三方四正表,
+    运限: {
+      大限: {
+        天干: hs.decadal.heavenlyStem, 地支: hs.decadal.earthlyBranch,
+        起止: decadalPalace?.decadal?.range || null,
+        mutagen: hs.decadal.mutagen,
+      },
+      流年: {
+        年份: yearNow, 天干: hs.yearly.heavenlyStem, 地支: hs.yearly.earthlyBranch,
+        mutagen: hs.yearly.mutagen,
+      },
+    },
+    当前大限流年: {
+      大限宫地支: decadalPalace?.earthlyBranch || null,
+      流年宫地支: yearlyPalace?.earthlyBranch || null,
+    },
   };
 }
 
@@ -158,18 +197,21 @@ function starsLabel(palace, lang) {
 
 /**
  * 规则版三方四正摘要(离线即出,无需 Key)。从真实星曜推导,非套话。
+ * @param {object} chart computeZiwei() 返回的命盘
+ * @param {'zh'|'en'} lang
+ * @param {string} palaceName 目标宫位(默认命宫);取自 chart.三方四正表 的 key
  * @returns {{标题:string, chips:string[], 段落:string[]}}
  */
-export function summarizeSanFang(chart, lang = 'zh') {
+export function summarizeSanFang(chart, lang = 'zh', palaceName = '命宫') {
   const en = lang === 'en';
-  const S = chart.三方四正;
+  const S = chart.三方四正表?.[palaceName] || chart.三方四正;
   const ming = S.命宫;
   const mingMajors = ming.主星;
   const mingMut = mingMajors.map((s) => s.化).filter(Boolean);
 
   const 标题 = en
-    ? `Triad & Opposition · read from the Life palace${mingMajors[0] ? ` (${starName(mingMajors[0].名, true)})` : ''}`
-    : `三方四正 · 以命宫${mingMajors[0] ? mingMajors[0].名 : '空宫'}起读`;
+    ? `Triad & Opposition · read from ${palaceName === '命宫' ? 'the Life palace' : palaceName}${mingMajors[0] ? ` (${starName(mingMajors[0].名, true)})` : ''}`
+    : `三方四正 · 以${palaceName}${mingMajors[0] ? mingMajors[0].名 : '空宫'}起读`;
 
   const chips = [
     `${en ? 'Life' : '命宫'} · ${starsLabel(S.命宫, lang)}`,
@@ -240,13 +282,18 @@ export async function interpretZiwei(client, { chart, question, lang = 'zh' }) {
 }
 
 /**
- * 天命紫微 编排:危机前置 → 排盘(纯) → 规则版三方四正 →(有 Key+问题)AI 深化
+ * 天命紫微 编排:危机前置 → 排盘(纯) → 规则版三方四正(12 宫全量) →(有 Key+问题)AI 深化
  * 无 Key 时也返回完整命盘 + 规则版解读,不报错。
- * @returns {Promise<{type:'crisis',text}|{type:'ziwei',chart,sanfang,text?}>}
+ * @returns {Promise<{type:'crisis',text}|{type:'ziwei',chart,sanfang,三方四正解读表,text?}>}
  */
 export async function runZiwei(client, input) {
   const chart = computeZiwei(input);
   const sanfang = summarizeSanFang(chart, input.lang);
+  // 12 宫全量规则版解读(供前端点选宫位联动,纯同步计算,不涉及 AI)
+  const 三方四正解读表 = {};
+  for (const 宫名 of Object.keys(chart.三方四正表)) {
+    三方四正解读表[宫名] = summarizeSanFang(chart, input.lang, 宫名);
+  }
 
   // 有问题 + 有 Key 才进 AI 流程(并先做危机前置);否则返回纯盘 + 规则版
   if (input.question && client) {
@@ -264,8 +311,8 @@ export async function runZiwei(client, input) {
       return { type: 'crisis', text };
     }
     const text = await interpretZiwei(client, { chart, question: input.question, lang: input.lang });
-    return { type: 'ziwei', chart, sanfang, text };
+    return { type: 'ziwei', chart, sanfang, 三方四正解读表, text };
   }
 
-  return { type: 'ziwei', chart, sanfang };
+  return { type: 'ziwei', chart, sanfang, 三方四正解读表 };
 }
