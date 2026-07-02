@@ -62,7 +62,7 @@ export function computeZiwei(input) {
   // 2) iztro 安星(用校正后的真太阳时)
   const a = astro.bySolar(solarStr, timeIndex, gender, true, 'zh-CN');
 
-  // 当前年龄 → 标注当前大限宫
+  // 当前年龄 → 标注"本命"当前大限宫(与查看年无关,恒为真实当下)
   const _now = new Date();
   let currentAge = _now.getFullYear() - Y;
   if ((_now.getMonth() + 1 < M) || (_now.getMonth() + 1 === M && _now.getDate() < D)) currentAge--;
@@ -72,13 +72,18 @@ export function computeZiwei(input) {
   const fanBranches = new Set([sp.target, sp.opposite, sp.wealth, sp.career].map((P) => P.earthlyBranch));
 
   // 3.5) 大限/流年 四化飞星(运限维度,与本命四化各自独立不复用同一 key)
-  const hs = a.horoscope(new Date());
+  // viewYear 可指定"查看年"(选择器用);不传则为真实当年,行为与此前一致
+  const isRealNow = input.viewYear == null;
+  const viewYear = isRealNow ? _now.getFullYear() : Number(input.viewYear);
+  if (!Number.isInteger(viewYear)) throw new Error('viewYear 应为年份整数');
+  const viewDate = isRealNow ? _now : new Date(viewYear, 5, 15); // 非当年时取该年年中,避开跨年边界
+  const hs = a.horoscope(viewDate);
   const MUTAGEN_ORDER = ['lu', 'quan', 'ke', 'ji']; // horoscope().mutagen 固定顺序:禄权科忌
   const decadalMutStar = {}; // 星名 → 'lu'|'quan'|'ke'|'ji'(大限)
   hs.decadal.mutagen.forEach((star, i) => { decadalMutStar[star] = MUTAGEN_ORDER[i]; });
   const yearlyMutStar = {}; // 星名 → 'lu'|'quan'|'ke'|'ji'(流年)
   hs.yearly.mutagen.forEach((star, i) => { yearlyMutStar[star] = MUTAGEN_ORDER[i]; });
-  const yearNow = Number(String(hs.solarDate).match(/^\d+/)?.[0]) || new Date().getFullYear();
+  const yearNow = Number(String(hs.solarDate).match(/^\d+/)?.[0]) || viewYear;
   const decadalPalace = a.palaces[hs.decadal.index];
   const yearlyPalace = a.palaces[hs.yearly.index];
 
@@ -154,6 +159,7 @@ export function computeZiwei(input) {
       大限宫地支: decadalPalace?.earthlyBranch || null,
       流年宫地支: yearlyPalace?.earthlyBranch || null,
     },
+    查看年: { 年份: viewYear, 是否当年: isRealNow },
   };
 }
 

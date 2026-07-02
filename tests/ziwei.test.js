@@ -90,3 +90,36 @@ test('summarizeSanFang:可对任意宫位生成解读,含空宫(借对宫)回退
     }
   }
 });
+
+test('computeZiwei:不传 viewYear 默认当年,标记 是否当年=true', () => {
+  const c = computeZiwei(SAMPLE);
+  assert.equal(c.查看年.是否当年, true, '不传 viewYear 应视为查看当年');
+  assert.equal(c.查看年.年份, new Date().getFullYear());
+});
+
+test('computeZiwei:viewYear 可查看任意年份的大限/流年,不影响本命当前大限', () => {
+  const c2010 = computeZiwei({ ...SAMPLE, viewYear: 2010 });
+  const c2035 = computeZiwei({ ...SAMPLE, viewYear: 2035 });
+  const cNow = computeZiwei(SAMPLE);
+
+  assert.equal(c2010.查看年.是否当年, false);
+  assert.equal(c2010.查看年.年份, 2010);
+  assert.equal(c2035.查看年.年份, 2035);
+
+  // 不同查看年 → 流年天干地支应不同(大限跨度更长,不强求必然不同)
+  assert.notEqual(c2010.运限.流年.地支 + c2010.运限.流年.天干, c2035.运限.流年.地支 + c2035.运限.流年.天干);
+
+  // 本命"当前大限"(十二宫 P.当前大限 标记)与 viewYear 无关,恒基于真实当下
+  const curGong2010 = c2010.十二宫.find((p) => p.当前大限)?.宫;
+  const curGong2035 = c2035.十二宫.find((p) => p.当前大限)?.宫;
+  const curGongNow = cNow.十二宫.find((p) => p.当前大限)?.宫;
+  assert.equal(curGong2010, curGongNow, '切换查看年不应改变本命当前大限宫');
+  assert.equal(curGong2035, curGongNow, '切换查看年不应改变本命当前大限宫');
+
+  // 三方四正表/十二宫结构不受 viewYear 影响(仍是同一张本命盘)
+  assert.deepEqual(Object.keys(c2010.三方四正表).sort(), Object.keys(cNow.三方四正表).sort());
+});
+
+test('computeZiwei:viewYear 非整数抛错', () => {
+  assert.throws(() => computeZiwei({ ...SAMPLE, viewYear: 'abc' }), /viewYear/);
+});
