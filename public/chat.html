@@ -76,6 +76,9 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .prof-btn:hover{border-color:var(--accent);color:var(--ink);}
 .prof-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex:none;}
 .prof-dot.empty{background:var(--faint);}
+.langtog{border:1.5px solid var(--line);border-radius:999px;padding:7px 13px;background:none;
+  color:var(--muted);font-family:inherit;font-size:12.5px;cursor:pointer;transition:all .14s;flex:none;}
+.langtog:hover{color:var(--ink);border-color:var(--accent);}
 
 /* ── 初始化屏(未设档案) ── */
 #setupScreen{flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:40px 20px;}
@@ -200,8 +203,13 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
     box-shadow:4px 0 28px rgba(42,28,18,.16);}
   .sb.open{transform:translateX(0);}
   .hbg{display:grid!important;}
-  .mode-row{gap:2px;}
-  .mt{padding:6px 10px;font-size:12.5px;}
+  .topbar{padding:10px 12px;gap:6px;}
+  .mode-row{gap:2px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;}
+  .mode-row::-webkit-scrollbar{display:none;}
+  .mt{padding:6px 10px;font-size:12.5px;flex:none;}
+  .prof-btn span:not(.prof-dot){display:none;}
+  .prof-btn{padding:8px;border-color:var(--line);background:var(--card);}
+  .langtog{padding:6px 9px;font-size:11.5px;}
   .msgs{padding:16px 14px 12px;}
 }
 </style>
@@ -218,7 +226,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
       </button>
     </div>
     <div class="sb-body" id="sbBody">
-      <p class="sb-empty" id="sbEmpty">暂无对话记录</p>
+      <p class="sb-empty" id="sbEmpty" data-i18n="sb.empty">暂无对话记录</p>
       <div id="histList"></div>
     </div>
   </aside>
@@ -232,15 +240,16 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
         <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>
       </button>
       <div class="mode-row" id="modeRow">
-        <button class="mt on" data-mode="suiwen"><span class="ico">◎</span>随问</button>
-        <button class="mt" data-mode="tianming"><span class="ico">✦</span>天命</button>
-        <button class="mt" data-mode="renjiandao"><span class="ico">☰</span>人间道</button>
-        <button class="mt" data-mode="diyun"><span class="ico">⌂</span>地运</button>
+        <button class="mt on" data-mode="suiwen"><span class="ico">◎</span><span data-i18n="mode.suiwen">随问</span></button>
+        <button class="mt" data-mode="tianming"><span class="ico">✦</span><span data-i18n="mode.tianming">天命</span></button>
+        <button class="mt" data-mode="renjiandao"><span class="ico">☰</span><span data-i18n="mode.renjiandao">人间道</span></button>
+        <button class="mt" data-mode="diyun"><span class="ico">⌂</span><span data-i18n="mode.diyun">地运</span></button>
       </div>
       <button class="prof-btn" id="profBtn">
         <span class="prof-dot empty" id="profDot"></span>
-        <span id="profLabel">设置生辰</span>
+        <span id="profLabel" data-i18n="prof.setup">设置生辰</span>
       </button>
+      <button class="langtog" id="langtog" type="button" aria-label="切换中英文 / Switch language">EN</button>
     </div>
 
     <!-- 聊天视图 -->
@@ -252,7 +261,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
     <div class="chatbar" id="chatbar">
       <div class="cbar-inner">
         <div class="cbar-row">
-          <textarea class="ctxt" id="cTxt" rows="1" placeholder="心有所问…"></textarea>
+          <textarea class="ctxt" id="cTxt" rows="1" placeholder="心有所问…" data-i18n-ph="mode.ph.suiwen"></textarea>
           <button class="send" id="sendBtn">
             <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
@@ -267,22 +276,22 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
   <div class="ov-card">
     <div class="ov-hd">
       <span class="seal" style="width:32px;height:32px;font-size:16px;">易</span>
-      <div><h3>修改生辰档案</h3><p>数据仅存于本机 localStorage</p></div>
+      <div><h3 data-i18n="modal.title">修改生辰档案</h3><p data-i18n="modal.hint">数据仅存于本机 localStorage</p></div>
     </div>
     <div class="ov-body">
-      <div class="fl"><label>出生日期 & 时间 *</label><input type="datetime-local" id="oDt"/></div>
-      <div class="fl"><label>性别 *</label>
+      <div class="fl"><label data-i18n="modal.dob">出生日期 & 时间 *</label><input type="datetime-local" id="oDt"/></div>
+      <div class="fl"><label data-i18n="modal.gender">性别 *</label>
         <div class="seg">
-          <label><input type="radio" name="oGender" value="male" checked/><span>男</span></label>
-          <label><input type="radio" name="oGender" value="female"/><span>女</span></label>
+          <label><input type="radio" name="oGender" value="male" checked/><span data-i18n="modal.male">男</span></label>
+          <label><input type="radio" name="oGender" value="female"/><span data-i18n="modal.female">女</span></label>
         </div>
       </div>
-      <div class="fl"><label>称呼</label><input type="text" id="oName" placeholder="可选"/></div>
-      <div class="fl" style="margin:0"><label>出生城市</label><input type="text" id="oCity" placeholder="可选，提升精度"/></div>
+      <div class="fl"><label data-i18n="modal.name">称呼</label><input type="text" id="oName" placeholder="可选" data-i18n-ph="modal.name.ph"/></div>
+      <div class="fl" style="margin:0"><label data-i18n="modal.city">出生城市</label><input type="text" id="oCity" placeholder="可选，提升精度" data-i18n-ph="modal.city.ph"/></div>
     </div>
     <div class="ov-ft">
-      <button class="btn-c" id="ovCancel">取消</button>
-      <button class="btn-ok" id="ovOk">保存</button>
+      <button class="btn-c" id="ovCancel" data-i18n="modal.cancel">取消</button>
+      <button class="btn-ok" id="ovOk" data-i18n="modal.save">保存</button>
     </div>
   </div>
 </div>
@@ -294,6 +303,60 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 const $  = id => document.getElementById(id);
 const ls = { get: k => { try { return JSON.parse(localStorage.getItem(k)) } catch { return null } },
               set: (k,v) => localStorage.setItem(k, JSON.stringify(v)) };
+
+// ═══════════════════════════════════════════════════
+//  i18n
+// ═══════════════════════════════════════════════════
+const I18N = {
+  zh: {
+    'sb.empty':'暂无对话记录','sb.today':'今天','sb.week':'近7天','sb.earlier':'更早',
+    'prof.setup':'设置生辰','prof.set':'已设生辰',
+    'mode.suiwen':'随问','mode.tianming':'天命','mode.renjiandao':'人间道','mode.diyun':'地运',
+    'mode.ph.suiwen':'随便问…','mode.ph.tianming':'关于命盘的任何问题…','mode.ph.renjiandao':'说说你想卜问的事…','mode.ph.diyun':'关于居所方位的问题…',
+    'modal.title':'修改生辰档案','modal.hint':'数据仅存于本机 localStorage',
+    'modal.dob':'出生日期 & 时间 *','modal.gender':'性别 *','modal.male':'男','modal.female':'女',
+    'modal.name':'称呼','modal.name.ph':'可选','modal.city':'出生城市','modal.city.ph':'可选，提升精度',
+    'modal.cancel':'取消','modal.save':'保存',
+    'welcome.suiwen.on':  name => `易理观人生，心诚则有应${name}。<br>你的命盘已在，有什么困惑或想看清的，直接说。`,
+    'welcome.suiwen.off': () => `易理观人生，心诚则有应。<br>有什么困惑、纠结、或难以抉择的，说出来——不用提供生辰也能聊。`,
+    'welcome.tianming.on':  name => `紫微布星河，命宫藏天机${name}。<br>你的命盘已排就，三方四正、大限流年——想从哪里看起？`,
+    'welcome.tianming.off': () => `紫微布星河，命宫藏天机。<br>可以先聊紫微斗数的基础，或点右上角「设置生辰」让我帮你解盘。`,
+    'welcome.renjiandao': () => `心有所问，卦自有应。<br>说出当下最想卜问的那件事，我借六爻卦象帮你把处境看清、时机想明白。`,
+    'welcome.diyun.on':  name => `山河有气，方位藏理${name}。<br>你的本命卦已推算就绪，关于居所方位随时问。`,
+    'welcome.diyun.off': () => `山河有气，方位藏理。<br>提供生辰后我可算出你的本命卦，给出个性化方位建议；也可以先聊聊八宅风水的基本原理。`,
+    'welcome.namePrefix': n => `，${n}`,
+    'chips.suiwen':     ['最近为什么诸事不顺', '感情上该怎么取舍', '周易怎么帮人做决策', '什么是三才合一', '今年我的运势如何', '贵人运什么时候来'],
+    'chips.tianming':   ['紫微斗数怎么看性格', '三方四正是什么意思', '命宫空宫代表什么', '什么是四化', '大限运势怎么看', '天机和太阴的区别'],
+    'chips.renjiandao': ['这件事该不该做', '近期感情走势如何', '这个决策对不对', '合作能不能成', '何时会有转机', '当前处境是什么象'],
+    'chips.diyun':      ['吉方是什么意思', '卧室方位怎么选', '书房朝向有讲究吗', '财位在哪个方向', '客厅沙发背靠哪方好', '厨房灶台朝向'],
+    'err.network': m => `网络错误：${m}`,
+  },
+  en: {
+    'sb.empty':'No conversations yet','sb.today':'Today','sb.week':'Past 7 days','sb.earlier':'Earlier',
+    'prof.setup':'Set birth info','prof.set':'Birth info set',
+    'mode.suiwen':'Ask anything','mode.tianming':'Tian Ming','mode.renjiandao':'Ren Jian Dao','mode.diyun':'Di Yun',
+    'mode.ph.suiwen':'Ask anything…','mode.ph.tianming':'Anything about your chart…','mode.ph.renjiandao':'What do you want to divine…','mode.ph.diyun':'Questions about your home\'s layout…',
+    'modal.title':'Edit birth info','modal.hint':'Stored locally in this browser only',
+    'modal.dob':'Date & time of birth *','modal.gender':'Gender *','modal.male':'Male','modal.female':'Female',
+    'modal.name':'Name','modal.name.ph':'Optional','modal.city':'Birth city','modal.city.ph':'Optional, improves accuracy',
+    'modal.cancel':'Cancel','modal.save':'Save',
+    'welcome.suiwen.on':  name => `By the Yi into insight, sincerity finds its answer${name}.<br>Your chart is ready — whatever you're unsure about, just ask.`,
+    'welcome.suiwen.off': () => `By the Yi into insight, sincerity finds its answer.<br>Whatever you're wrestling with, say it — no birth info needed to chat.`,
+    'welcome.tianming.on':  name => `Purple stars fill the sky, destiny hides in the Life Palace${name}.<br>Your chart is cast — three-and-four alignments, decade cycles — where should we start?`,
+    'welcome.tianming.off': () => `Purple stars fill the sky, destiny hides in the Life Palace.<br>We can start with Zi Wei Dou Shu basics, or tap "Set birth info" up top to get your chart read.`,
+    'welcome.renjiandao': () => `Ask with sincerity, the hexagram will answer.<br>Tell me what you most want to divine right now, and I'll read the six-line hexagram to help you see your situation and timing.`,
+    'welcome.diyun.on':  name => `Mountains and rivers carry qi, direction holds reason${name}.<br>Your natal trigram is ready — ask anytime about your home's layout.`,
+    'welcome.diyun.off': () => `Mountains and rivers carry qi, direction holds reason.<br>Share your birth info and I can work out your natal trigram for personalized directions; or we can start with Eight Mansions basics.`,
+    'welcome.namePrefix': n => `, ${n}`,
+    'chips.suiwen':     ['Why does nothing seem to go right lately', 'How should I weigh this relationship decision', 'How does the I Ching help with decisions', 'What does "three powers as one" mean', 'How is my fortune this year', 'When will my luck with helpful people turn'],
+    'chips.tianming':   ['How does Zi Wei Dou Shu read personality', 'What are the three-and-four alignments', 'What does an empty Life Palace mean', 'What are the Four Transformations', 'How do I read a decade cycle', 'Difference between Tianji and Taiyin'],
+    'chips.renjiandao': ['Should I go through with this', 'How is my relationship trending', 'Is this decision right', 'Will this partnership work out', 'When will things turn around', 'What does my current situation look like'],
+    'chips.diyun':      ['What does an auspicious direction mean', 'How do I pick a bedroom direction', 'Does study orientation matter', 'Which direction is the wealth corner', 'Which way should the sofa back face', 'Which way should the stove face'],
+    'err.network': m => `Network error: ${m}`,
+  },
+};
+let LANG = localStorage.getItem('lang') || 'zh';
+const t = k => (I18N[LANG] && I18N[LANG][k]) ?? (I18N.zh[k] ?? k);
 
 // ═══════════════════════════════════════════════════
 //  状态
@@ -310,10 +373,21 @@ let streaming = false;
 init();
 
 function init() {
+  applyI18n();
   updateProfBtn();
   renderSidebar();
   bindEvents();
   renderWelcome();  // 直接进聊天，无需档案
+}
+
+function applyI18n() {
+  document.documentElement.lang = LANG === 'en' ? 'en' : 'zh-CN';
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-ph')); });
+  $('langtog').textContent = LANG === 'en' ? '中' : 'EN';
+  updateProfBtn();
+  $('cTxt').placeholder = t(`mode.ph.${curMode}`);
+  renderSidebar();
 }
 
 function bindEvents() {
@@ -324,6 +398,14 @@ function bindEvents() {
     if ($('sb').classList.contains('open') && !$('sb').contains(e.target) && e.target !== $('hbg'))
       $('sb').classList.remove('open');
   });
+
+  // 语言切换
+  $('langtog').onclick = () => {
+    LANG = LANG === 'en' ? 'zh' : 'en';
+    localStorage.setItem('lang', LANG);
+    applyI18n();
+    if (!curSid) { $('msgs').innerHTML = ''; renderWelcome(); }  // 尚未开始对话时，重绘欢迎屏应用新语言
+  };
 
   // 模式切换
   $('modeRow').addEventListener('click', e => {
@@ -356,9 +438,7 @@ function bindEvents() {
 function switchMode(mode) {
   curMode = mode;
   document.querySelectorAll('#modeRow .mt').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
-  // 更新输入框 placeholder
-  const ph = { suiwen:'随便问…', tianming:'关于命盘的任何问题…', renjiandao:'说说你想卜问的事…', diyun:'关于居所方位的问题…' };
-  $('cTxt').placeholder = ph[mode] || '心有所问…';
+  $('cTxt').placeholder = t(`mode.ph.${mode}`);
 }
 
 function showChat() {
@@ -371,10 +451,10 @@ function showChat() {
 function updateProfBtn() {
   if (profile?.datetime) {
     $('profDot').className = 'prof-dot';
-    $('profLabel').textContent = profile.name ? profile.name : '已设生辰';
+    $('profLabel').textContent = profile.name ? profile.name : t('prof.set');
   } else {
     $('profDot').className = 'prof-dot empty';
-    $('profLabel').textContent = '设置生辰';
+    $('profLabel').textContent = t('prof.setup');
   }
 }
 
@@ -423,18 +503,18 @@ function saveProfileFromModal() {
 //  侧栏
 // ═══════════════════════════════════════════════════
 const MODE_ICON = { suiwen:'◎', tianming:'✦', renjiandao:'☰', diyun:'⌂' };
-const MODE_LBL  = { suiwen:'随问', tianming:'天命', renjiandao:'人间道', diyun:'地运' };
+const modeLbl = mode => t(`mode.${mode}`) || t('mode.suiwen');
 
 function renderSidebar() {
   if (!sessions.length) { $('sbEmpty').style.display = ''; $('histList').innerHTML = ''; return; }
   $('sbEmpty').style.display = 'none';
   const now = Date.now();
-  const G = { '今天': [], '近7天': [], '更早': [] };
+  const G = { [t('sb.today')]: [], [t('sb.week')]: [], [t('sb.earlier')]: [] };
   sessions.forEach(s => {
     const d = now - s.ts;
-    if (d < 86400000) G['今天'].push(s);
-    else if (d < 7*86400000) G['近7天'].push(s);
-    else G['更早'].push(s);
+    if (d < 86400000) G[t('sb.today')].push(s);
+    else if (d < 7*86400000) G[t('sb.week')].push(s);
+    else G[t('sb.earlier')].push(s);
   });
   let h = '';
   for (const [label, list] of Object.entries(G)) {
@@ -442,7 +522,7 @@ function renderSidebar() {
     h += `<div class="sb-mt">${label}</div>`;
     list.forEach(s => {
       const ico = MODE_ICON[s.mode] || '◎';
-      const lbl = MODE_LBL[s.mode] || '随问';
+      const lbl = modeLbl(s.mode);
       h += `<div class="hi${s.id === curSid ? ' on' : ''}" data-sid="${s.id}">
         <span class="hi-t">${esc(s.title)}</span>
         <span class="hi-m">${ico} ${lbl}</span>
@@ -486,30 +566,18 @@ function newSession() {
 
 function renderWelcome() {
   const hasProf = !!(profile?.datetime);
-  const name    = profile?.name ? `，${profile.name}` : '';
+  const name    = profile?.name ? t('welcome.namePrefix')(profile.name) : '';
 
   // 欢迎语：有命盘 / 无命盘 两套
   const introMap = {
-    suiwen: hasProf
-      ? `易理观人生，心诚则有应${name}。<br>你的命盘已在，有什么困惑或想看清的，直接说。`
-      : `易理观人生，心诚则有应。<br>有什么困惑、纠结、或难以抉择的，说出来——不用提供生辰也能聊。`,
-    tianming: hasProf
-      ? `紫微布星河，命宫藏天机${name}。<br>你的命盘已排就，三方四正、大限流年——想从哪里看起？`
-      : `紫微布星河，命宫藏天机。<br>可以先聊紫微斗数的基础，或点右上角「设置生辰」让我帮你解盘。`,
-    renjiandao: `心有所问，卦自有应。<br>说出当下最想卜问的那件事，我借六爻卦象帮你把处境看清、时机想明白。`,
-    diyun: hasProf
-      ? `山河有气，方位藏理${name}。<br>你的本命卦已推算就绪，关于居所方位随时问。`
-      : `山河有气，方位藏理。<br>提供生辰后我可算出你的本命卦，给出个性化方位建议；也可以先聊聊八宅风水的基本原理。`,
+    suiwen:     t(hasProf ? 'welcome.suiwen.on'   : 'welcome.suiwen.off')(name),
+    tianming:   t(hasProf ? 'welcome.tianming.on' : 'welcome.tianming.off')(name),
+    renjiandao: t('welcome.renjiandao')(),
+    diyun:      t(hasProf ? 'welcome.diyun.on'    : 'welcome.diyun.off')(name),
   };
   const intro = introMap[curMode] || introMap.suiwen;
 
-  const allChips = {
-    suiwen:     ['最近为什么诸事不顺', '感情上该怎么取舍', '周易怎么帮人做决策', '什么是三才合一', '今年我的运势如何', '贵人运什么时候来'],
-    tianming:   ['紫微斗数怎么看性格', '三方四正是什么意思', '命宫空宫代表什么', '什么是四化', '大限运势怎么看', '天机和太阴的区别'],
-    renjiandao: ['这件事该不该做', '近期感情走势如何', '这个决策对不对', '合作能不能成', '何时会有转机', '当前处境是什么象'],
-    diyun:      ['吉方是什么意思', '卧室方位怎么选', '书房朝向有讲究吗', '财位在哪个方向', '客厅沙发背靠哪方好', '厨房灶台朝向'],
-  };
-  const chips = allChips[curMode] || allChips.suiwen;
+  const chips = t(`chips.${curMode}`) || t('chips.suiwen');
 
   const div = document.createElement('div');
   div.className = 'welcome-msg';
@@ -551,7 +619,7 @@ async function send(q) {
         messages: sess.msgs.filter(m => m.role !== 'typing'),
         profile,
         mode: curMode,
-        lang: 'zh',
+        lang: LANG,
         extras: sess.extras || {},
       }),
     });
@@ -612,7 +680,7 @@ async function send(q) {
 
   } catch (e) {
     typingEl?.remove();
-    addAIBub(`网络错误：${e.message}`, null, true, true);
+    addAIBub(t('err.network')(e.message), null, true, true);
   }
 
   streaming = false;
@@ -634,7 +702,7 @@ function addUserBub(text) {
 function addTyping() {
   const d = document.createElement('div');
   d.className = 'msg ai';
-  d.innerHTML = `<div class="mt-tag">${MODE_ICON[curMode] || '◎'} ${MODE_LBL[curMode] || '随问'}</div>
+  d.innerHTML = `<div class="mt-tag">${MODE_ICON[curMode] || '◎'} ${modeLbl(curMode)}</div>
 <div class="typing"><i/><i/><i/></div>`;
   $('msgs').appendChild(d);
   scrollBottom();
@@ -644,7 +712,7 @@ function addTyping() {
 function addAIBub(text, hexagram, done, isErr) {
   const d = document.createElement('div');
   d.className = 'msg ai';
-  const modeTag = `<span class="mt-tag">${MODE_ICON[curMode] || '◎'} ${MODE_LBL[curMode] || '随问'}</span>`;
+  const modeTag = `<span class="mt-tag">${MODE_ICON[curMode] || '◎'} ${modeLbl(curMode)}</span>`;
   let hexHtml = '';
   if (curMode === 'renjiandao') {
     if (hexagram?.本卦) {

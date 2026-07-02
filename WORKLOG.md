@@ -4,6 +4,25 @@
 
 ---
 
+## 2026-07-01 — 营销区双语补全(定价/FAQ/CTA + chat.html) + 移动端截图核验
+
+### 做了什么
+- **`landing.html` 补双语**:`#pricing`(三档定价卡含权益列表)、`#faq`(四条问答)、`.cta-band` 三个转化区块全部打上 `data-i18n`,`I18N.zh`/`I18N.en` 字典补齐对应词条。范围收敛在关键转化区,装饰性 section(三道合一介绍/为什么心易/易理为用/气韵 band)按拍板保留纯中文,不铺开改。
+- **`chat.html`(V2 对话页)从 0 个 `data-i18n` 到完整双语**:新增顶栏 `langtog` 按钮(复用 landing 同款视觉);静态 UI(侧栏空状态、模式四按钮、设置生辰按钮、输入框 placeholder、修改生辰弹窗全部字段)与动态 JS 文案(`renderWelcome()` 的欢迎语×有无命盘两版、`allChips` 四组快捷问、模式 placeholder 映射)全部接入 `I18N` 字典;`send()` 请求体 `lang` 字段从硬编码 `'zh'` 改为跟随 `LANG` 状态透传——后端 `server.js`→`src/chat.js`(`buildSystem`/`summarizeSanFang`)早已支持按 `lang` 输出英文,前端只是没接上。语言切换后若在初始欢迎屏会重绘生效;已发送的历史 AI 回复不追溯翻译。
+- **Playwright 截图核验**(375×812、390×844 两档,五页:landing/天命/地运/人间道/chat):发现 `chat.html` 顶栏在窄屏挤爆——`hbg + 模式四按钮 + 设置生辰 + EN` 四组元素塞不进一行,新加的 `langtog` 被推出视口不可见;切到英文后模式按钮文案变长(Ren Jian Dao/Di Yun)导致整行溢出。修复:窄屏下模式行改横向可滑动(`overflow-x:auto` + 按钮 `flex:none`,不再挤压/换行)、设置生辰按钮收窄为图标态、`langtog` 缩小 padding。修复后中英文两态在两档视口下均无横向溢出(`document.documentElement.scrollWidth` 校验)。landing/天命/地运/人间道四页移动端排版本身工整,无需改动。
+- **`npm test` 24/24 ✓**(排盘引擎回归无受影响,本次改动全在 `public/` 前端)。
+
+### 关键决策 / 注意
+- 双语范围按用户拍板收敛到"关键转化区",不是全站铺开;若后续要继续扩大双语覆盖(三道合一介绍等),需另行确认范围。
+- 工作区里另有一份未提交的 RAG 检索增强改动(`server.js`/`src/fengshui.js`/`src/pipeline.js`/`src/renjiandao.js`/新增 `src/rag.js`/`knowledge/`/`tests/rag.test.js`),**不是本次改动产生**,本次未触碰、未一并提交,仅顺带确认它未破坏 `npm test`(测试含 RAG 相关用例且通过)。
+
+### 下一步推荐动作
+1. **[P1]** 紫微解读深化(大限/流年/四化飞星;命盘点选宫位联动)——WORKLOG 里挂了多轮,仍未开始。
+2. **[P2]** 部署上线出内测链接。
+3. 若要继续扩大双语覆盖面(三道合一/为什么心易等装饰性 section),需先与用户确认范围。
+
+---
+
 ## 2026-06-29 — 🏁 心易 V1 定版(首个端到端可用)+ 上 GitHub
 
 ### 做了什么
