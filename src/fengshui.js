@@ -7,6 +7,7 @@
  * 排盘(本命卦 + 八方位)是纯函数(见 bazhai.js),此处只负责「看图」这一步。
  */
 import { STAR_META } from './bazhai.js';
+import { getKnowledgeContext } from './rag.js';
 
 const MODEL = process.env.LLM_VISION_MODEL || 'claude-sonnet-4-6'; // 视觉 + 推理,可由 .env 切换国内视觉模型
 
@@ -16,9 +17,12 @@ const SYSTEM = `你是一位严谨克制的阳宅风水顾问,师法倪海厦天
 1. 先根据「图纸上方=某真实方位」把户型摆正,判断每个主要房间(卧室/客厅/厨房/卫生间/书房/玄关)各落在哪个方位。
 2. 把每个房间的方位对照用户的吉凶表,逐间点评(吉/凶 + 一句白话)。
 3. 给出明确建议:主卧/老人房/儿童房/书房最该选哪个方位;现有布局里哪些需要化解(尤其卧室落在凶方)。
-原则:① 只依据吉凶表与常识,不自创命理;看不清的地方直说"图上看不清,建议…",不要编造。
+原则:① 只依据吉凶表、<knowledge> 与常识,不自创命理;看不清的地方直说"图上看不清,建议…",不要编造。
 ② 不下绝对断语、不制造焦虑,给的是"参考与调整方向",决定权交回用户。
-③ 用大白话,术语随手翻译。正文 400–700 字,可用小标题与分点。`;
+③ 用大白话,术语随手翻译。正文 400–700 字,可用小标题与分点。
+
+# RAG 知识约束
+<knowledge> 只作为八宅/户型解释依据。优先采信传入的本命卦和八方位吉凶表,不得因知识片段重新计算方位。`;
 
 function dataUrlToBlock(dataUrl) {
   const m = String(dataUrl).match(/^data:(image\/(png|jpeg|jpg|webp|gif));base64,(.+)$/);
@@ -33,12 +37,26 @@ function dirsToTable(dirs) {
     .join('\n');
 }
 
+function buildFengshuiRagQuery({ mingGua, dirs, goal, facing }) {
+  return [
+    '八宅 东西四命 户型 方位 卧室 书房 办公位',
+    mingGua?.卦, mingGua?.命组, mingGua?.本位方位, goal?.名, goal?.star, facing,
+    ...(dirs || []).map((d) => `${d.方位} ${d.星} ${d.吉凶} ${d.主}`),
+  ].filter(Boolean).join('\n');
+}
+
 /**
  * @param {Anthropic} client
  * @param {object} opts { mingGua, dirs, goal, facing, imageDataUrl }
  * @returns {Promise<string>} 户型方位解读正文
  */
 export async function analyzeFloorplan(client, { mingGua, dirs, goal, facing, imageDataUrl, lang = 'zh' }) {
+  const { knowledge } = await getKnowledgeContext({
+    domain: 'fengshui',
+    query: buildFengshuiRagQuery({ mingGua, dirs, goal, facing }),
+    limit: 5,
+  });
+
   const userText = [
     `<本命卦>\n${mingGua.卦}命 · ${mingGua.命组}(本位 ${mingGua.本位方位})。${mingGua.白话}\n</本命卦>`,
     `<八方位吉凶表>\n${dirsToTable(dirs)}\n</八方位吉凶表>`,

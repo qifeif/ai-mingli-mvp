@@ -15,6 +15,7 @@
  */
 import { makeClient as makeLLMClient } from './llm.js';
 import { computeChart } from './bazi.js';
+import { getKnowledgeContext } from './rag.js';
 import {
   SYSTEM_PROMPT, STYLE, SCENE_TEMPLATES, FEWSHOT,
   CRISIS_TRIAGE, CRISIS_COMFORT, CRISIS_FALLBACK,
@@ -24,6 +25,16 @@ const MODEL = {
   interpret: process.env.LLM_TEXT_MODEL || 'claude-sonnet-4-6', // 主解读:可由 .env 切换国内模型
   classify: process.env.LLM_CLASSIFY_MODEL || process.env.LLM_TEXT_MODEL || 'claude-haiku-4-5', // 分类/危机:默认用小模型
 };
+
+function buildBaziRagQuery({ chart, question, scene }) {
+  const tenGods = (chart?.十神要点 || []).map((x) => x.十神).join(' ');
+  return [
+    question, scene, chart?.日主?.天干, chart?.日主?.五行, chart?.日主?.旺衰, tenGods,
+    chart?.当前大运?.干支, chart?.当前大运?.主十神,
+    chart?.今年流年?.干支, chart?.今年流年?.主十神,
+    Object.entries(chart?.五行分布 || {}).flat().join(' '),
+  ].filter(Boolean).join('\n');
+}
 
 // ---------- ① 危机检测(前置短路) ----------
 export async function detectCrisis(client, question) {
@@ -143,9 +154,14 @@ export async function runConsultation(client, input) {
     Promise.resolve(computeChart(input)),
   ]);
 
-  // ③ 主解读
-  const text = await interpret(client, { chart, question, scene, style: input.style, lang: input.lang });
-  return { type: 'reading', scene, chart, text };
+  // ③ RAG 检索 + 主解读
+  const { chunks, knowledge } = await getKnowledgeContext({
+    domain: 'bazi',
+    query: buildBaziRagQuery({ chart, question, scene }),
+    limit: input.ragLimit || 5,
+  });
+  const text = await interpret(client, { chart, question, scene, style: input.style, knowledge, lang: input.lang });
+  return { type: 'reading', scene, chart, rag: chunks.map(({ id, title, source, score }) => ({ id, title, source, score })), text };
 }
 
 export function makeClient() {

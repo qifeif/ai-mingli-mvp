@@ -21,6 +21,7 @@ import { castHexagram } from './src/liuyao.js';
 import { runRenjiandao } from './src/renjiandao.js';
 import { runZiwei } from './src/ziwei.js';
 import { streamChat, castHexagram as castHex } from './src/chat.js';
+import { retrieveKnowledge, formatKnowledge, knowledgeStats } from './src/rag.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -86,6 +87,27 @@ const server = createServer(async (req, res) => {
           return res.end(buf);
         } catch { /* 落到 404 */ }
       }
+    }
+
+    // RAG 调试接口:查看资料是否被读取、某个问题能命中哪些知识片段(无需 Key)
+    if (req.method === 'GET' && req.url === '/api/rag/stats') {
+      return sendJSON(res, 200, await knowledgeStats());
+    }
+
+    if (req.method === 'POST' && req.url === '/api/rag/search') {
+      const input = JSON.parse(await readBody(req) || '{}');
+      const chunks = await retrieveKnowledge({
+        domain: input.domain,
+        domains: input.domains,
+        query: input.query || input.question || '',
+        limit: input.limit || 5,
+      });
+      return sendJSON(res, 200, {
+        type: 'rag',
+        count: chunks.length,
+        chunks: chunks.map(({ id, domain, title, source, tags, score, text }) => ({ id, domain, title, source, tags, score, text })),
+        knowledge: formatKnowledge(chunks),
+      });
     }
 
     // 纯排盘接口:只跑 computeChart,零依赖 LLM / API Key,可独立调用

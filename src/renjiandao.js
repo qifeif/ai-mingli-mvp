@@ -11,11 +11,21 @@ import { castHexagram } from './liuyao.js';
 import { detectCrisis } from './pipeline.js';
 import { CRISIS_COMFORT, CRISIS_FALLBACK } from './prompts.js';
 import { YIJING_GANGLING, GUATU_METHOD, QUCI_RULE } from './data/renjiandao_method.js';
+import { getKnowledgeContext } from './rag.js';
 
 const MODEL = {
   interpret: process.env.LLM_TEXT_MODEL || 'claude-sonnet-4-6',
   classify: process.env.LLM_CLASSIFY_MODEL || process.env.LLM_TEXT_MODEL || 'claude-haiku-4-5',
 };
+
+function buildHexagramRagQuery({ cast, question }) {
+  return [
+    question, cast?.本卦?.name, cast?.本卦?.upper, cast?.本卦?.lower,
+    cast?.变卦?.name,
+    cast?.动爻?.length ? `动爻 ${cast.动爻.map((p) => `第${p}爻`).join(' ')}` : '无动爻',
+    cast?.取辞规则, '六爻 人间道 观象悟辞 宜动宜静',
+  ].filter(Boolean).join('\n');
+}
 
 // 解读体系 System Prompt(稳定前缀,可缓存)
 function buildSystem(lang) {
@@ -47,7 +57,11 @@ ${QUCI_RULE}
 
 # 输入
 <卦象> 已起好的本卦/变卦/动爻/取辞规则(直接采信,不要自己重摇);
+<knowledge> 是可参考的人间道/六爻知识片段;
 <question> 用户的问题。卦辞爻辞依周易正典补全,以卦图象解法会意。
+
+# RAG 知识约束
+优先采信 <卦象> 的起卦结果,不得因知识片段重摇或改卦。<knowledge> 只作为解释口径和方法依据;资料不足时直说只能作一般参考,不要编造案例。
 
 # 输出规范
 - 350–600 字,自然段 + 小标题,不用 JSON。
@@ -75,7 +89,7 @@ function renderCast(cast) {
   return lines.join('\n');
 }
 
-export async function interpretHexagram(client, { cast, question, lang = 'zh' }) {
+export async function interpretHexagram(client, { cast, question, knowledge = '', lang = 'zh' }) {
   const systemText = buildSystem(lang);
   const userMsg = [
     `<卦象>\n${renderCast(cast)}\n</卦象>`,
@@ -117,7 +131,12 @@ export async function runRenjiandao(client, input) {
   // ② 起卦:优先用前端已摇好的 cast(保证页面动画与解读一致),否则后端摇
   const cast = input.cast && input.cast.本卦 ? input.cast : castHexagram();
 
-  // ③ 解读
-  const text = await interpretHexagram(client, { cast, question, lang });
-  return { type: 'reading', cast, text };
+  // ③ RAG 检索 + 解读
+  const { chunks, knowledge } = await getKnowledgeContext({
+    domains: ['renjiandao', 'liuyao'],
+    query: buildHexagramRagQuery({ cast, question }),
+    limit: input.ragLimit || 6,
+  });
+  const text = await interpretHexagram(client, { cast, question, knowledge, lang });
+  return { type: 'reading', cast, rag: chunks.map(({ id, title, source, score }) => ({ id, title, source, score })), text };
 }
