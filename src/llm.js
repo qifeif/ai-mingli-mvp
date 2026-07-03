@@ -59,8 +59,13 @@ function convertMessages(messages) {
 function modelFor(requestedModel, messages) {
   const hasImage = messages.some((m) => Array.isArray(m.content)
     && m.content.some((b) => b?.type === 'image' || b?.type === 'image_url'));
+  // 调用方显式请求的是本平台已配置的模型(如分类用的 LLM_CLASSIFY_MODEL 小模型)时尊重调用方
+  const configured = [process.env.LLM_TEXT_MODEL, process.env.LLM_CLASSIFY_MODEL, process.env.LLM_VISION_MODEL]
+    .filter(Boolean);
+  if (requestedModel && configured.includes(requestedModel)) return requestedModel;
+  // 请求的是未配置平台上的模型名(如 Anthropic 默认的 claude-*)时,回落到本平台模型:带图优先视觉模型
   if (hasImage && process.env.LLM_VISION_MODEL) return process.env.LLM_VISION_MODEL;
-  if (!hasImage && process.env.LLM_TEXT_MODEL) return process.env.LLM_TEXT_MODEL;
+  if (process.env.LLM_TEXT_MODEL) return process.env.LLM_TEXT_MODEL;
   return requestedModel;
 }
 

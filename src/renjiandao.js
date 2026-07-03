@@ -57,7 +57,7 @@ ${QUCI_RULE}
 
 # 输入
 <卦象> 已起好的本卦/变卦/动爻/取辞规则(直接采信,不要自己重摇);
-<knowledge> 是可参考的人间道/六爻知识片段;
+可能为空的 <knowledge> 是可参考的人间道/六爻知识片段;
 <question> 用户的问题。卦辞爻辞依周易正典补全,以卦图象解法会意。
 
 # RAG 知识约束
@@ -91,10 +91,12 @@ function renderCast(cast) {
 
 export async function interpretHexagram(client, { cast, question, knowledge = '', lang = 'zh' }) {
   const systemText = buildSystem(lang);
+  // 可变后缀(每次不同,不可缓存):卦象 / 知识 / 问题,与 pipeline.js 主解读同一注入模式
   const userMsg = [
     `<卦象>\n${renderCast(cast)}\n</卦象>`,
+    knowledge ? `<knowledge>\n${knowledge}\n</knowledge>` : '',
     `<question>\n${question}\n</question>`,
-  ].join('\n\n');
+  ].filter(Boolean).join('\n\n');
 
   const res = await client.messages.create({
     model: MODEL.interpret,
@@ -131,12 +133,16 @@ export async function runRenjiandao(client, input) {
   // ② 起卦:优先用前端已摇好的 cast(保证页面动画与解读一致),否则后端摇
   const cast = input.cast && input.cast.本卦 ? input.cast : castHexagram();
 
-  // ③ RAG 检索 + 解读
-  const { chunks, knowledge } = await getKnowledgeContext({
-    domains: ['renjiandao', 'liuyao'],
-    query: buildHexagramRagQuery({ cast, question }),
-    limit: input.ragLimit || 6,
-  });
+  // ③ RAG 检索 + 解读(检索失败静默降级为无知识片段,不影响主流程)
+  let chunks = [];
+  let knowledge = '';
+  try {
+    ({ chunks, knowledge } = await getKnowledgeContext({
+      domains: ['renjiandao', 'liuyao'],
+      query: buildHexagramRagQuery({ cast, question }),
+      limit: input.ragLimit || 6,
+    }));
+  } catch { /* 知识库不可用时按无知识继续 */ }
   const text = await interpretHexagram(client, { cast, question, knowledge, lang });
   return { type: 'reading', cast, rag: chunks.map(({ id, title, source, score }) => ({ id, title, source, score })), text };
 }

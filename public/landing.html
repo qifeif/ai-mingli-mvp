@@ -163,6 +163,13 @@
   .tier li::before { content: "✦"; position: absolute; left: 0; color: var(--green); font-size: 12px; top: 11px; }
   .tier li.off { color: var(--faint); opacity: .6; } .tier li.off::before { content: "·"; color: var(--faint); }
   .tier .btn { justify-content: center; width: 100%; }
+  .tier .btn + .btn { margin-top: 10px; }
+  .tier .btn.disabled { opacity: .55; pointer-events: none; cursor: default; }
+  .tier .fine { font-size: 12px; color: var(--faint); line-height: 1.8; margin: -12px 0 4px; }
+  .tier .fine + .fine { margin-top: 0; }
+  .tier .fine + .btn { margin-top: 10px; }
+  .pricing-foot { text-align: center; color: var(--faint); font-size: 12px; letter-spacing: 1px;
+    margin: 26px 0 0; font-family: var(--serif); }
 
   /* FAQ */
   .faq { max-width: 760px; margin: 0 auto; }
@@ -256,6 +263,7 @@
       <a href="/app" class="hide-sm" data-i18n="nav.tianming">天命</a>
       <a href="/diyun" class="hide-sm" data-i18n="nav.diyun">地运</a>
       <a href="/renjiandao" class="hide-sm" data-i18n="nav.renjiandao">人间道</a>
+      <a href="/hehun" class="hide-sm" data-i18n="nav.hehun">合参</a>
       <a href="/chat" class="hide-sm nav-chat" data-i18n="nav.chat">对话 <sup class="v2tag">V2</sup></a>
       <a href="#pricing" data-i18n="nav.pricing">定价</a>
       <a href="/chat" class="nav-cta" data-i18n="nav.cta">开启对话</a>
@@ -469,48 +477,49 @@
 
       <div class="tier">
         <div class="tname" data-i18n="pricing.t1.name">微光</div>
-        <div class="tdesc" data-i18n="pricing.t1.desc">命理探路,小试牛刀</div>
+        <div class="tdesc" data-i18n="pricing.t1.desc">免费探路,三道全开</div>
         <div class="price" data-i18n="pricing.t1.price">免费</div>
         <ul>
-          <li data-i18n="pricing.t1.f1">每月 3 次 AI 解读</li>
-          <li data-i18n="pricing.t1.f2">八字真太阳时排盘</li>
-          <li data-i18n="pricing.t1.f3">危机前置拦截 · 全程守护</li>
-          <li class="off" data-i18n="pricing.t1.f4">历史档案保存</li>
-          <li class="off" data-i18n="pricing.t1.f5">八字 × 塔罗交叉印证</li>
+          <li data-i18n="pricing.t1.f1">三道排盘不限次(紫微 · 八宅 · 六爻)</li>
+          <li data-i18n="pricing.t1.f2">真太阳时校正,贴合真实天象</li>
+          <li data-i18n="pricing.t1.f3">规则版解读 · 无需联网模型</li>
+          <li data-i18n="pricing.t1.f4">危机前置守护 · 全程护航</li>
         </ul>
         <a href="/app" class="btn btn-ghost" data-i18n="pricing.t1.cta">开启微光</a>
       </div>
 
       <div class="tier popular">
         <div class="tag-pop" data-i18n="pricing.popular">最受欢迎</div>
-        <div class="tname" data-i18n="pricing.t2.name">烛照</div>
-        <div class="tdesc" data-i18n="pricing.t2.desc">把人生关口看清楚</div>
-        <div class="price">¥39<span class="unit" data-i18n="pricing.permo"> / 月</span></div>
+        <div class="tname" data-i18n="pricing.t2.name">点灯</div>
+        <div class="tdesc" data-i18n="pricing.t2.desc">单次付费,想深读时再点亮</div>
+        <div class="price">¥19.9<span class="unit" data-i18n="pricing.t2.unit"> / 次</span></div>
         <ul>
-          <li data-i18n="pricing.t2.f1">每月 100 次 AI 解读</li>
-          <li data-i18n="pricing.t2.f2">无限历史档案</li>
-          <li data-i18n="pricing.t2.f3">八字 × 塔罗交叉印证</li>
-          <li data-i18n="pricing.t2.f4">关键流年 · 大运深度解读</li>
-          <li data-i18n="pricing.t2.f5">朋友版 / 专业版双解读风格</li>
+          <li data-i18n="pricing.t2.f1">含「微光」全部免费能力</li>
+          <li data-i18n="pricing.t2.f2">AI 深读 ¥19.9 / 次 · 天命 / 地运 / 人间道任一道</li>
+          <li data-i18n="pricing.t2.f3">合参 · 双人合盘 ¥29.9 / 次 · 婚恋合参 / 合伙合参</li>
         </ul>
-        <a href="/app" class="btn btn-primary" data-i18n="pricing.t2.cta">开启烛照</a>
+        <p class="fine" data-i18n="pricing.t2.fine1">真人合婚 / 合盘行情约 ¥200–800 / 次</p>
+        <p class="fine" data-i18n="pricing.t2.fine2">内测期间免费体验,正式上线按此定价</p>
+        <a href="/app" class="btn btn-primary" data-i18n="pricing.t2.cta">AI 深读 · 立即点灯</a>
+        <a href="/hehun" class="btn btn-ghost" data-i18n="pricing.t2.cta2">双人合参 · 去合盘</a>
       </div>
 
       <div class="tier">
-        <div class="tname" data-i18n="pricing.t3.name">洞见</div>
-        <div class="tdesc" data-i18n="pricing.t3.desc">解锁专属决策顾问</div>
-        <div class="price">¥99<span class="unit" data-i18n="pricing.permo"> / 月</span></div>
+        <div class="tname" data-i18n="pricing.t3.name">烛照</div>
+        <div class="tdesc" data-i18n="pricing.t3.desc">订阅制 · 即将上线</div>
+        <div class="price">¥39<span class="unit" data-i18n="pricing.t3.unit"> / 月 起</span></div>
         <ul>
-          <li data-i18n="pricing.t3.f1">每月 300 次 AI 解读</li>
-          <li data-i18n="pricing.t3.f2">烛照版全部能力</li>
-          <li data-i18n="pricing.t3.f3">重大决策 · 专属复盘报告</li>
-          <li data-i18n="pricing.t3.f4">多命盘对照(亲友 / 合作)</li>
-          <li data-i18n="pricing.t3.f5">优先体验新功能</li>
+          <li data-i18n="pricing.t3.f1">每月 100 次 AI 深读</li>
+          <li data-i18n="pricing.t3.f2">无限历史档案</li>
+          <li data-i18n="pricing.t3.f3">大限 / 流年深读</li>
+          <li data-i18n="pricing.t3.f4">朋友版 / 专业版双解读风格</li>
+          <li data-i18n="pricing.t3.f5">进阶「洞见」¥99 / 月:300 次 / 月 · 多命盘对照(合参不限次)· 新功能优先</li>
         </ul>
-        <a href="/app" class="btn btn-ghost" data-i18n="pricing.t3.cta">开启洞见</a>
+        <span class="btn btn-ghost disabled" aria-disabled="true" data-i18n="pricing.t3.cta">即将上线 · 敬请期待</span>
       </div>
 
     </div>
+    <p class="pricing-foot" data-i18n="pricing.foot">单项一口价 · 无虚拟币 · 订阅续费价格上线前公示 · 随时退</p>
   </div>
 </section>
 
@@ -570,7 +579,7 @@
 <script>
 const I18N = {
   zh: {
-    'nav.tianming':'天命','nav.diyun':'地运','nav.renjiandao':'人间道','nav.chat':'对话','nav.pricing':'定价','nav.cta':'开启对话',
+    'nav.tianming':'天命','nav.diyun':'地运','nav.renjiandao':'人间道','nav.hehun':'合参','nav.chat':'对话','nav.pricing':'定价','nav.cta':'开启对话',
     'hero.tagline':'由易入理 · 三才合一',
     'hero.intro':'承周易之体,演 AI 之用。把「算命」重做成陪你想清楚的决策工具——人生影响,天命占 1/3,地运占 1/3,人事占 1/3。',
     'triad.t':'天命','triad.d':'地运','triad.r':'人间道','triad.c':'对话',
@@ -578,17 +587,21 @@ const I18N = {
     'footer.disc':'心易输出仅供参考与自我思考,不构成任何预测、医疗、法律或投资建议。命运的笔,始终握在你手里。',
     'footer.copy':'© 2026 心易 · 由易入理,三才合一',
     'pricing.h':'选 择 你 的 那 束 光',
-    'pricing.sub':'先免费试,觉得有用再点亮更多。随时可退,不绑年费。',
-    'pricing.popular':'最受欢迎','pricing.permo':' / 月',
-    'pricing.t1.name':'微光','pricing.t1.desc':'命理探路,小试牛刀','pricing.t1.price':'免费',
-    'pricing.t1.f1':'每月 3 次 AI 解读','pricing.t1.f2':'八字真太阳时排盘','pricing.t1.f3':'危机前置拦截 · 全程守护',
-    'pricing.t1.f4':'历史档案保存','pricing.t1.f5':'八字 × 塔罗交叉印证','pricing.t1.cta':'开启微光',
-    'pricing.t2.name':'烛照','pricing.t2.desc':'把人生关口看清楚',
-    'pricing.t2.f1':'每月 100 次 AI 解读','pricing.t2.f2':'无限历史档案','pricing.t2.f3':'八字 × 塔罗交叉印证',
-    'pricing.t2.f4':'关键流年 · 大运深度解读','pricing.t2.f5':'朋友版 / 专业版双解读风格','pricing.t2.cta':'开启烛照',
-    'pricing.t3.name':'洞见','pricing.t3.desc':'解锁专属决策顾问',
-    'pricing.t3.f1':'每月 300 次 AI 解读','pricing.t3.f2':'烛照版全部能力','pricing.t3.f3':'重大决策 · 专属复盘报告',
-    'pricing.t3.f4':'多命盘对照(亲友 / 合作)','pricing.t3.f5':'优先体验新功能','pricing.t3.cta':'开启洞见',
+    'pricing.sub':'排盘免费随便用,想深读再单次点灯。内测期不设强制订阅,单项一口价。',
+    'pricing.popular':'最受欢迎',
+    'pricing.t1.name':'微光','pricing.t1.desc':'免费探路,三道全开','pricing.t1.price':'免费',
+    'pricing.t1.f1':'三道排盘不限次(紫微 · 八宅 · 六爻)','pricing.t1.f2':'真太阳时校正,贴合真实天象',
+    'pricing.t1.f3':'规则版解读 · 无需联网模型','pricing.t1.f4':'危机前置守护 · 全程护航','pricing.t1.cta':'开启微光',
+    'pricing.t2.name':'点灯','pricing.t2.desc':'单次付费,想深读时再点亮','pricing.t2.unit':' / 次',
+    'pricing.t2.f1':'含「微光」全部免费能力','pricing.t2.f2':'AI 深读 ¥19.9 / 次 · 天命 / 地运 / 人间道任一道',
+    'pricing.t2.f3':'合参 · 双人合盘 ¥29.9 / 次 · 婚恋合参 / 合伙合参',
+    'pricing.t2.fine1':'真人合婚 / 合盘行情约 ¥200–800 / 次','pricing.t2.fine2':'内测期间免费体验,正式上线按此定价',
+    'pricing.t2.cta':'AI 深读 · 立即点灯','pricing.t2.cta2':'双人合参 · 去合盘',
+    'pricing.t3.name':'烛照','pricing.t3.desc':'订阅制 · 即将上线','pricing.t3.unit':' / 月 起',
+    'pricing.t3.f1':'每月 100 次 AI 深读','pricing.t3.f2':'无限历史档案','pricing.t3.f3':'大限 / 流年深读',
+    'pricing.t3.f4':'朋友版 / 专业版双解读风格','pricing.t3.f5':'进阶「洞见」¥99 / 月:300 次 / 月 · 多命盘对照(合参不限次)· 新功能优先',
+    'pricing.t3.cta':'即将上线 · 敬请期待',
+    'pricing.foot':'单项一口价 · 无虚拟币 · 订阅续费价格上线前公示 · 随时退',
     'faq.h':'你 可 能 想 问',
     'faq.q1':'心易会"算命"、预测我的未来吗?',
     'faq.a1':'不会。心易的设计原则就是不下定论、不预测确定事件。它把命盘当成一面镜子,帮你换个角度看清处境与选项,决定权永远交回你自己手里。',
@@ -601,7 +614,7 @@ const I18N = {
     'cta.h':'把这次纠结,说给它听','cta.sub':'三分钟,点亮一束属于你的光。','cta.btn':'立即体验 · 免费开始',
   },
   en: {
-    'nav.tianming':'Tian Ming','nav.diyun':'Di Yun','nav.renjiandao':'Ren Jian Dao','nav.pricing':'Pricing','nav.cta':'Try it',
+    'nav.tianming':'Tian Ming','nav.diyun':'Di Yun','nav.renjiandao':'Ren Jian Dao','nav.hehun':'Dual Chart','nav.pricing':'Pricing','nav.cta':'Try it',
     'hero.tagline':'By the Yi into insight · Heaven, Earth & Human as one',
     'hero.intro':'Rooted in the I Ching, expressed through AI — we remade "fortune-telling" into a tool that helps you think a decision through. Life is shaped in three equal parts: Destiny ⅓, Environment ⅓, Effort ⅓.',
     'triad.t':'Tian Ming','triad.d':'Di Yun','triad.r':'Ren Jian Dao',
@@ -609,17 +622,21 @@ const I18N = {
     'footer.disc':'Output is for reflection only — not a prediction, medical, legal, or investment advice. The pen of fate stays in your hand.',
     'footer.copy':'© 2026 Xin Yi · By the Yi into insight, Three Powers as one',
     'pricing.h':'Choose Your Light',
-    'pricing.sub':'Start free, light up more when it clicks. Cancel anytime, no annual lock-in.',
-    'pricing.popular':'Most Popular','pricing.permo':' / mo',
-    'pricing.t1.name':'Glimmer','pricing.t1.desc':'Dip a toe into the reading','pricing.t1.price':'Free',
-    'pricing.t1.f1':'3 AI readings / month','pricing.t1.f2':'BaZi true solar time chart','pricing.t1.f3':'Crisis pre-check · full-session guard',
-    'pricing.t1.f4':'Saved chart history','pricing.t1.f5':'BaZi × Tarot cross-reading','pricing.t1.cta':'Start with Glimmer',
-    'pricing.t2.name':'Candlelight','pricing.t2.desc':'See the crossroads clearly',
-    'pricing.t2.f1':'100 AI readings / month','pricing.t2.f2':'Unlimited chart history','pricing.t2.f3':'BaZi × Tarot cross-reading',
-    'pricing.t2.f4':'Key luck cycles · deep annual reading','pricing.t2.f5':'Friendly / professional reading styles','pricing.t2.cta':'Start with Candlelight',
-    'pricing.t3.name':'Insight','pricing.t3.desc':'Unlock a dedicated decision advisor',
-    'pricing.t3.f1':'300 AI readings / month','pricing.t3.f2':'Everything in Candlelight','pricing.t3.f3':'Major-decision review reports',
-    'pricing.t3.f4':'Multi-chart comparison (family / partners)','pricing.t3.f5':'Early access to new features','pricing.t3.cta':'Start with Insight',
+    'pricing.sub':'Chart for free as much as you like; pay per reading only when you want to go deeper. No forced subscription during beta — flat one-time pricing.',
+    'pricing.popular':'Most Popular',
+    'pricing.t1.name':'Glimmer','pricing.t1.desc':'Free to explore, all three paths open','pricing.t1.price':'Free',
+    'pricing.t1.f1':'Unlimited charting · Zi Wei / Eight Mansions / Liu Yao','pricing.t1.f2':'True solar time correction on every chart',
+    'pricing.t1.f3':'Rule-based reading · no AI model needed','pricing.t1.f4':'Crisis pre-check · full-session guard','pricing.t1.cta':'Start with Glimmer',
+    'pricing.t2.name':'Lantern','pricing.t2.desc':'Pay per reading, light up when you need it','pricing.t2.unit':' / reading',
+    'pricing.t2.f1':'Everything in Glimmer','pricing.t2.f2':'AI deep reading ¥19.9 per reading · any one path (Tian Ming / Di Yun / Ren Jian Dao)',
+    'pricing.t2.f3':'Dual-Chart Reading ¥29.9 per reading · romance or partnership',
+    'pricing.t2.fine1':'In-person dual-chart sessions typically run ¥200–800 each','pricing.t2.fine2':'Free during beta — this pricing takes effect at launch',
+    'pricing.t2.cta':'AI deep reading · Light the lantern','pricing.t2.cta2':'Dual-Chart Reading',
+    'pricing.t3.name':'Candlelight','pricing.t3.desc':'Subscription · coming soon','pricing.t3.unit':' / mo and up',
+    'pricing.t3.f1':'100 AI deep readings / month','pricing.t3.f2':'Unlimited chart history','pricing.t3.f3':'Decade & annual cycle deep readings',
+    'pricing.t3.f4':'Friendly / professional reading styles','pricing.t3.f5':'Insight tier ¥99 / mo: 300 readings + multi-chart comparison (unlimited dual-chart) + early access to new features',
+    'pricing.t3.cta':'Coming soon · Stay tuned',
+    'pricing.foot':'Flat one-time pricing · No virtual coins · Renewal prices published before subscriptions launch · Cancel anytime',
     'faq.h':'You Might Be Wondering',
     'faq.q1':'Will Xin Yi "tell my fortune" or predict my future?',
     'faq.a1':'No. Xin Yi is built to never make definitive claims or predict fixed events. It treats your chart as a mirror to help you see your situation and options from another angle — the decision always stays with you.',

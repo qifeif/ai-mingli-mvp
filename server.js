@@ -20,6 +20,7 @@ import { analyzeFloorplan } from './src/fengshui.js';
 import { castHexagram } from './src/liuyao.js';
 import { runRenjiandao } from './src/renjiandao.js';
 import { runZiwei } from './src/ziwei.js';
+import { runHehun } from './src/hehun.js';
 import { streamChat, castHexagram as castHex } from './src/chat.js';
 import { retrieveKnowledge, formatKnowledge, knowledgeStats } from './src/rag.js';
 
@@ -61,6 +62,9 @@ const PAGES = {
   // 对话页
   '/chat': 'chat.html',
   '/chat.html': 'chat.html',
+  // 合参(双人八字对比)
+  '/hehun': 'hehun.html',
+  '/hehun.html': 'hehun.html',
   // 新中式风格预览(临时,定稿前不动 landing)
   '/preview': 'preview.html',
   '/preview.html': 'preview.html',
@@ -133,6 +137,19 @@ const server = createServer(async (req, res) => {
         return sendJSON(res, 200, await runZiwei(client, input));
       } catch (e) {
         return sendJSON(res, 400, { error: `排盘失败:${e.message}` });
+      }
+    }
+
+    // 合参 · 双人八字对比:两盘四柱 + 日主/十神/地支/五行互补(纯计算,无需 Key);带问题且有 Key 时叠加 AI 深化 + 危机前置
+    if (req.method === 'POST' && req.url === '/api/hehun') {
+      const input = JSON.parse(await readBody(req) || '{}');
+      if (!input.personA || !input.personB) {
+        return sendJSON(res, 400, { error: '缺少必填项:两个人的出生信息(personA / personB)' });
+      }
+      try {
+        return sendJSON(res, 200, await runHehun(client, input));
+      } catch (e) {
+        return sendJSON(res, 400, { error: `合参失败:${e.message}` });
       }
     }
 

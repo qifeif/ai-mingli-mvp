@@ -310,10 +310,41 @@ fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
 ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.style.borderColor = ''; }));
 drop.addEventListener('drop', e => { if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
 
+// 上传前压缩:长边超 1568px 等比缩到 1568px,输出 JPEG(0.85);小图不放大;失败回退原图
+const MAX_IMAGE_EDGE = 1568;
+function compressDataUrl(dataUrl) {
+  return new Promise((resolve) => {
+    try {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const longEdge = Math.max(img.naturalWidth, img.naturalHeight);
+          if (!longEdge || longEdge <= MAX_IMAGE_EDGE) { resolve(dataUrl); return; }
+          const scale = MAX_IMAGE_EDGE / longEdge;
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.naturalWidth * scale);
+          canvas.height = Math.round(img.naturalHeight * scale);
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#fff'; // JPEG 无透明通道,先铺白底
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const out = canvas.toDataURL('image/jpeg', 0.85);
+          resolve(out && out.startsWith('data:image/') ? out : dataUrl);
+        } catch { resolve(dataUrl); }
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    } catch { resolve(dataUrl); }
+  });
+}
+
 function handleFile(file) {
   if (!file || !file.type.startsWith('image/')) return;
   const reader = new FileReader();
-  reader.onload = () => { imageDataUrl = reader.result; preview.src = reader.result; preview.style.display = 'block'; ph.style.display = 'none'; };
+  reader.onload = async () => {
+    const dataUrl = await compressDataUrl(reader.result);
+    imageDataUrl = dataUrl; preview.src = dataUrl; preview.style.display = 'block'; ph.style.display = 'none';
+  };
   reader.readAsDataURL(file);
 }
 

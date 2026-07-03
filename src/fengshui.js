@@ -22,7 +22,7 @@ const SYSTEM = `你是一位严谨克制的阳宅风水顾问,师法倪海厦天
 ③ 用大白话,术语随手翻译。正文 400–700 字,可用小标题与分点。
 
 # RAG 知识约束
-<knowledge> 只作为八宅/户型解释依据。优先采信传入的本命卦和八方位吉凶表,不得因知识片段重新计算方位。`;
+可能为空的 <knowledge> 只作为八宅/户型解释依据。优先采信传入的本命卦和八方位吉凶表,不得因知识片段重新计算方位。`;
 
 function dataUrlToBlock(dataUrl) {
   const m = String(dataUrl).match(/^data:(image\/(png|jpeg|jpg|webp|gif));base64,(.+)$/);
@@ -51,19 +51,24 @@ function buildFengshuiRagQuery({ mingGua, dirs, goal, facing }) {
  * @returns {Promise<string>} 户型方位解读正文
  */
 export async function analyzeFloorplan(client, { mingGua, dirs, goal, facing, imageDataUrl, lang = 'zh' }) {
-  const { knowledge } = await getKnowledgeContext({
-    domain: 'fengshui',
-    query: buildFengshuiRagQuery({ mingGua, dirs, goal, facing }),
-    limit: 5,
-  });
+  // RAG 检索(失败静默降级为无知识片段,不影响主流程)
+  let knowledge = '';
+  try {
+    ({ knowledge } = await getKnowledgeContext({
+      domain: 'fengshui',
+      query: buildFengshuiRagQuery({ mingGua, dirs, goal, facing }),
+      limit: 5,
+    }));
+  } catch { /* 知识库不可用时按无知识继续 */ }
 
   const userText = [
     `<本命卦>\n${mingGua.卦}命 · ${mingGua.命组}(本位 ${mingGua.本位方位})。${mingGua.白话}\n</本命卦>`,
     `<八方位吉凶表>\n${dirsToTable(dirs)}\n</八方位吉凶表>`,
     `<诉求>\n${goal?.名 || '综合居住'}(优先「${goal?.star || '生气'}」方)\n</诉求>`,
     `<图纸朝向>\n图纸正上方对应真实方位:${facing || '北'}\n</图纸朝向>`,
+    knowledge ? `<knowledge>\n${knowledge}\n</knowledge>` : '',
     `请据此分析下面这张户型图,给出方位点评与卧室/书房选位建议。`,
-  ].join('\n\n');
+  ].filter(Boolean).join('\n\n');
 
   const langRule = lang === 'en'
     ? '\n\n# Output language\nWrite the entire analysis in natural English; translate 风水/方位 terms and explain them plainly.'
