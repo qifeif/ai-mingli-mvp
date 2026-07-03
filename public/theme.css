@@ -1,32 +1,32 @@
-/* 心易 · 新中式主题(米白·胡桃木·墨绿·赭石·朱砂印,山水留白) */
+/* 心易 · 水墨山水主题(宣纸白·墨蓝灰·云雾留白) */
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@500;600;700;900&display=swap');
 
 :root {
   /* 米白宣纸 */
-  --bg: #EFE9DB;            /* 米白 */
-  --bg-2: #E7DECB;          /* 略深分区/输入底 */
-  --card: #F8F3E9;          /* 暖米白卡 */
-  /* 墨褐文字(浓淡分层) */
-  --ink: #3A2E22;           /* 墨褐·正文 */
-  --ink-strong: #2A1D12;    /* 浓·标题 */
-  --muted: #6E5F4C;         /* 淡褐 */
-  --faint: #756343;         /* 远褐(调深至 WCAG AA 4.8:1,原 #9C8C75 仅 2.7) */
+  --bg: #EDF1EF;            /* 米白 */
+  --bg-2: #E1E8E7;          /* 略深分区/输入底 */
+  --card: rgba(247, 249, 246, .88);          /* 暖米白卡 */
+  /* 墨蓝灰文字(浓淡分层) */
+  --ink: #26343B;           /* 墨褐·正文 */
+  --ink-strong: #1F2B31;    /* 浓·标题 */
+  --muted: #526872;         /* 淡褐 */
+  --faint: #697B82;         /* 远褐(调深至 WCAG AA 4.8:1,原 #9C8C75 仅 2.7) */
   /* 木线 */
-  --line: rgba(59,42,30,.16);
-  --line-soft: rgba(59,42,30,.08);
-  /* 主色=胡桃木,点睛=朱砂印,辅=墨绿/赭石/黛青 */
-  --accent: #3B2A1E;        /* 胡桃木(标题/按钮/结构) */
-  --accent-2: #33453A;      /* 墨绿(小型强调) */
-  --cinnabar: #B23A2E;      /* 朱砂印 */
-  --cinnabar-soft: rgba(178,58,46,.10);
-  --green: #2F4034; --ochre: #A85E33; --dai: #4F6873; --bronze: #9C7B3F;
-  --glow: rgba(59,42,30,.16);
-  --grad: linear-gradient(160deg, #2A1C12, #4A3525);  /* 浓→淡胡桃木 */
+  --line: rgba(38, 52, 59, .16);
+  --line-soft: rgba(38, 52, 59, .08);
+  /* 主色=墨蓝灰,辅色=山岚青灰 */
+  --accent: #26343B;        /* 胡桃木(标题/按钮/结构) */
+  --accent-2: #486670;      /* 墨绿(小型强调) */
+  --cinnabar: #415E68;      /* 朱砂印 */
+  --cinnabar-soft: rgba(65, 94, 104, .10);
+  --green: #365A55; --ochre: #6F7D78; --dai: #4F6873; --bronze: #7B8B88;
+  --glow: rgba(38, 52, 59, .16);
+  --grad: linear-gradient(160deg, #1F2B31, #4F6873);  /* 浓→淡胡桃木 */
   /* 吉=墨绿 / 凶=赭石 */
   --good: #4E6B52; --good-bg: rgba(78,107,82,.12); --good-line: rgba(78,107,82,.34);
   --bad: #A85E33;  --bad-bg: rgba(168,94,51,.10);  --bad-line: rgba(168,94,51,.34);
   /* 动爻=朱砂 */
-  --gold: #B23A2E; --gold-glow: rgba(178,58,46,.4);
+  --gold: #4F6873; --gold-glow: rgba(79,104,115,.34);
   /* 字体 */
   --sans: "Geist", -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
   --serif: "Songti SC", "Noto Serif SC", "STSong", serif;
@@ -34,9 +34,9 @@
   --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Monaco, monospace;
   /* 圆角 */
   --r-card: 8px; --r-panel: 12px; --r-large: 22px; --r-pill: 999px;
-  /* 阴影:暖墨极淡 */
-  --shadow: 0 1px 2px rgba(59,42,30,.05), 0 16px 40px -24px rgba(59,42,30,.26);
-  --shadow-soft: 0 1px 2px rgba(59,42,30,.04), 0 10px 26px -16px rgba(59,42,30,.18);
+  /* 阴影:水墨极淡 */
+  --shadow: 0 1px 2px rgba(38,52,59,.05), 0 16px 40px -24px rgba(38,52,59,.24);
+  --shadow-soft: 0 1px 2px rgba(38,52,59,.04), 0 10px 26px -16px rgba(38,52,59,.16);
 }
 
 * { box-sizing: border-box; }
@@ -47,13 +47,23 @@ body {
   line-height: 1.82; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
   position: relative; overflow-x: hidden;
 }
-/* 宣纸纤维纹(极淡) */
+/* 宣纸纤维纹(极淡,盖在山水纱之上) */
 body::before {
-  content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none; opacity: .3;
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .3;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.28'/%3E%3C/svg%3E");
   mix-blend-mode: multiply;
 }
-body::after { content: none !important; }
+/* 山水底 + 宣纸色纱(工作页含蓄透出;position:fixed 层替代 background-attachment:fixed,规避 iOS Safari 兼容坑) */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background:
+    linear-gradient(180deg,
+      rgba(237,241,239,.44) 0%,
+      rgba(237,241,239,.58) 34%,
+      rgba(237,241,239,.76) 68%,
+      rgba(237,241,239,.84) 100%),
+    #EDF1EF url('/bg-xinyi-product.webp') center top / cover no-repeat;
+}
 a { color: inherit; }
 
 /* 暖墨晕封面(工具页顶部;落地页用山水 hero 覆盖此层) */
@@ -69,15 +79,15 @@ a { color: inherit; }
 .aurora::before {
   background:
     radial-gradient(56% 46% at 50% 20%, rgba(248,243,233,.72), transparent 72%),  /* 米白透光 */
-    radial-gradient(42% 50% at 84% 10%, rgba(59,42,30,.13), transparent 66%),     /* 胡桃木云 */
-    radial-gradient(38% 46% at 14% 16%, rgba(59,42,30,.08), transparent 70%),     /* 远墨云 */
-    radial-gradient(22% 30% at 66% 4%, rgba(178,58,46,.06), transparent 70%);     /* 朱砂晕 */
+    radial-gradient(42% 50% at 84% 10%, rgba(38,52,59,.12), transparent 66%),     /* 胡桃木云 */
+    radial-gradient(38% 46% at 14% 16%, rgba(38,52,59,.08), transparent 70%),     /* 远墨云 */
+    radial-gradient(22% 30% at 66% 4%, rgba(79,104,115,.05), transparent 70%);     /* 朱砂晕 */
   filter: blur(58px);
 }
 .aurora::after {
   background:
-    radial-gradient(30% 40% at 72% 24%, rgba(59,42,30,.10), transparent 72%),
-    radial-gradient(22% 30% at 24% 8%, rgba(178,58,46,.05), transparent 70%);
+    radial-gradient(30% 40% at 72% 24%, rgba(38,52,59,.10), transparent 72%),
+    radial-gradient(22% 30% at 24% 8%, rgba(79,104,115,.05), transparent 70%);
   filter: blur(72px);
   animation: inkDrift 26s ease-in-out infinite alternate;
 }
