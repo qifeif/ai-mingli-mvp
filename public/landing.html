@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>心易 · 新一代 AI 命理决策助手</title>
+<link rel="icon" href="data:," />
+<noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@500;600;700;900&display=swap" rel="stylesheet" />
@@ -19,11 +21,19 @@
     --faint: #697B82;        /* 远褐(AA 4.8:1) */
     --line: rgba(38, 52, 59, .16);
     --line-soft: rgba(38, 52, 59, .08);
-    --seal: #415E68;         /* 朱砂印 */
+    --seal: #A6402F;         /* 朱砂印(真朱砂 · 全站唯一暖色:印章/主CTA/focus环/三才行圆点/关键角标) */
+    --seal-soft: rgba(166, 64, 47, .10);
+    --cinnabar: #A6402F; --cinnabar-soft: rgba(166, 64, 47, .10);
     --green: #365A55;        /* 墨绿 */
     --ochre: #6F7D78;        /* 赭石 */
     --dai: #4F6873;          /* 黛青 */
-    --gold: #7B8B88;         /* 古铜/描金细线 */
+    --gold: #A8834C;         /* 金线(极少量:hover 发丝线/分隔线提亮,不做底色) */
+    --gilt: #A8834C;
+    --ink-strong: #1F2B31;   /* 浓墨(墨玉主按钮底) */
+    --glass: rgba(250, 251, 249, .74);
+    --ease: cubic-bezier(.22, .61, .36, 1);
+    --dur-1: .18s; --dur-2: .32s; --dur-3: .56s;
+    --shadow-soft: 0 1px 2px rgba(38,52,59,.04), 0 10px 26px -16px rgba(38,52,59,.16);
     --kai: "Ma Shan Zheng", "Kaiti SC", "STKaiti", "Noto Serif SC", serif; /* 书法 */
     --serif: "Songti SC", "Noto Serif SC", "STSong", serif;
     --sans: "Geist", -apple-system, "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
@@ -57,49 +67,65 @@
   .container { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
 
   /* 顶栏 */
+  /* nav 玻璃霜化(.nav-frost 约定,滚动 >24px 由 /fx.js 加 .scrolled) */
   nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 30;
-    background: transparent; border-bottom: 0; pointer-events: none;
+    position: sticky; top: 0; z-index: 30; margin-bottom: -88px;
+    background: rgba(247, 249, 246, .66);
+    -webkit-backdrop-filter: blur(12px) saturate(1.05);
+    backdrop-filter: blur(12px) saturate(1.05);
+    border-bottom: 1px solid transparent;
+    transition: background var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+  }
+  nav.nav-frost.scrolled {
+    background: rgba(247, 249, 246, .86);
+    border-bottom-color: var(--line-soft);
+    box-shadow: 0 8px 24px -18px rgba(38, 52, 59, .28);
   }
   nav .container {
     position: relative; max-width: none; height: 88px; padding: 0 clamp(28px, 4vw, 62px);
     display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
   }
   nav a, nav button { pointer-events: auto; }
-  .logo { display: inline-flex; align-items: center; gap: 12px; justify-self: start; }
+  .logo { display: inline-flex; align-items: center; gap: 12px; justify-self: start; min-height: 44px; }
   .logo .seal-mini {
-    width: 38px; height: 38px; border-radius: 50%; background: rgba(237,241,239,.54); color: var(--walnut);
+    width: 38px; height: 38px; border-radius: 9px;
+    background: linear-gradient(150deg, #B24936, #9A3826); color: #F7F3EA;
     font-family: var(--serif); font-size: 17px; font-weight: 700; display: grid; place-items: center;
-    border: 2px solid rgba(38,52,59,.82); box-shadow: inset 0 0 0 1px rgba(255,255,255,.42);
+    border: 0; box-shadow: inset 0 0 0 1.5px rgba(247, 243, 234, .35), 0 6px 14px -8px rgba(122, 32, 18, .6);
   }
   .logo .lt { font-family: var(--serif); font-size: 22px; font-weight: 700; letter-spacing: 5px; color: var(--walnut); }
   .nav-links {
-    justify-self: center; display: inline-flex; align-items: center; gap: 4px; padding: 7px;
-    border-radius: 999px; border: 1px solid rgba(255,255,255,.72);
-    background: rgba(247,249,246,.54); box-shadow: inset 0 1px 0 rgba(255,255,255,.72), 0 16px 44px -30px rgba(31,43,49,.5);
-    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    justify-self: center; display: inline-flex; align-items: center; gap: 2px; padding: 0;
+    border-radius: 999px; border: 0; background: transparent; box-shadow: none;
     font-size: 14px; color: var(--walnut); font-weight: 700;
   }
   .nav-links a {
-    display: inline-flex; align-items: center; justify-content: center; min-width: 74px; height: 42px;
-    padding: 0 18px; border-radius: 999px; transition: background .18s, color .18s;
+    display: inline-flex; align-items: center; justify-content: center; min-width: 72px; height: 44px;
+    padding: 0 16px; border-radius: 999px; transition: background .18s, color .18s;
   }
-  .nav-links a:first-child { background: rgba(255,255,255,.82); color: var(--walnut); }
-  .nav-links a:hover { background: rgba(255,255,255,.58); }
+  .nav-links a:hover { background: rgba(38, 52, 59, .06); }
   .nav-actions { justify-self: end; display: inline-flex; align-items: center; gap: 12px; }
   .nav-login {
-    display: inline-flex; align-items: center; justify-content: center; height: 42px; min-width: 68px;
+    display: inline-flex; align-items: center; justify-content: center; height: 44px; min-width: 68px;
     padding: 0 20px; border-radius: 999px; color: var(--walnut); font-size: 14px; font-weight: 700;
-    border: 1px solid rgba(255,255,255,.72); background: rgba(247,249,246,.48);
-    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--line); background: rgba(250, 251, 249, .55);
+    transition: border-color .18s, background .18s;
   }
+  .nav-login:hover { border-color: rgba(38, 52, 59, .3); background: rgba(255, 255, 255, .75); }
   .nav-cta {
-    display: inline-flex; align-items: center; justify-content: center; height: 42px; min-width: 96px;
+    display: inline-flex; align-items: center; justify-content: center; height: 44px; min-width: 96px;
     background: #17232B; color: #F3F6F4 !important; padding: 0 22px; border-radius: 999px;
     font-size: 14px; font-weight: 800; letter-spacing: 1px; box-shadow: 0 14px 32px -20px rgba(23,35,43,.8);
   }
   .nav-cta:hover { background: #21333C; }
-  .langtog { display: none; }
+  .langtog {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
+    border: 1px solid var(--line); background: rgba(250, 251, 249, .55); color: var(--muted);
+    font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 1px;
+    transition: color .18s, border-color .18s;
+  }
+  .langtog:hover { color: var(--walnut); border-color: rgba(38, 52, 59, .3); }
 
   /* 山水 HERO */
   .hero {
@@ -113,23 +139,33 @@
       radial-gradient(72% 38% at 50% 74%, rgba(237,241,239,.5) 0%, rgba(237,241,239,.14) 64%, transparent 100%);
   }
   .hero .container { position: relative; z-index: 2; width: 100%; display: flex; flex-direction: column; align-items: center; }
-  .titlewrap { display: block; margin: 6px 0 0; }
+  .titlewrap { display: inline-block; position: relative; margin: 6px 0 0; }
   .hero h1 {
     font-family: var(--serif); font-weight: 900; font-size: clamp(56px, 6vw, 78px);
     letter-spacing: 18px; text-indent: 18px; margin: 0; color: rgba(255,255,255,.94); line-height: 1;
     text-shadow: 0 2px 0 rgba(255,255,255,.28), 0 18px 42px rgba(31,43,49,.16);
   }
-  .seal { display: none; }
-  .hero-copy { margin-top: clamp(510px, 55vh, 620px); max-width: 760px; }
+  /* 朱砂印:hero 落印 */
+  .seal {
+    position: absolute; right: -64px; bottom: 4px; display: grid; place-items: center;
+    width: 56px; height: 56px; border-radius: 9px;
+    background: linear-gradient(150deg, #B24936 8%, #9A3826 92%);
+    color: #F7F3EA; font-family: var(--kai); font-size: 17px; line-height: 1.3;
+    letter-spacing: 3px; text-indent: 3px; text-align: center;
+    box-shadow: inset 0 0 0 2px rgba(247, 243, 234, .34), inset 0 0 16px rgba(96, 22, 10, .42),
+                0 12px 26px -14px rgba(122, 32, 18, .6);
+    transform: rotate(4deg);
+  }
+  .hero-copy { margin-top: clamp(330px, 42vh, 430px); max-width: 760px; }
   .hero .kicker {
     display: inline-flex; align-items: center; gap: 16px; font-family: var(--mono); font-size: 13px;
     letter-spacing: 4px; color: #526872; text-transform: uppercase; font-weight: 700;
   }
   .hero .kicker::before, .hero .kicker::after {
-    content: ""; width: 58px; height: 1px; background: linear-gradient(90deg, transparent, rgba(145, 112, 77, .62));
+    content: ""; width: 58px; height: 1px; background: linear-gradient(90deg, transparent, rgba(168, 131, 76, .62));
   }
-  .hero .kicker::after { background: linear-gradient(90deg, rgba(145, 112, 77, .62), transparent); }
-  .hero .kicker .cn { display: none; }
+  .hero .kicker::after { background: linear-gradient(90deg, rgba(168, 131, 76, .62), transparent); }
+  .hero .kicker .cn { display: inline; }
   .hero .tagline { display: none; }
   .hero .lead {
     max-width: 780px; margin: 28px auto 0; color: #344852; font-family: var(--serif);
@@ -144,7 +180,7 @@
   .hero .triad a { display: inline-flex; align-items: center; padding: 0; border-bottom: 0; }
   .hero .triad b { color: inherit; font-weight: 700; }
   .hero .triad a:hover b { color: var(--walnut); }
-  .hero .triad i { width: 8px; height: 8px; background: #B99B72; border-radius: 2px; transform: rotate(45deg); }
+  .hero .triad i { width: 7px; height: 7px; background: var(--seal); border-radius: 50%; box-shadow: 0 0 0 3px var(--seal-soft); }
   .hero-cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 999px; cursor: pointer;
@@ -172,12 +208,11 @@
 
   /* 三道卡片 */
   .triad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-  .dao { background: rgba(247,249,246,.92); border: 1px solid var(--line); border-radius: 16px; padding: 36px 28px 30px;
-    text-align: center; box-shadow: var(--shadow); transition: transform .25s, border-color .25s; position: relative; display: block; }
-  .dao:hover { transform: translateY(-5px); border-color: var(--gold); }
-  .dao .medal { width: 96px; height: 96px; margin: 0 auto 20px; border-radius: 50%; background: var(--paper);
-    border: 1px solid var(--line); display: grid; place-items: center; box-shadow: inset 0 2px 12px rgba(59,42,30,.06); }
-  .dao .medal svg { width: 52px; height: 52px; }
+  .dao { border-radius: 16px; padding: 36px 28px 30px; text-align: center; position: relative; display: block; }
+  .dao .medal { width: 84px; height: 84px; margin: 0 auto 16px; display: grid; place-items: center;
+    color: var(--muted); transition: color var(--dur-2) var(--ease); }
+  .dao .medal svg { width: 72px; height: 72px; display: block; }
+  .dao:hover .medal { color: var(--seal); }
   .dao .dt { font-family: var(--kai); font-size: 30px; color: var(--walnut); letter-spacing: 4px; line-height: 1; }
   .dao .dsub { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; color: var(--ochre);
     text-transform: uppercase; margin: 8px 0 14px; }
@@ -306,13 +341,13 @@
   .xinyi-bagua {
     position: absolute;
     left: 50%;
-    top: clamp(238px, 25vh, 286px);
+    top: clamp(140px, 17vh, 196px);
     z-index: 1;
-    width: clamp(390px, 34vw, 540px);
+    width: clamp(400px, 35vw, 560px);
     aspect-ratio: 1;
     transform: translateX(-50%);
     pointer-events: none;
-    opacity: .22;
+    opacity: .26;
     mix-blend-mode: multiply;
     filter: blur(.15px) drop-shadow(0 34px 58px rgba(32, 52, 61, .12));
   }
@@ -370,16 +405,16 @@
   }
 
   @media (max-width: 860px) {
+    nav { margin-bottom: -70px; }
     nav .container { height: 70px; padding: 0 18px; grid-template-columns: auto 1fr auto; }
-    .logo .seal-mini { width: 32px; height: 32px; font-size: 15px; }
+    .logo .seal-mini { width: 32px; height: 32px; font-size: 15px; border-radius: 8px; }
     .logo .lt { font-size: 18px; letter-spacing: 4px; }
     .nav-links { display: none; }
     .nav-login { display: none; }
-    .nav-cta { height: 38px; min-width: 92px; padding: 0 16px; font-size: 13px; }
+    .nav-cta.btn-ink { height: 44px; min-height: 44px; min-width: 0; padding: 0 14px; font-size: 13px; }
     .hero { min-height: 100svh; padding: 106px 0 70px; }
-    .hero h1 { font-size: clamp(52px, 18vw, 72px); letter-spacing: 10px; text-indent: 10px; }
-    .xinyi-bagua { top: 178px; width: min(82vw, 340px); opacity: .2; }
-    .hero-copy { margin-top: clamp(360px, 48vh, 470px); max-width: 340px; }
+    .xinyi-bagua { top: clamp(96px, 14vh, 140px); width: min(78vw, 320px); opacity: .24; }
+    .hero-copy { margin-top: clamp(250px, 36vh, 330px); max-width: 340px; }
     .hero .kicker { font-size: 11px; letter-spacing: 3px; gap: 10px; }
     .hero .kicker::before, .hero .kicker::after { width: 38px; }
     .hero .lead { font-size: 18px; line-height: 1.9; }
@@ -390,11 +425,144 @@
     .cf-mock { transform: none; }
     .cf-right { display: none; }
   }
+
+  /* ============================================================
+     墨韵 Ink Luxe · 重设计层(自包含;值抄 /theme.css 组件层,
+     设计真源 design-system/MASTER.md;显现/涟漪/nav 由 /fx.js 驱动)
+     ============================================================ */
+
+  /* ---- 滚动显现(.reveal / .reveal-group 子级差 70ms) ---- */
+  .reveal { opacity: 0; transform: translateY(14px);
+    transition: opacity var(--dur-2) var(--ease), transform var(--dur-2) var(--ease);
+    transition-delay: var(--d, 0ms); will-change: opacity, transform; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* ---- 玻璃卡组(底≥.70 保对比;hover 升 3px、发丝线转金) ---- */
+  .dao, .feat, .tier, .faq details, .cf-mock {
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(14px) saturate(1.05);
+    backdrop-filter: blur(14px) saturate(1.05);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-soft);
+  }
+  .dao, .feat, .tier, .faq details {
+    transition:
+      opacity var(--dur-2) var(--ease) var(--d, 0ms),
+      transform var(--dur-2) var(--ease) var(--d, 0ms),
+      translate var(--dur-2) var(--ease),
+      border-color var(--dur-2) var(--ease),
+      box-shadow var(--dur-2) var(--ease);
+  }
+  .dao:hover, .feat:hover, .tier:hover, .faq details:hover {
+    translate: 0 -3px; border-color: rgba(168, 131, 76, .46); box-shadow: var(--shadow);
+  }
+
+  /* ---- 定价:衬线价格放大 + 最受欢迎卡(朱砂发丝顶线 + 轻放大 1.02) ---- */
+  .tier .price { font-size: 46px; }
+  .tier.popular { scale: 1.02; border-color: var(--line); box-shadow: var(--shadow); }
+  .tier.popular::before { content: ""; position: absolute; top: -1px; left: 16px; right: 16px; height: 2px;
+    border-radius: 2px; pointer-events: none;
+    background: linear-gradient(90deg, rgba(166,64,47,0), var(--seal) 28%, var(--seal) 72%, rgba(166,64,47,0)); }
+  .tier .tag-pop { background: var(--seal); box-shadow: 0 6px 14px -8px rgba(122, 32, 18, .55); }
+
+  /* ---- 按钮体系:.btn-ink 墨玉胶囊 / .btn-paper 宣纸描边(涟漪由 fx.js 注入) ---- */
+  .btn-ink, .btn-paper {
+    position: relative; overflow: hidden; isolation: isolate;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 44px; padding: 0 26px; border-radius: 999px;
+    font-family: var(--serif); font-size: 15px; letter-spacing: 1.5px;
+    cursor: pointer; user-select: none; -webkit-user-select: none; text-decoration: none;
+    transition: transform var(--dur-1) var(--ease), box-shadow var(--dur-2) var(--ease),
+                background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+  }
+  .btn-ink { background: var(--ink-strong); color: #F4F1EA; border: 1px solid transparent;
+    box-shadow: 0 2px 10px -4px rgba(31, 43, 49, .5); }
+  .btn-ink::before { /* 朱砂印点 */
+    content: ""; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--seal); box-shadow: 0 0 0 2px rgba(166, 64, 47, .22); flex: none; }
+  .btn-ink::after { /* 光泽扫过 */
+    content: ""; position: absolute; top: 0; bottom: 0; left: -70%; width: 46%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .14), transparent);
+    transform: skewX(-18deg); transition: left var(--dur-3) var(--ease); pointer-events: none; }
+  .btn-ink:hover { transform: translateY(-1px); background: var(--ink-strong); color: #F4F1EA;
+    box-shadow: 0 6px 20px -6px rgba(31, 43, 49, .55); }
+  .btn-ink:hover::after { left: 120%; }
+  .btn-ink:active { transform: translateY(0) scale(.985); }
+  .btn-paper { background: rgba(250, 251, 249, .8); color: var(--ink); border: 1px solid var(--line); box-shadow: none; }
+  .btn-paper:hover { background: rgba(38, 52, 59, .06); border-color: rgba(38, 52, 59, .3); }
+  .ink-ripple { /* 墨晕涟漪 */
+    position: absolute; border-radius: 50%; pointer-events: none; z-index: -1;
+    background: radial-gradient(circle, rgba(166, 64, 47, .30) 0%, rgba(166, 64, 47, .12) 40%, transparent 70%);
+    transform: scale(0); animation: inkRipple .55s var(--ease) forwards; }
+  .btn-ink .ink-ripple { background: radial-gradient(circle, rgba(255, 255, 255, .28) 0%, rgba(255, 255, 255, .10) 40%, transparent 70%); }
+  @keyframes inkRipple { to { transform: scale(1); opacity: 0; } }
+  .nav-cta.btn-ink { height: 44px; min-height: 44px; min-width: 0; padding: 0 18px; font-size: 13.5px; letter-spacing: 1px; }
+  .nav-cta.btn-ink::before { width: 6px; height: 6px; }
+
+  /* ---- 印章落印(hero 朱砂印,一次) ---- */
+  .seal-pulse { animation: sealDrop .7s var(--ease) both; transform-origin: center; }
+  .hero .seal.seal-pulse { animation-delay: .55s; }
+  @keyframes sealDrop {
+    0% { opacity: 0; transform: rotate(4deg) scale(1.12); }
+    60% { opacity: 1; }
+    100% { opacity: 1; transform: rotate(4deg) scale(1); }
+  }
+
+  /* ---- hero 仪式感:主标逐字浮现(级差 60ms) → 落印 → 副文/三才行依次 reveal ---- */
+  .hero h1 .ch { display: inline-block; animation: charRise .62s var(--ease) both; }
+  .hero h1 .ch:nth-child(2) { animation-delay: .06s; }
+  @keyframes charRise { from { opacity: 0; transform: translateY(.34em) scale(.985); } to { opacity: 1; transform: none; } }
+  .hero-copy > * { animation: fadeRise .56s var(--ease) both; }
+  .hero-copy > *:nth-child(1) { animation-delay: .38s; }
+  .hero-copy > *:nth-child(2) { animation-delay: .46s; }
+  .hero-copy > *:nth-child(3) { animation-delay: .54s; }
+  .hero-copy > *:nth-child(4) { animation-delay: .66s; }
+  .hero-copy > *:nth-child(5) { animation-delay: .78s; }
+  @keyframes fadeRise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  /* ---- 三才行:hover 墨晕扫线下划(background-size 扫线) ---- */
+  .hero .triad a { min-height: 44px; }
+  .hero .triad a b { padding-bottom: 5px;
+    background-image: linear-gradient(90deg, rgba(38,52,59,0), rgba(38,52,59,.62) 22%, rgba(38,52,59,.62) 78%, rgba(38,52,59,0));
+    background-repeat: no-repeat; background-size: 0% 2px; background-position: left bottom;
+    transition: background-size var(--dur-2) var(--ease), color var(--dur-2) var(--ease); }
+  .hero .triad a:hover b, .hero .triad a:focus-visible b { background-size: 100% 2px; }
+
+  /* ---- V2 徽记朱砂化;预览窗点转墨阶(朱砂为全站唯一暖色) ---- */
+  .cf-badge { color: var(--seal); border-color: rgba(166, 64, 47, .32); background: var(--seal-soft); }
+  .cf-dot.r { background: rgba(38, 52, 59, .40); }
+  .cf-dot.y { background: rgba(38, 52, 59, .26); }
+  .cf-dot.g { background: rgba(38, 52, 59, .14); }
+
+  /* ---- 区块饰线:金(极少量提亮) ---- */
+  .sec-head .deco .dia { color: var(--gilt); opacity: .9; }
+
+  /* ---- focus 可见环(全站朱砂) ---- */
+  :where(a, button, [role="button"], input, select, textarea, summary):focus-visible {
+    outline: 2px solid var(--seal); outline-offset: 2px; border-radius: 4px;
+  }
+
+  /* ---- 移动端 ≤560px:动效降载(逐字改整块 fade、雾层视差禁) ---- */
+  @media (max-width: 560px) {
+    .hero h1 .ch { animation: none; opacity: 1; transform: none; }
+    .hero h1 { animation: fadeRise .5s var(--ease) both; }
+    .xinyi-bagua::after { animation: none; opacity: .68; }
+  }
+
+  /* ---- prefers-reduced-motion:全部静止,内容完整可见 ---- */
+  @media (prefers-reduced-motion: reduce) {
+    .hero h1, .hero h1 .ch, .hero-copy > *, .seal-pulse, .reveal, .ink-ripple { animation: none !important; }
+    .hero h1 .ch, .hero-copy > * { opacity: 1; transform: none; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .btn-ink::after { display: none; }
+    .btn-ink, .btn-paper, .dao, .feat, .tier, .faq details, .dao .medal, nav,
+    .hero .triad a b, .nav-links a, .nav-login, .langtog { transition: none; }
+  }
 </style>
 </head>
 <body>
 
-<nav>
+<nav class="nav-frost">
   <div class="container">
     <a class="logo" href="/"><span class="seal-mini">易</span><span class="lt">心易</span></a>
     <div class="nav-links" aria-label="主导航">
@@ -406,7 +574,7 @@
     </div>
     <div class="nav-actions">
       <a href="/chat" class="nav-login" data-i18n="nav.login">登录</a>
-      <a href="/chat" class="nav-cta" data-i18n="nav.cta">开启对话</a>
+      <a href="/chat" class="nav-cta btn-ink" data-i18n="nav.cta">开启对话</a>
       <button class="langtog" id="langtog" type="button" aria-label="切换中英文 / Switch language">EN</button>
     </div>
   </div>
@@ -452,12 +620,8 @@
     </svg>
   </div>
   <div class="container">
-    <div class="titlewrap">
-      <h1>心易</h1>
-      <span class="seal">心易<br>之印</span>
-    </div>
     <div class="hero-copy">
-      <div class="kicker">EASTERN&nbsp;YI&nbsp;·&nbsp;MODERN&nbsp;DECISION&nbsp;&nbsp;<span class="cn">东方易理 · 现代决策</span></div>
+      <div class="kicker"><span class="cn" data-i18n="hero.kicker">东方易理 · 现代决策</span></div>
       <div class="tagline" data-i18n="hero.tagline">由易入理 · 三才合一</div>
       <p class="lead" data-i18n="hero.intro">承周易之体，演 AI 之用。把「算命」重做成陪你想清楚的决策工具：<br>天命看势，地运调场，人间道问时机。</p>
       <div class="triad">
@@ -467,8 +631,8 @@
         <a href="/chat" title="AI 易理对话"><b data-i18n="triad.c">对话</b></a>
       </div>
       <div class="hero-cta">
-        <a href="/chat" class="btn btn-primary" data-i18n="hero.cta1">每日易问</a>
-        <a href="/app" class="btn btn-ghost" data-i18n="hero.cta2">开启心盘</a>
+        <a href="/chat" class="btn btn-primary btn-ink" data-i18n="hero.cta1">每日易问</a>
+        <a href="/app" class="btn btn-ghost btn-paper" data-i18n="hero.cta2">开启心盘</a>
       </div>
     </div>
   </div>
@@ -477,17 +641,26 @@
 <!-- 三道合一 -->
 <section id="triad">
   <div class="container">
-    <div class="sec-head">
+    <div class="sec-head reveal">
       <div class="deco"><span class="ln"></span><span class="dia">◆</span><span class="ln r"></span></div>
       <h2>三 道 合 一</h2>
       <p>天命定其势,地运调其场,人事尽其为——一套问答,三道互参。</p>
     </div>
-    <div class="triad-grid">
+    <div class="triad-grid reveal-group">
       <a class="dao" href="/app">
         <div class="medal">
-          <svg viewBox="0 0 52 52" fill="none" stroke="#3B2A1E" stroke-width="1.4">
-            <circle cx="26" cy="26" r="20"/><circle cx="26" cy="26" r="7"/>
-            <path d="M26 6 v6 M26 40 v6 M6 26 h6 M40 26 h6 M12 12 l4 4 M40 40 l-4 -4 M40 12 l-4 4 M12 40 l4 -4" stroke-linecap="round"/>
+          <!-- 天命 · 星环:同心双圆 + 12 刻度点 + 三连星线 -->
+          <svg viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <circle cx="36" cy="36" r="19"/>
+            <circle cx="36" cy="36" r="25.5"/>
+            <g fill="currentColor" stroke="none">
+              <circle cx="36" cy="5" r="1.2"/><circle cx="51.5" cy="9.15" r="1.2"/><circle cx="62.85" cy="20.5" r="1.2"/>
+              <circle cx="67" cy="36" r="1.2"/><circle cx="62.85" cy="51.5" r="1.2"/><circle cx="51.5" cy="62.85" r="1.2"/>
+              <circle cx="36" cy="67" r="1.2"/><circle cx="20.5" cy="62.85" r="1.2"/><circle cx="9.15" cy="51.5" r="1.2"/>
+              <circle cx="5" cy="36" r="1.2"/><circle cx="9.15" cy="20.5" r="1.2"/><circle cx="20.5" cy="9.15" r="1.2"/>
+            </g>
+            <path d="M27 42 L34.5 28 L45 34.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <g fill="currentColor" stroke="none"><circle cx="27" cy="42" r="2"/><circle cx="34.5" cy="28" r="2"/><circle cx="45" cy="34.5" r="2"/></g>
           </svg>
         </div>
         <div class="dt">天命</div>
@@ -497,10 +670,13 @@
       </a>
       <a class="dao" href="/diyun">
         <div class="medal">
-          <svg viewBox="0 0 52 52" fill="none" stroke="#3B2A1E" stroke-width="1.4">
-            <polygon points="26,6 38,12 44,26 38,40 26,46 14,40 8,26 14,12"/>
-            <circle cx="26" cy="26" r="6"/>
-            <path d="M26 12 v6 M26 34 v6 M14 26 h6 M32 26 h6" stroke-linecap="round"/>
+          <!-- 地运 · 罗盘玫瑰:八向罗盘针 + 内八角 -->
+          <svg viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <circle cx="36" cy="36" r="29"/>
+            <polygon points="36,23 45.19,26.81 49,36 45.19,45.19 36,49 26.81,45.19 23,36 26.81,26.81" stroke-linejoin="round"/>
+            <path d="M36 7 V23 M36 49 V65 M7 36 H23 M49 36 H65" stroke-linecap="round"/>
+            <path d="M56.5 15.5 L45.19 26.81 M15.5 15.5 L26.81 26.81 M56.5 56.5 L45.19 45.19 M15.5 56.5 L26.81 45.19" stroke-linecap="round"/>
+            <circle cx="36" cy="36" r="2.2" fill="currentColor" stroke="none"/>
           </svg>
         </div>
         <div class="dt">地运</div>
@@ -510,9 +686,14 @@
       </a>
       <a class="dao" href="/renjiandao">
         <div class="medal">
-          <svg viewBox="0 0 52 52" stroke="#3B2A1E" stroke-width="3" stroke-linecap="round">
-            <path d="M14 14 h24"/><path d="M14 20 h10 M28 20 h10"/><path d="M14 26 h24"/>
-            <path d="M14 32 h10 M28 32 h10"/><path d="M14 38 h24"/><path d="M14 44 h10 M28 44 h10"/>
+          <!-- 人间道 · 卦爻:六横爻,两断四连错落 -->
+          <svg viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+            <path d="M16 15 H56"/>
+            <path d="M16 23.4 H33 M39 23.4 H56"/>
+            <path d="M16 31.8 H56"/>
+            <path d="M16 40.2 H56"/>
+            <path d="M16 48.6 H30 M36 48.6 H56"/>
+            <path d="M16 57 H56"/>
           </svg>
         </div>
         <div class="dt">人间道</div>
@@ -527,7 +708,7 @@
 <!-- V2 · AI 易理对话 -->
 <section id="chat-feat" class="chat-feat">
   <div class="container">
-    <div class="cf-inner">
+    <div class="cf-inner reveal-group">
       <div class="cf-left">
         <div class="cf-badge">V 2 · 全新功能</div>
         <h2 class="cf-h">AI 易理对话</h2>
@@ -535,7 +716,7 @@
         <div class="cf-modes">
           <span>◎ 随问</span><span>✦ 天命</span><span>☰ 人间道</span><span>⌂ 地运</span>
         </div>
-        <a href="/chat" class="btn btn-primary cf-cta">开启对话</a>
+        <a href="/chat" class="btn btn-primary btn-ink cf-cta">开启对话</a>
       </div>
       <div class="cf-right" aria-hidden="true">
         <div class="cf-mock">
@@ -559,12 +740,12 @@
 <!-- 为什么心易 -->
 <section id="why" class="why">
   <div class="container">
-    <div class="sec-head">
+    <div class="sec-head reveal">
       <div class="deco"><span class="ln"></span><span class="dia">◆</span><span class="ln r"></span></div>
       <h2>为 什 么 心 易</h2>
       <p>同样是命盘,心易做了三件别人不做的事。</p>
     </div>
-    <div class="feat-grid">
+    <div class="feat-grid reveal-group">
       <div class="feat">
         <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V6l7-3z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <h3>危机前置守护</h3>
@@ -587,12 +768,12 @@
 <!-- 易理为用(编号) -->
 <section id="pts">
   <div class="container">
-    <div class="sec-head">
+    <div class="sec-head reveal">
       <div class="deco"><span class="ln"></span><span class="dia">◆</span><span class="ln r"></span></div>
       <h2>易 理 为 用</h2>
       <p>由易理为指导书,给您参考,决策权在您。</p>
     </div>
-    <div class="pts">
+    <div class="pts reveal-group">
       <div class="pt"><span class="num">01</span><div class="ptx"><h4>不下定论</h4><p>永远说「倾向 / 这个阶段」,不预测确定事件,不替你做决定。</p></div></div>
       <div class="pt"><span class="num">02</span><div class="ptx"><h4>三道互参</h4><p>天命看势、地运调场、人间道问时机,一个问题三面镜子交叉印证。</p></div></div>
       <div class="pt"><span class="num">03</span><div class="ptx"><h4>说人话</h4><p>命理术语当场翻译成生活语言,靠命盘的「白话」字段托底。</p></div></div>
@@ -604,12 +785,12 @@
 <!-- 定价 -->
 <section id="pricing">
   <div class="container">
-    <div class="sec-head">
+    <div class="sec-head reveal">
       <div class="deco"><span class="ln"></span><span class="dia">◆</span><span class="ln r"></span></div>
       <h2 data-i18n="pricing.h">选 择 你 的 那 束 光</h2>
       <p data-i18n="pricing.sub">先免费试,觉得有用再点亮更多。随时可退,不绑年费。</p>
     </div>
-    <div class="pricing-grid">
+    <div class="pricing-grid reveal-group">
 
       <div class="tier">
         <div class="tname" data-i18n="pricing.t1.name">微光</div>
@@ -621,7 +802,7 @@
           <li data-i18n="pricing.t1.f3">规则版解读 · 无需联网模型</li>
           <li data-i18n="pricing.t1.f4">危机前置守护 · 全程护航</li>
         </ul>
-        <a href="/app" class="btn btn-ghost" data-i18n="pricing.t1.cta">开启微光</a>
+        <a href="/app" class="btn btn-ghost btn-paper" data-i18n="pricing.t1.cta">开启微光</a>
       </div>
 
       <div class="tier popular">
@@ -636,8 +817,8 @@
         </ul>
         <p class="fine" data-i18n="pricing.t2.fine1">真人合婚 / 合盘行情约 ¥200–800 / 次</p>
         <p class="fine" data-i18n="pricing.t2.fine2">内测期间免费体验,正式上线按此定价</p>
-        <a href="/app" class="btn btn-primary" data-i18n="pricing.t2.cta">AI 深读 · 立即点灯</a>
-        <a href="/hehun" class="btn btn-ghost" data-i18n="pricing.t2.cta2">双人合参 · 去合盘</a>
+        <a href="/app" class="btn btn-primary btn-ink" data-i18n="pricing.t2.cta">AI 深读 · 立即点灯</a>
+        <a href="/hehun" class="btn btn-ghost btn-paper" data-i18n="pricing.t2.cta2">双人合参 · 去合盘</a>
       </div>
 
       <div class="tier">
@@ -651,7 +832,7 @@
           <li data-i18n="pricing.t3.f4">朋友版 / 专业版双解读风格</li>
           <li data-i18n="pricing.t3.f5">进阶「洞见」¥99 / 月:300 次 / 月 · 多命盘对照(合参不限次)· 新功能优先</li>
         </ul>
-        <span class="btn btn-ghost disabled" aria-disabled="true" data-i18n="pricing.t3.cta">即将上线 · 敬请期待</span>
+        <span class="btn btn-ghost btn-paper disabled" aria-disabled="true" data-i18n="pricing.t3.cta">即将上线 · 敬请期待</span>
       </div>
 
     </div>
@@ -662,11 +843,11 @@
 <!-- 你可能想问 -->
 <section id="faq">
   <div class="container">
-    <div class="sec-head">
+    <div class="sec-head reveal">
       <div class="deco"><span class="ln"></span><span class="dia">◆</span><span class="ln r"></span></div>
       <h2 data-i18n="faq.h">你 可 能 想 问</h2>
     </div>
-    <div class="faq">
+    <div class="faq reveal-group">
       <details open>
         <summary data-i18n="faq.q1">心易会"算命"、预测我的未来吗?</summary>
         <p data-i18n="faq.a1">不会。心易的设计原则就是不下定论、不预测确定事件。它把命盘当成一面镜子,帮你换个角度看清处境与选项,决定权永远交回你自己手里。</p>
@@ -689,16 +870,16 @@
 
 <!-- 立即体验 CTA -->
 <section class="cta-band">
-  <div class="container">
+  <div class="container reveal">
     <h2 data-i18n="cta.h">把这次纠结,说给它听</h2>
     <p data-i18n="cta.sub">三分钟,点亮一束属于你的光。</p>
-    <a href="/app" class="btn btn-primary" data-i18n="cta.btn">立即体验 · 免费开始</a>
+    <a href="/app" class="btn btn-primary btn-ink" data-i18n="cta.btn">立即体验 · 免费开始</a>
   </div>
 </section>
 
 <!-- 气韵 band -->
 <div class="band">
-  <div class="container">
+  <div class="container reveal">
     <div class="deco"><span class="ln"></span><span class="dia" style="color:var(--seal)">◆</span><span class="ln r"></span></div>
     <h2>心易 · 不止于算命,是陪你把选择想清楚</h2>
     <div class="vals"><span>雅致</span><span>传承</span><span>笃定</span><span>自主</span></div>
@@ -716,6 +897,7 @@
 const I18N = {
   zh: {
     'nav.tianming':'天命','nav.diyun':'地运','nav.renjiandao':'人间道','nav.hehun':'合参','nav.chat':'对话','nav.pricing':'定价','nav.login':'登录','nav.cta':'开启对话',
+    'hero.kicker':'东方易理 · 现代决策',
     'hero.tagline':'由易入理 · 三才合一',
     'hero.intro':'承周易之体，演 AI 之用。把「算命」重做成陪你想清楚的决策工具：<br>天命看势，地运调场，人间道问时机。',
     'triad.t':'天命','triad.d':'地运','triad.r':'人间道','triad.c':'对话',
@@ -751,9 +933,10 @@ const I18N = {
   },
   en: {
     'nav.tianming':'Tian Ming','nav.diyun':'Di Yun','nav.renjiandao':'Ren Jian Dao','nav.hehun':'Dual Chart','nav.chat':'Chat','nav.pricing':'Pricing','nav.login':'Log in','nav.cta':'Start chat',
+    'hero.kicker':'Eastern Yi · Modern Decision',
     'hero.tagline':'By the Yi into insight · Heaven, Earth & Human as one',
     'hero.intro':'Rooted in the I Ching, expressed through AI — we remade "fortune-telling" into a tool that helps you think a decision through. Life is shaped in three equal parts: Destiny ⅓, Environment ⅓, Effort ⅓.',
-    'triad.t':'Tian Ming','triad.d':'Di Yun','triad.r':'Ren Jian Dao',
+    'triad.t':'Tian Ming','triad.d':'Di Yun','triad.r':'Ren Jian Dao','triad.c':'Chat',
     'hero.cta1':'Daily Yi Ask','hero.cta2':'Open my chart',
     'footer.disc':'Output is for reflection only — not a prediction, medical, legal, or investment advice. The pen of fate stays in your hand.',
     'footer.copy':'© 2026 Xin Yi · By the Yi into insight, Three Powers as one',
@@ -799,6 +982,7 @@ function applyI18n(){
 document.getElementById('langtog').addEventListener('click', ()=>{ LANG = LANG==='en'?'zh':'en'; localStorage.setItem('lang',LANG); applyI18n(); });
 applyI18n();
 </script>
+<script src="/fx.js" defer></script>
 <script src="/ink.js" defer></script>
 </body>
 </html>

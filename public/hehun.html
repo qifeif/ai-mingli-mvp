@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>心易 · 合参 双人八字对照</title>
 <link rel="stylesheet" href="/theme.css" />
+<script src="/fx.js" defer></script>
 <style>
   a { color:inherit; text-decoration:none; }
   .shell { max-width:1140px; margin:0 auto; padding:30px 24px 100px; position:relative; }
@@ -14,7 +15,7 @@
   .top .logo { display:flex; align-items:center; gap:9px; }
   .top .logo .seal-mini { width:27px; height:27px; border-radius:6px; background:var(--cinnabar); color:#F3EAD8;
     font-family:"Songti SC","Noto Serif SC",serif; font-size:15px; font-weight:700; display:grid; place-items:center;
-    box-shadow:0 2px 8px -2px rgba(178,58,46,.5); }
+    box-shadow:0 2px 8px -2px rgba(166,64,47,.5); }
   .top .logo .lt { font-family:"Songti SC","Noto Serif SC",serif; font-size:20px; font-weight:700; letter-spacing:4px; color:var(--accent); }
   .top .nav { display:flex; gap:18px; font-size:14px; color:var(--muted); align-items:center; flex-wrap:wrap; }
   .top .nav a:hover { color:var(--ink); }
@@ -23,7 +24,9 @@
     cursor:pointer; background:var(--card); letter-spacing:1px; font-family:inherit; display:inline-flex;
     align-items:center; min-height:34px; }
   .langtog:hover { color:var(--ink); border-color:var(--accent-2); }
-  .langtog:focus-visible { outline:2px solid var(--accent-2); outline-offset:2px; }
+  .langtog:focus-visible { outline:2px solid var(--cinnabar); outline-offset:2px; }
+  /* nav 玻璃霜化(.nav-frost 由 theme.css 提供,滚动态 .scrolled 由 fx.js 挂) */
+  .top.nav-frost { position:sticky; top:10px; z-index:30; border-radius:14px; padding:10px 16px; }
 
   /* 编辑式 HERO */
   .lead { text-align:center; max-width:760px; margin:30px auto 46px; }
@@ -36,13 +39,15 @@
     -webkit-text-fill-color:transparent; filter:drop-shadow(0 4px 28px rgba(42,38,32,.28)); }
   .lead .lede { color:var(--muted); font-size:16px; line-height:2; margin:18px auto 0; max-width:600px; }
   .lead .lede b { color:var(--ink); font-weight:600; }
+  /* 合参道纹样:双环相扣,交叠处一点朱砂(MASTER §3,装饰,aria-hidden) */
+  .lead .dao-motif { display:block; margin:16px auto 0; color:var(--muted); opacity:.9; transition:color var(--dur-2) var(--ease); }
+  .lead .dao-motif:hover { color:var(--cinnabar); }
 
   /* 工作台双栏 */
   .studio { display:grid; grid-template-columns:minmax(0,1.42fr) minmax(0,1fr); gap:26px; align-items:start; }
 
-  /* 表单卡 */
-  form { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px;
-    box-shadow:var(--shadow); }
+  /* 表单卡(玻璃化:视觉底/边/影交给 .glass,本规则只留骨架) */
+  form { border-radius:20px; padding:30px; }
   .form-cap { display:flex; align-items:baseline; gap:10px; margin-bottom:22px; }
   .form-cap h2 { font-family:"Songti SC","Noto Serif SC",serif; font-size:19px; letter-spacing:3px; color:var(--accent); margin:0; }
   .form-cap span { font-size:12px; color:var(--faint); letter-spacing:.5px; }
@@ -54,12 +59,10 @@
   textarea { resize:vertical; min-height:92px; line-height:1.7; }
   input:focus, select:focus, textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(42,38,32,.16); }
   select option { background:#fff; }
-  button#btn { width:100%; margin-top:6px; padding:15px; border:none; border-radius:12px; background:var(--grad);
-    background-size:160% 160%; color:#fff; font-family:inherit; font-size:16px; font-weight:600; letter-spacing:4px;
-    cursor:pointer; transition:filter .2s, transform .1s, opacity .2s; box-shadow:0 10px 34px -10px var(--glow); }
-  button#btn:hover:not(:disabled){ filter:brightness(1.08); }
-  button#btn:active:not(:disabled){ transform:translateY(1px); }
-  button#btn:disabled{ opacity:.55; cursor:default; }
+  /* 提交按钮:视觉走 .btn-ink(theme.css),这里只留布局级覆写;loading 视觉由 :disabled 叠加 */
+  button#btn { width:100%; margin-top:6px; min-height:50px; font-size:16px; letter-spacing:4px; }
+  button#btn:disabled{ opacity:.82; cursor:default; pointer-events:none; }
+  button#btn:disabled::before { animation:inkBlink 1s infinite var(--ease); }
 
   /* 分段选择(与天命页同款,墨色调) */
   .seg { display:flex; width:100%; background:var(--bg-2); border:1px solid var(--line); border-radius:11px; padding:4px; gap:4px; }
@@ -69,21 +72,26 @@
     letter-spacing:1px; transition:all .18s; pointer-events:none; }
   .seg label:hover span { color:var(--ink); }
   .seg input:checked + span { background:var(--grad); color:#fff; box-shadow:0 6px 16px -8px var(--glow); }
-  .seg input:focus-visible + span { box-shadow:0 0 0 3px rgba(42,38,32,.16); }
+  .seg input:focus-visible + span { box-shadow:0 0 0 2px rgba(166,64,47,.55); }
+  /* seg 选中态朱砂印点(呼应 .btn-ink 的朱砂细节) */
+  .seg span::before { content:""; display:inline-block; width:6px; height:6px; border-radius:50%; background:transparent;
+    margin-right:7px; vertical-align:1px; transition:background var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease); }
+  .seg input:checked + span::before { background:var(--cinnabar); box-shadow:0 0 0 2px rgba(166,64,47,.28); }
 
-  /* 甲/乙 表单分组(合参特有:两组出生信息) */
+  /* 甲/乙 表单分组(合参特有:两组出生信息,甲乙发丝线左右呼应) */
   .pgroup { border-top:1px dashed var(--line); padding-top:18px; margin-top:4px; }
   .pgroup .pg-cap { display:flex; align-items:center; gap:9px; margin-bottom:14px; }
+  .pgroup .pg-cap::after { content:""; flex:1; height:1px; background:linear-gradient(90deg, var(--line), transparent); }
   .pgroup .pg-cap .ptag { width:26px; height:26px; border-radius:50%; color:#F3EAD8; flex:none;
     font-family:"Songti SC","Noto Serif SC",serif; font-size:14px; font-weight:700; display:grid; place-items:center; }
-  .ptag.a { background:var(--cinnabar); box-shadow:0 2px 8px -2px rgba(178,58,46,.5); }
+  .ptag.a { background:var(--cinnabar); box-shadow:0 2px 8px -2px rgba(166,64,47,.5); }
   .ptag.b { background:var(--accent-2); box-shadow:0 2px 8px -2px rgba(51,69,58,.5); }
   .pgroup .pg-cap h3 { font-family:"Songti SC","Noto Serif SC",serif; font-size:15px; letter-spacing:2px; color:var(--accent); margin:0; }
 
   /* 侧栏 */
   .aside { display:flex; flex-direction:column; gap:16px; position:sticky; top:24px; }
-  .cardx { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px 22px 20px;
-    box-shadow:var(--shadow-soft); }
+  /* 侧栏卡(玻璃化:视觉交给 .glass) */
+  .cardx { border-radius:16px; padding:22px 22px 20px; }
   .cardx .xh { display:flex; align-items:center; gap:11px; margin-bottom:14px; }
   .cardx .xh .ico { width:36px; height:36px; border-radius:10px; display:grid; place-items:center;
     background:var(--bg-2); border:1px solid var(--line); flex:none; }
@@ -109,15 +117,21 @@
   .xlink .xt span { color:var(--faint); font-size:12px; }
   .xlink .arr { margin-left:auto; color:var(--faint); font-size:18px; }
 
-  /* 结果区(整宽) */
+  /* 结果区(整宽,卡片玻璃化) */
   #result { margin-top:30px; }
-  .reading { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:34px;
-    white-space:pre-wrap; font-size:16px; line-height:2; box-shadow:var(--shadow); }
+  .reading { background:var(--glass); -webkit-backdrop-filter:blur(14px) saturate(1.05); backdrop-filter:blur(14px) saturate(1.05);
+    border:1px solid var(--line); border-radius:20px; padding:34px;
+    white-space:pre-wrap; font-size:16px; line-height:2; box-shadow:var(--shadow-soft); }
   .meta { font-size:12px; color:var(--accent-2); margin-bottom:20px; letter-spacing:.5px; padding-bottom:16px; border-bottom:1px solid var(--line); }
   .crisis { border-color:rgba(110,103,91,.5); box-shadow:0 0 0 1px rgba(110,103,91,.25), var(--shadow); }
   .err { color:var(--cinnabar); font-size:14px; }
   .hint { text-align:center; color:var(--faint); font-size:12px; margin-top:30px; letter-spacing:.5px; }
-  .loading { text-align:center; color:var(--muted); padding:48px; letter-spacing:3px; animation:pulse 1.6s ease-in-out infinite; }
+  /* 等待态:玻璃卡 + 三墨点 + 醒目提示(流程不动只强化呈现) */
+  .loading { display:flex; flex-direction:column; align-items:center; gap:16px; text-align:center;
+    color:var(--muted); padding:56px 24px; letter-spacing:3px; border-radius:20px; }
+  .loading .ink-dots i { width:8px; height:8px; background:var(--cinnabar); }
+  .loading .load-txt { font-family:var(--serif); font-size:16px; letter-spacing:4px; color:var(--ink);
+    animation:pulse 1.6s ease-in-out infinite; }
   @keyframes pulse { 0%,100% { opacity:.5; } 50% { opacity:1; } }
 
   /* 结果分节标题 */
@@ -125,12 +139,13 @@
   .sec-cap:first-child { margin-top:0; }
   .sec-cap h3 { font-family:"Songti SC","Noto Serif SC",serif; font-size:20px; letter-spacing:4px; margin:0;
     background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
-  .sec-cap .mode-pill { font-size:11px; color:var(--cinnabar); border:1px solid var(--bad-line); border-radius:999px; padding:3px 11px; letter-spacing:1px; }
+  .sec-cap .mode-pill { font-size:11px; color:var(--cinnabar); border:1px solid rgba(166,64,47,.35); background:var(--cinnabar-soft); border-radius:999px; padding:3px 11px; letter-spacing:1px; }
   .sec-cap .corr { font-size:11px; color:var(--faint); letter-spacing:.3px; }
 
-  /* ===== 两人四柱简卡并排 ===== */
+  /* ===== 两人四柱简卡并排(玻璃化,左右呼应错位入场) ===== */
   .duo { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
-  .pcard { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:26px; box-shadow:var(--shadow); min-width:0; }
+  .pcard { background:var(--glass); -webkit-backdrop-filter:blur(14px) saturate(1.05); backdrop-filter:blur(14px) saturate(1.05);
+    border:1px solid var(--line); border-radius:20px; padding:26px; box-shadow:var(--shadow-soft); min-width:0; }
   .pcard .ph { display:flex; align-items:center; gap:10px; margin-bottom:4px; flex-wrap:wrap; }
   .pcard .ph .pname { font-family:"Songti SC","Noto Serif SC",serif; font-size:17px; letter-spacing:2px; color:var(--accent); }
   .pcard .ph .corr { font-size:11px; color:var(--faint); margin-left:auto; }
@@ -156,9 +171,10 @@
   .wx-row .wx-n { width:18px; text-align:right; color:var(--faint); font-size:12px; flex:none; }
   .wx-note { font-size:12px; color:var(--faint); margin-top:8px; } .wx-note b { color:var(--accent-2); }
 
-  /* ===== compare 维度卡 ===== */
+  /* ===== compare 维度卡(玻璃化) ===== */
   .cmp-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
-  .cmp-card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:24px; box-shadow:var(--shadow-soft); min-width:0; }
+  .cmp-card { background:var(--glass); -webkit-backdrop-filter:blur(14px) saturate(1.05); backdrop-filter:blur(14px) saturate(1.05);
+    border:1px solid var(--line); border-radius:16px; padding:24px; box-shadow:var(--shadow-soft); min-width:0; }
   .cmp-card.span2 { grid-column:1 / -1; }
   .cmp-card .ch { font-size:12px; color:var(--accent-2); letter-spacing:2px; margin-bottom:14px; }
   .cmp-card .hua { font-size:14px; color:var(--muted); line-height:1.95; margin-top:12px; }
@@ -191,9 +207,10 @@
   .dy-vs .dline .who { font-size:11px; color:var(--faint); flex:none; }
   .dy-vs .dline b { font-family:"Songti SC","Noto Serif SC",serif; color:var(--ink); font-weight:600; }
 
-  /* ===== summary 四块 ===== */
+  /* ===== summary 四块(玻璃化) ===== */
   .sum-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
-  .sum-card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:24px 26px; box-shadow:var(--shadow-soft); min-width:0; }
+  .sum-card { background:var(--glass); -webkit-backdrop-filter:blur(14px) saturate(1.05); backdrop-filter:blur(14px) saturate(1.05);
+    border:1px solid var(--line); border-radius:16px; padding:24px 26px; box-shadow:var(--shadow-soft); min-width:0; }
   .sum-card h5 { font-family:"Songti SC","Noto Serif SC",serif; font-size:16px; letter-spacing:2px; margin:0 0 12px;
     color:var(--accent); display:flex; align-items:center; gap:9px; }
   .sum-card h5 .sn { flex:none; width:22px; height:22px; border-radius:50%; background:var(--bg-2); border:1px solid var(--line);
@@ -201,6 +218,14 @@
   .sum-card p { font-size:14.5px; color:var(--muted); line-height:2; margin:0; }
 
   #result > .reading { margin-top:26px; }
+
+  /* 动态结果卡入场级差(fx.js 只处理静态 .reveal-group,动态节点用 CSS 动画补齐;只动 transform/opacity) */
+  @keyframes cardIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+  .duo > .pcard, .cmp-grid > .cmp-card, .sum-grid > .sum-card { animation:cardIn var(--dur-2) var(--ease) backwards; }
+  .duo > .pcard:nth-child(2), .cmp-grid > .cmp-card:nth-child(2), .sum-grid > .sum-card:nth-child(2) { animation-delay:.08s; }
+  .cmp-grid > .cmp-card:nth-child(3), .sum-grid > .sum-card:nth-child(3) { animation-delay:.16s; }
+  .cmp-grid > .cmp-card:nth-child(4), .sum-grid > .sum-card:nth-child(4) { animation-delay:.24s; }
+  .cmp-grid > .cmp-card:nth-child(5) { animation-delay:.32s; }
 
   @media (max-width: 900px) {
     .studio { grid-template-columns:1fr; }
@@ -218,12 +243,20 @@
     .pillar .gz { font-size:22px; }
     .pillar .gz.en { font-size:11px; }
   }
+  /* 页级动效全部受 reduced-motion 约束(theme.css/fx.js 已管组件层) */
+  @media (prefers-reduced-motion: reduce){
+    .duo > .pcard, .cmp-grid > .cmp-card, .sum-grid > .sum-card { animation:none; }
+    .loading .load-txt { animation:none; }
+    button#btn:disabled::before { animation:none; }
+    .lead .dao-motif, .seg span, .seg span::before, .xlink { transition:none; }
+    .xlink:hover { transform:none; }
+  }
 </style>
 </head>
 <body>
 <div class="aurora" aria-hidden="true"></div>
 <div class="shell">
-  <div class="top">
+  <div class="top nav-frost">
     <a href="/" class="logo"><span class="seal-mini">易</span><span class="lt">心易</span></a>
     <div class="nav">
       <a href="/app" data-i18n="nav.tianming">天命</a>
@@ -236,12 +269,17 @@
 
   <header class="lead">
     <div class="kick"><span class="dot"></span><span data-i18n="hero.badge">合参 · 双人八字 · 婚恋与合伙</span>　<span class="cn" data-i18n="hero.kickcn">两盘合观</span></div>
+    <svg class="dao-motif" aria-hidden="true" width="72" height="52" viewBox="0 0 132 96" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="48" cy="48" r="30"/>
+      <circle cx="84" cy="48" r="30"/>
+      <circle cx="66" cy="48" r="3.5" fill="var(--cinnabar)" stroke="none"/>
+    </svg>
     <h1 data-i18n="hero.title">合 参</h1>
     <p class="lede"><b data-i18n="hero.motto">一人一盘,合而参之。</b><span data-i18n="hero.sub">把两个人的八字放在一起对照——日主生克、十神互看、地支合冲、五行互补,看的是互动倾向与相处线索,是画像,不是判决。</span></p>
   </header>
 
   <div class="studio">
-    <form id="f">
+    <form id="f" class="glass">
       <div class="form-cap"><h2 data-i18n="form.cap">两盘信息</h2><span data-i18n="form.capsub">两人出生信息 + 此刻所问</span></div>
       <div class="row">
         <div>
@@ -265,17 +303,17 @@
           </div>
           <div>
             <label for="fa-place" data-i18n="f.place">出生地</label>
-            <input id="fa-place" name="placeA" value="北京" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
+            <input id="fa-place" name="placeA" value="北京" class="inkline" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
           </div>
         </div>
         <div class="row">
           <div>
             <label for="fa-date" data-i18n="f.date">出生日期</label>
-            <input id="fa-date" type="date" name="dateA" value="1990-06-15" />
+            <input id="fa-date" type="date" name="dateA" value="1990-06-15" class="inkline" />
           </div>
           <div>
             <label for="fa-time" data-i18n="f.time">出生时间</label>
-            <input id="fa-time" type="time" name="timeA" value="08:30" />
+            <input id="fa-time" type="time" name="timeA" value="08:30" class="inkline" />
           </div>
         </div>
       </div>
@@ -292,37 +330,37 @@
           </div>
           <div>
             <label for="fb-place" data-i18n="f.place">出生地</label>
-            <input id="fb-place" name="placeB" value="上海" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
+            <input id="fb-place" name="placeB" value="上海" class="inkline" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
           </div>
         </div>
         <div class="row">
           <div>
             <label for="fb-date" data-i18n="f.date">出生日期</label>
-            <input id="fb-date" type="date" name="dateB" value="1992-12-01" />
+            <input id="fb-date" type="date" name="dateB" value="1992-12-01" class="inkline" />
           </div>
           <div>
             <label for="fb-time" data-i18n="f.time">出生时间</label>
-            <input id="fb-time" type="time" name="timeB" value="22:10" />
+            <input id="fb-time" type="time" name="timeB" value="22:10" class="inkline" />
           </div>
         </div>
       </div>
 
       <div style="margin-bottom:18px">
         <label for="f-question" data-i18n="f.q">想一起看清的事(可选)</label>
-        <textarea id="f-question" name="question" data-i18n-ph="f.q_ph" placeholder="比如:我们最近总在小事上吵架,该怎么磨合?越具体越好…"></textarea>
+        <textarea id="f-question" name="question" class="inkline" data-i18n-ph="f.q_ph" placeholder="比如:我们最近总在小事上吵架,该怎么磨合?越具体越好…"></textarea>
       </div>
-      <button type="submit" id="btn" data-i18n="f.submit">两 盘 合 参</button>
+      <button type="submit" id="btn" class="btn-ink" data-i18n="f.submit">两 盘 合 参</button>
     </form>
 
-    <aside class="aside">
-      <div class="cardx">
+    <aside class="aside reveal-group">
+      <div class="cardx glass">
         <div class="xh">
           <span class="ico"><svg viewBox="0 0 24 24"><circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/></svg></span>
           <h4 data-i18n="aside.about.t">合参是什么</h4>
         </div>
         <p data-i18n="aside.about.p">合参把两张八字盘放在一起对照:日主看气质生克,十神看彼此角色,地支看合冲刑害,五行看互补长短。它照见的是互动模式,不是姻缘或成败的判决——给你们一面看清彼此的镜子。</p>
       </div>
-      <div class="cardx">
+      <div class="cardx glass">
         <div class="xh">
           <span class="ico"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9" stroke-linecap="round"/></svg></span>
           <h4 data-i18n="aside.steps.t">怎么用</h4>
@@ -333,7 +371,7 @@
           <li><span class="n">3</span><span data-i18n="aside.s3">读四维对照与摘要,把它当<b>参考</b>,关系由你们自己定。</span></li>
         </ol>
       </div>
-      <div class="cardx">
+      <div class="cardx glass">
         <div class="xh">
           <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 .7 1-5.5-4-3.9 5.5-.8z" stroke-linejoin="round"/></svg></span>
           <h4 data-i18n="aside.cross.t">三道互参</h4>
@@ -523,7 +561,7 @@ f.addEventListener('submit', async (e) => {
     lang: LANG,
   };
   btn.disabled = true; btn.textContent = t('f.loading_btn');
-  result.innerHTML = `<div class="loading">${esc(t('loading'))}</div>`;
+  result.innerHTML = `<div class="loading glass"><span class="ink-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="load-txt">${esc(t('loading'))}</span></div>`;
   try {
     const res = await fetch('/api/hehun', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -546,6 +584,7 @@ f.addEventListener('submit', async (e) => {
       html += `<div class="reading"><div class="meta" style="border:none;padding:0;margin:0">${esc(t('offline_note'))}</div></div>`;
     }
     result.innerHTML = html;
+    window.inkReveal?.(result);
   } catch (err) {
     result.innerHTML = `<div class="reading"><span class="err">${esc(t('err'))}${esc(err.message)}</span></div>`;
   } finally {
@@ -590,8 +629,9 @@ function personCard(p, key) {
     const n = wx[k] || 0;
     return `<div class="wx-row"><span class="wx-name">${en ? WX_EN[k] : k}</span><span class="wx-bar"><i style="width:${Math.round((n / max) * 100)}%"></i></span><span class="wx-n">${n}</span></div>`;
   }).join('');
-  const lacks = (wx.缺 || []).map((k) => en ? WX_EN[k] || k : k).join('、');
-  const excess = (wx.过旺 || []).map((k) => en ? WX_EN[k] || k : k).join('、');
+  // 后端"缺/过旺"无内容时可能给字符串"无":非数组一律按空处理,避免渲染崩溃
+  const lacks = (Array.isArray(wx.缺) ? wx.缺 : []).map((k) => en ? WX_EN[k] || k : k).join('、');
+  const excess = (Array.isArray(wx.过旺) ? wx.过旺 : []).map((k) => en ? WX_EN[k] || k : k).join('、');
   const notes = [];
   if (lacks) notes.push(`${t('r.lack')}:<b>${esc(lacks)}</b>`);
   if (excess) notes.push(`${t('r.excess')}:<b>${esc(excess)}</b>`);
@@ -699,7 +739,7 @@ function renderCompare(cmp) {
   }
 
   return `<div class="sec-cap" style="margin-top:26px"><h3>${esc(t('r.cmp.t'))}</h3></div>
-  <div class="cmp-grid">${rzCard}${ssCard}${zhiCard}${wxCard}${dyCard}</div>`;
+  <div class="cmp-grid reveal-group">${rzCard}${ssCard}${zhiCard}${wxCard}${dyCard}</div>`;
 }
 
 // ===== summary 四块(服务端已按 lang 出中英文,前端只配标题) =====
@@ -711,7 +751,7 @@ function renderSummary(sum, relation) {
     `<div class="sum-card"><h5><span class="sn">${i + 1}</span>${esc(t(tk))}</h5><p>${esc(sum[key] || '')}</p></div>`
   ).join('');
   return `<div class="sec-cap" style="margin-top:26px"><h3>${esc(t('r.sum.t'))}</h3><span class="mode-pill">${esc(modeLbl)} · ${esc(t('sum.rule'))}</span></div>
-  <div class="sum-grid">${cards}</div>`;
+  <div class="sum-grid reveal-group">${cards}</div>`;
 }
 
 function esc(s) { return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }

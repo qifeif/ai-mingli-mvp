@@ -14,7 +14,7 @@
   .top .logo { display:flex; align-items:center; gap:9px; }
   .top .logo .seal-mini { width:27px; height:27px; border-radius:6px; background:var(--cinnabar); color:#F3EAD8;
     font-family:"Songti SC","Noto Serif SC",serif; font-size:15px; font-weight:700; display:grid; place-items:center;
-    box-shadow:0 2px 8px -2px rgba(178,58,46,.5); }
+    box-shadow:0 2px 8px -2px rgba(166,64,47,.5); }
   .top .logo .lt { font-family:"Songti SC","Noto Serif SC",serif; font-size:20px; font-weight:700; letter-spacing:4px; color:var(--accent); }
   .top .nav { display:flex; gap:18px; font-size:14px; color:var(--muted); align-items:center; flex-wrap:wrap; }
   .top .nav a:hover { color:var(--ink); }
@@ -24,6 +24,8 @@
     align-items:center; min-height:34px; }
   .langtog:hover { color:var(--ink); border-color:var(--accent-2); }
   .langtog:focus-visible { outline:2px solid var(--accent-2); outline-offset:2px; }
+  /* nav 玻璃霜化(.nav-frost 由 theme.css 提供,滚动态 .scrolled 由 fx.js 挂) */
+  .top.nav-frost { position:sticky; top:10px; z-index:30; border-radius:14px; padding:10px 16px; }
 
   /* 编辑式 HERO */
   .lead { text-align:center; max-width:760px; margin:30px auto 46px; }
@@ -36,13 +38,17 @@
     -webkit-text-fill-color:transparent; filter:drop-shadow(0 4px 28px rgba(42,38,32,.28)); }
   .lead .lede { color:var(--muted); font-size:16px; line-height:2; margin:18px auto 0; max-width:600px; }
   .lead .lede b { color:var(--ink); font-weight:600; }
+  /* 天命道纹样:星环(MASTER §3,装饰,aria-hidden) */
+  .lead .dao-ring { display:block; margin:0 auto 14px; color:var(--muted);
+    transition:color var(--dur-2) var(--ease), opacity var(--dur-2) var(--ease), transform var(--dur-2) var(--ease); }
+  .lead .dao-ring:hover { color:var(--cinnabar); }
+  .lead .dao-ring.in, .lead .dao-ring:not(.reveal) { opacity:.9; }
 
   /* 工作台双栏 */
   .studio { display:grid; grid-template-columns:minmax(0,1.42fr) minmax(0,1fr); gap:26px; align-items:start; }
 
-  /* 表单卡 */
-  form { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px;
-    box-shadow:var(--shadow); }
+  /* 表单卡(玻璃化:视觉底/边/影交给 .glass,本规则只留骨架) */
+  form { border-radius:20px; padding:30px; }
   .form-cap { display:flex; align-items:baseline; gap:10px; margin-bottom:22px; }
   .form-cap h2 { font-family:"Songti SC","Noto Serif SC",serif; font-size:19px; letter-spacing:3px; color:var(--accent); margin:0; }
   .form-cap span { font-size:12px; color:var(--faint); letter-spacing:.5px; }
@@ -54,26 +60,68 @@
   textarea { resize:vertical; min-height:92px; line-height:1.7; }
   input:focus, select:focus, textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(42,38,32,.16); }
   select option { background:#fff; }
-  button#btn { width:100%; margin-top:6px; padding:15px; border:none; border-radius:12px; background:var(--grad);
-    background-size:160% 160%; color:#fff; font-family:inherit; font-size:16px; font-weight:600; letter-spacing:4px;
-    cursor:pointer; transition:filter .2s, transform .1s, opacity .2s; box-shadow:0 10px 34px -10px var(--glow); }
-  button#btn:hover:not(:disabled){ filter:brightness(1.08); }
-  button#btn:active:not(:disabled){ transform:translateY(1px); }
+  /* 提交按钮:视觉走 .btn-ink(theme.css),这里只留布局级覆写 */
+  button#btn { width:100%; margin-top:6px; min-height:50px; font-size:16px; letter-spacing:4px; }
   button#btn:disabled{ opacity:.55; cursor:default; }
 
   /* 分段选择(仿命理排盘 App 的 男/女 切换,墨色调) */
   .seg { display:flex; width:100%; background:var(--bg-2); border:1px solid var(--line); border-radius:11px; padding:4px; gap:4px; }
   .seg label { flex:1; position:relative; margin:0; }
   .seg input { position:absolute; inset:0; opacity:0; margin:0; cursor:pointer; }
-  .seg span { display:block; text-align:center; padding:9px 6px; border-radius:8px; font-size:14px; color:var(--muted);
+  .seg span { display:block; position:relative; text-align:center; padding:9px 6px; border-radius:8px; font-size:14px; color:var(--muted);
     letter-spacing:1px; transition:all .18s; pointer-events:none; }
   .seg label:hover span { color:var(--ink); }
   .seg input:checked + span { background:var(--grad); color:#fff; box-shadow:0 6px 16px -8px var(--glow); }
   .seg input:focus-visible + span { box-shadow:0 0 0 3px rgba(42,38,32,.16); }
+  /* 选中项朱砂细节:底部一线朱砂(小面积点睛,不做大面积红) */
+  .seg span::after { content:""; position:absolute; left:50%; bottom:4px; width:16px; height:2px; border-radius:999px;
+    background:var(--cinnabar); transform:translateX(-50%) scaleX(0); opacity:0;
+    transition:transform var(--dur-1) var(--ease), opacity var(--dur-1) var(--ease); }
+  .seg input:checked + span::after { transform:translateX(-50%) scaleX(1); opacity:1; }
+
+  /* ===== 出生日期:阳历/阴历 + 拨转轮(wheel picker,纯手写墨韵) ===== */
+  .datefield { display:flex; flex-direction:column; gap:10px; }
+  .datefield .seg { margin:0; }
+  /* 拨轮外框:宣纸列 + 发丝描边 */
+  .wheels { position:relative; display:grid; grid-template-columns:1.05fr 1fr 1fr; gap:0;
+    border:1px solid var(--line); border-radius:12px; background:var(--bg-2); overflow:hidden; }
+  .wheel { position:relative; height:132px; overflow:hidden; text-align:center; touch-action:none;
+    -webkit-user-select:none; user-select:none; }
+  .wheel + .wheel { border-left:1px solid var(--line-soft); }
+  /* 直接输入:每列顶部一个细输入,回车/失焦即定位滚轮 */
+  .wheel-in { width:100%; border:none; border-bottom:1px solid var(--line-soft); border-radius:0;
+    background:transparent; text-align:center; font-size:12.5px; padding:7px 4px; color:var(--muted);
+    letter-spacing:.5px; }
+  .wheel-in:focus { outline:none; background:var(--cinnabar-soft); box-shadow:none; color:var(--ink); }
+  .wheel-in::placeholder { color:var(--faint); }
+  .wheel-scroll { position:absolute; left:0; right:0; top:34px; bottom:0; overflow-y:auto;
+    scroll-snap-type:y mandatory; scrollbar-width:none; -ms-overflow-style:none;
+    -webkit-overflow-scrolling:touch; scroll-behavior:smooth; }
+  .wheel-scroll::-webkit-scrollbar { display:none; }
+  .wheel-scroll .pad { height:33px; } /* 上下留白,使首/末项也能滚到中心选中行 */
+  .wheel-item { height:33px; line-height:33px; scroll-snap-align:center; font-size:15px;
+    color:var(--faint); font-variant-numeric:tabular-nums; cursor:pointer;
+    transition:color var(--dur-1) var(--ease); }
+  .wheel-item.on { color:var(--ink); font-family:"Songti SC","Noto Serif SC",serif; }
+  /* 中心选中行:上下两条朱砂细线(小面积点睛) */
+  .wheels::before, .wheels::after { content:""; position:absolute; left:0; right:0; height:1px;
+    background:var(--cinnabar); opacity:.55; pointer-events:none; z-index:2; }
+  .wheels::before { top:calc(34px + 49px); }   /* 34 头 + 33 pad + 16.5(半行) */
+  .wheels::after  { top:calc(34px + 82px); }
+  /* 上下渐隐遮罩(宣纸雾) */
+  .wheel-mask { position:absolute; left:0; right:0; top:34px; bottom:0; pointer-events:none; z-index:1;
+    background:linear-gradient(to bottom, var(--bg-2) 0%, rgba(225,232,231,0) 34%, rgba(225,232,231,0) 66%, var(--bg-2) 100%); }
+  .datefield .fallback { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--faint); }
+  .datefield .fallback input[type="date"] { padding:7px 9px; font-size:12.5px; flex:1; min-width:0; }
+  @media (prefers-reduced-motion: reduce) {
+    .wheel-scroll { scroll-behavior:auto; } /* 关滚动惯性动画,拨轮仍可用 */
+    .wheel-item { transition:none; }
+  }
 
   /* 侧栏 */
   .aside { display:flex; flex-direction:column; gap:16px; position:sticky; top:24px; }
-  .cardx { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px 22px 20px;
+  .cardx { background:var(--glass); border:1px solid var(--line); border-radius:16px; padding:22px 22px 20px;
+    -webkit-backdrop-filter:blur(14px) saturate(1.05); backdrop-filter:blur(14px) saturate(1.05);
     box-shadow:var(--shadow-soft); }
   .cardx .xh { display:flex; align-items:center; gap:11px; margin-bottom:14px; }
   .cardx .xh .ico { width:36px; height:36px; border-radius:10px; display:grid; place-items:center;
@@ -91,8 +139,8 @@
 
   .cross { display:grid; gap:10px; }
   .xlink { display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--line); border-radius:12px;
-    background:var(--bg-2); transition:border-color .2s, transform .2s; }
-  .xlink:hover { border-color:var(--bronze); transform:translateX(2px); }
+    background:var(--bg-2); transition:border-color var(--dur-2) var(--ease), transform var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease); }
+  .xlink:hover { border-color:rgba(168,131,76,.5); transform:translateY(-3px); box-shadow:var(--shadow-soft); }
   .xlink .ico { width:38px; height:38px; border-radius:50%; background:var(--bg); border:1px solid var(--line);
     display:grid; place-items:center; flex:none; }
   .xlink .ico svg { width:21px; height:21px; stroke:var(--accent); fill:none; stroke-width:1.4; }
@@ -103,8 +151,23 @@
   /* 结果区(整宽) */
   #result { margin-top:30px; }
   .reading { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:34px;
-    white-space:pre-wrap; font-size:16px; line-height:2; box-shadow:var(--shadow); }
-  .meta { font-size:12px; color:var(--accent-2); margin-bottom:20px; letter-spacing:.5px; padding-bottom:16px; border-bottom:1px solid var(--line); }
+    font-size:16px; box-shadow:var(--shadow); }
+  /* AI 正文:保留换行,给出阅读级行高/字距/段落感(不再让容器整体 pre-wrap) */
+  .reading .reading-body { white-space:pre-wrap; font-size:16px; line-height:2; color:var(--ink);
+    letter-spacing:.2px; max-width:64ch; }
+  .reading.crisis { white-space:pre-wrap; line-height:2; }
+  /* 解读标题条:朱砂点 + 标签,与正文之间发丝线分隔、留呼吸 */
+  .meta { display:flex; align-items:center; gap:9px; font-family:"Songti SC","Noto Serif SC",serif;
+    font-size:14px; letter-spacing:2px; color:var(--accent); margin:0 0 22px; padding-bottom:16px;
+    border-bottom:1px solid var(--line); }
+  .meta::before { content:""; width:7px; height:7px; border-radius:50%; background:var(--cinnabar);
+    box-shadow:0 0 8px -1px var(--glow); flex:none; }
+  /* 离线降级提示:非标题,弱化为一条温和说明(单独版式,不套用 .meta 标题样式) */
+  .reading .offline-note { display:flex; align-items:flex-start; gap:9px; font-size:13.5px;
+    line-height:1.85; color:var(--muted); letter-spacing:.2px; }
+  .reading .offline-note::before { content:""; width:6px; height:6px; border-radius:50%; margin-top:8px;
+    background:var(--accent-2); flex:none; }
+  .reading .offline-note b { color:var(--ink); font-weight:600; }
 
   /* ===== 命盘面板 ===== */
   .chart-panel { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px;
@@ -174,13 +237,15 @@
   .zw-panel.loading-year { opacity:.55; pointer-events:none; }
   .zw-grid { position:relative; display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(4,minmax(104px,auto)); gap:7px; }
   .zw-fly-svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; z-index:1; }
-  .zw-fly-svg path { fill:none; stroke-width:1.6; opacity:.7; }
+  .zw-fly-svg path { fill:none; stroke-width:1.6; opacity:.78; animation:zwDraw 1s var(--ease) both; }
+  /* 连线描画入场:虚线从无到有、沿线流入(结束态回到属性里的 stroke-dasharray 4 3) */
+  @keyframes zwDraw { from { stroke-dasharray:0 7; stroke-dashoffset:70; opacity:0; } }
   .zw-fly-svg path.lu { stroke:var(--good); } .zw-fly-svg path.quan { stroke:var(--bronze); }
   .zw-fly-svg path.ke { stroke:var(--dai); } .zw-fly-svg path.ji { stroke:var(--bad); }
   .zw-fly-toggle { display:inline-flex; align-items:center; gap:5px; font-size:12px; cursor:pointer; user-select:none; color:var(--faint); white-space:nowrap; }
   .zw-fly-toggle input { cursor:pointer; }
   .zw-cell { position:relative; border:1px solid var(--line); border-radius:10px; background:var(--bg-2); padding:9px 10px 28px; overflow:hidden; }
-  .zw-cell.fan { border-color:var(--bad-line); background:var(--bad-bg); }
+  .zw-cell.fan { border-color:var(--bad-line); background:rgba(168,94,51,.13); }
   .zw-cell.ming { box-shadow:inset 0 0 0 1.5px var(--cinnabar); }
   .zw-stars { display:flex; flex-wrap:wrap; gap:4px 8px; font-size:13px; line-height:1.45; }
   .zw-star { color:var(--ink); font-family:"Songti SC","Noto Serif SC",serif; }
@@ -232,9 +297,13 @@
     border:1px solid rgba(156,123,63,.3); color:var(--muted); white-space:nowrap; }
   .zw-dalim-bar b { color:var(--bronze); font-weight:700; }
 
-  /* 宫位可点选(命盘从静态展示升级为可探索) */
+  /* 宫位可点选(命盘从静态展示升级为可探索):hover 内晕走 ::after 覆层,
+     不覆写 .ming/.dalim/.yr-cur 的 box-shadow 标记框 */
   .zw-cell { cursor:pointer; transition:box-shadow .15s ease, background-color .15s ease; }
-  .zw-cell:hover { box-shadow:inset 0 0 0 1.5px var(--accent-2); }
+  .zw-cell::after { content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; opacity:0;
+    box-shadow:inset 0 0 0 1px rgba(79,104,115,.25), inset 0 0 22px rgba(79,104,115,.16);
+    transition:opacity var(--dur-1) var(--ease); }
+  .zw-cell:hover::after { opacity:1; }
   /* 大限/流年 运化 标记(与本命 .hua-* 文字染色区分:角标+细边框,不抢主星名颜色) */
   .zw-run-badge { font-size:8px; font-weight:700; border-radius:3px; padding:0 3px; margin-left:1px; vertical-align:2px; border:1px solid; }
   .zw-run-badge.dec-lu, .zw-run-badge.yr-lu { color:var(--good); border-color:var(--good); }
@@ -246,6 +315,36 @@
   .zw-cell.yr-cur.dalim { box-shadow:inset 0 0 0 1.5px var(--bronze), inset 0 0 0 4px rgba(79,104,115,.35); }
   .zw-mut-tag.dec .star-n, .zw-mut-tag.yr .star-n { font-family:"Songti SC",serif; }
 
+  /* ===== 命盘格局(规则版标签 + 点开白话释义) ===== */
+  .zw-geju { margin-top:14px; padding:14px 15px 15px; border:1px solid var(--line);
+    border-radius:14px; background:linear-gradient(180deg, rgba(247,249,246,.5), rgba(225,232,231,.35)); }
+  .zw-geju .gj-cap { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:11px; }
+  .zw-geju .gj-t { font-family:"Songti SC",serif; font-size:14px; font-weight:700; color:var(--ink-strong); letter-spacing:1px; }
+  .zw-geju .gj-t::before { content:"❖"; color:var(--cinnabar); margin-right:6px; font-size:12px; }
+  .zw-geju .gj-sub { font-size:11px; color:var(--faint); }
+  .gj-tags { display:flex; flex-wrap:wrap; gap:8px; }
+  .geju-tag { display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+    padding:5px 11px 5px 9px; border-radius:999px; border:1px solid var(--line);
+    background:var(--card); font:inherit; color:var(--ink); line-height:1;
+    transition:border-color .15s ease, box-shadow .15s ease, transform .12s ease; }
+  .geju-tag:hover { transform:translateY(-1px); }
+  .geju-tag[aria-expanded="true"] { box-shadow:inset 0 0 0 1px currentColor; }
+  .geju-tag .gj-dot { width:7px; height:7px; border-radius:50%; background:currentColor; flex:none; }
+  .geju-tag .gj-name { font-family:"Songti SC",serif; font-weight:700; font-size:13.5px; color:var(--ink-strong); }
+  .geju-tag .gj-lvl { font-size:10.5px; color:var(--faint); letter-spacing:.5px; }
+  /* level 配色:沿用全站语义色,只染 dot/边框,不抢星名主色 */
+  .geju-tag.lv-ex   { color:var(--cinnabar); border-color:rgba(166,64,47,.4); }
+  .geju-tag.lv-good { color:var(--good);     border-color:var(--good-line); }
+  .geju-tag.lv-neu  { color:var(--dai);      border-color:var(--line); }
+  .geju-tag.lv-caut { color:var(--bad);      border-color:var(--bad-line); }
+  .geju-desc { margin-top:11px; padding:12px 14px; border-radius:11px; font-size:13px;
+    line-height:1.85; color:var(--ink); background:var(--bg-2);
+    border-left:3px solid var(--cinnabar); animation:gjFade .2s var(--ease); }
+  .geju-desc b { font-family:"Songti SC",serif; color:var(--ink-strong); margin-right:8px; }
+  @keyframes gjFade { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce) { .geju-tag, .geju-desc { transition:none; animation:none; } }
+  @media (max-width:640px) { .zw-geju .gj-sub { flex-basis:100%; } }
+
   /* 三方四正 解读 */
   .sfsz { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px; box-shadow:var(--shadow); margin-bottom:22px; }
   .sfsz > .t { font-size:12px; color:var(--accent-2); letter-spacing:2px; margin-bottom:14px; }
@@ -253,10 +352,12 @@
   .sf-chips .chip { font-size:12px; border:1px solid var(--bad-line); background:var(--bad-bg); color:var(--ink); border-radius:999px; padding:5px 12px; }
   .sf-chips .chip b { color:var(--cinnabar); }
   .sfsz .lead-q { color:var(--muted); font-size:13px; border-left:2px solid var(--bronze); padding-left:12px; margin-bottom:16px; line-height:1.8; }
-  .sfsz p { font-size:15px; line-height:1.95; color:var(--ink); margin:0 0 12px; }
+  .sfsz p { font-size:15px; line-height:1.95; color:var(--ink); margin:0 0 16px; }
   .sfsz p:last-child { margin-bottom:0; }
   .hint { text-align:center; color:var(--faint); font-size:12px; margin-top:30px; letter-spacing:.5px; }
-  .loading { text-align:center; color:var(--muted); padding:48px; letter-spacing:3px; animation:pulse 1.6s ease-in-out infinite; }
+  /* 结果区等待占位(限定 #result,避免与 .btn-ink.loading 撞名):文字 + 三墨点 */
+  #result .loading { display:flex; align-items:center; justify-content:center; gap:12px; text-align:center;
+    color:var(--muted); padding:48px; letter-spacing:3px; animation:pulse 1.6s ease-in-out infinite; }
   @keyframes pulse { 0%,100% { opacity:.5; } 50% { opacity:1; } }
 
   @media (max-width: 900px) {
@@ -278,12 +379,20 @@
     .zw-center { padding:8px; gap:5px; } .zw-center .zc-name { font-size:14px; } .zw-center .zc-row { font-size:10px; }
     .sfsz { padding:22px; }
   }
+
+  /* reduced-motion:页面级动画全关(theme.css/fx.js 已各自处理其组件) */
+  @media (prefers-reduced-motion: reduce) {
+    #result .loading { animation:none; }
+    .zw-fly-svg path { animation:none; }
+    .seg span::after, .zw-cell::after, .xlink, .lead .dao-ring { transition:none; }
+    .xlink:hover { transform:none; }
+  }
 </style>
 </head>
 <body>
 <div class="aurora" aria-hidden="true"></div>
 <div class="shell">
-  <div class="top">
+  <div class="top nav-frost">
     <a href="/" class="logo"><span class="seal-mini">易</span><span class="lt">心易</span></a>
     <div class="nav">
       <a href="/app" class="on" data-i18n="nav.tianming">天命</a>
@@ -294,14 +403,26 @@
     </div>
   </div>
 
-  <header class="lead">
+  <header class="lead reveal-group">
+    <svg class="dao-ring" viewBox="0 0 88 88" width="72" height="72" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+      <circle cx="44" cy="44" r="40" opacity=".55"/>
+      <circle cx="44" cy="44" r="27" opacity=".85"/>
+      <g fill="currentColor" stroke="none">
+        <circle cx="78" cy="44" r="1.5"/><circle cx="73.44" cy="61" r="1.5"/><circle cx="61" cy="73.44" r="1.5"/>
+        <circle cx="44" cy="78" r="1.5"/><circle cx="27" cy="73.44" r="1.5"/><circle cx="14.56" cy="61" r="1.5"/>
+        <circle cx="10" cy="44" r="1.5"/><circle cx="14.56" cy="27" r="1.5"/><circle cx="27" cy="14.56" r="1.5"/>
+        <circle cx="44" cy="10" r="1.5"/><circle cx="61" cy="14.56" r="1.5"/><circle cx="73.44" cy="27" r="1.5"/>
+      </g>
+      <path d="M33 52 L44 36 L56 49"/>
+      <g fill="currentColor" stroke="none"><circle cx="33" cy="52" r="2.2"/><circle cx="44" cy="36" r="2.2"/><circle cx="56" cy="49" r="2.2"/></g>
+    </svg>
     <div class="kick"><span class="dot"></span><span data-i18n="hero.badge">天命 · 紫薇八字 · 真太阳时</span>　<span class="cn" data-i18n="hero.kickcn">观象入元</span></div>
     <h1 data-i18n="hero.title">天 命</h1>
     <p class="lede"><b data-i18n="hero.motto">由易入理,三才合一。</b><span data-i18n="hero.sub">把纠结说给它听,它陪你把选择想清楚——四柱见性格倾向与能量节奏,是依据,不是判决。</span></p>
   </header>
 
   <div class="studio">
-    <form id="f">
+    <form id="f" class="glass">
       <div class="form-cap"><h2 data-i18n="form.cap">命盘信息</h2><span data-i18n="form.capsub">出生四要素 + 此刻所问</span></div>
       <div class="row">
         <div>
@@ -313,36 +434,67 @@
         </div>
         <div>
           <label for="f-place" data-i18n="f.place">出生地</label>
-          <input id="f-place" name="place" value="杭州" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
+          <input id="f-place" class="inkline" name="place" value="杭州" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
         </div>
       </div>
-      <div class="row">
+      <div class="row" style="margin-bottom:18px">
         <div>
-          <label for="f-date" data-i18n="f.date">出生日期</label>
-          <input id="f-date" type="date" name="date" value="1996-08-12" />
+          <label data-i18n="f.date">出生日期</label>
+          <div class="datefield" id="datefield">
+            <div class="seg" role="radiogroup" aria-label="阳历 / 阴历 · Solar / Lunar">
+              <label><input type="radio" name="caltype" value="solar" checked /><span data-i18n="f.solar">阳历</span></label>
+              <label><input type="radio" name="caltype" value="lunar" /><span data-i18n="f.lunar">阴历</span></label>
+            </div>
+            <div class="wheels" id="wheels">
+              <div class="wheel" data-col="year">
+                <input class="wheel-in" data-col="year" inputmode="numeric" aria-label="年 · Year" />
+                <div class="wheel-scroll" data-col="year" tabindex="0" role="listbox" aria-label="年 · Year"></div>
+                <div class="wheel-mask" aria-hidden="true"></div>
+              </div>
+              <div class="wheel" data-col="month">
+                <input class="wheel-in" data-col="month" inputmode="numeric" aria-label="月 · Month" />
+                <div class="wheel-scroll" data-col="month" tabindex="0" role="listbox" aria-label="月 · Month"></div>
+                <div class="wheel-mask" aria-hidden="true"></div>
+              </div>
+              <div class="wheel" data-col="day">
+                <input class="wheel-in" data-col="day" inputmode="numeric" aria-label="日 · Day" />
+                <div class="wheel-scroll" data-col="day" tabindex="0" role="listbox" aria-label="日 · Day"></div>
+                <div class="wheel-mask" aria-hidden="true"></div>
+              </div>
+            </div>
+            <div class="fallback">
+              <span data-i18n="f.solar_fallback">公历直填</span>
+              <input id="f-date-fallback" type="date" value="1996-08-12" aria-label="公历日期直接输入 · Solar date direct input" />
+            </div>
+            <!-- 提交契约不变:最终公历 YYYY-MM-DD 写入此隐藏字段供 FormData 读取 -->
+            <input type="hidden" name="date" id="f-date" value="1996-08-12" />
+          </div>
         </div>
         <div>
           <label for="f-time" data-i18n="f.time">出生时间</label>
-          <input id="f-time" type="time" name="time" value="14:30" />
+          <input id="f-time" class="inkline" type="time" name="time" value="14:30" />
+          <label style="margin-top:16px" data-i18n="f.marital">婚姻状况</label>
+          <div class="seg">
+            <label><input type="radio" name="marital" value="single" checked /><span data-i18n="f.single">未婚</span></label>
+            <label><input type="radio" name="marital" value="married" /><span data-i18n="f.married">已婚</span></label>
+          </div>
         </div>
       </div>
       <div style="margin-bottom:18px">
         <label for="f-question" data-i18n="f.q">此刻的纠结</label>
-        <textarea id="f-question" name="question" data-i18n-ph="f.q_ph" placeholder="把你正在纠结的事说出来,越具体越好…">工作三年了很迷茫,要不要辞职去考研?</textarea>
+        <textarea id="f-question" class="inkline" name="question" data-i18n-ph="f.q_ph" placeholder="把你正在纠结的事说出来,越具体越好…">工作三年了很迷茫,要不要辞职去考研?</textarea>
       </div>
-      <div class="row" style="align-items:flex-end; margin-bottom:0">
-        <div>
-          <label data-i18n="f.style">解读风格</label>
-          <div class="seg">
-            <label><input type="radio" name="style" value="friend" checked /><span data-i18n="f.friend">朋友版</span></label>
-            <label><input type="radio" name="style" value="pro" /><span data-i18n="f.pro">专业版</span></label>
-          </div>
+      <div style="margin-bottom:18px">
+        <label data-i18n="f.style">解读风格</label>
+        <div class="seg">
+          <label><input type="radio" name="style" value="friend" checked /><span data-i18n="f.friend">朋友版</span></label>
+          <label><input type="radio" name="style" value="pro" /><span data-i18n="f.pro">专业版</span></label>
         </div>
-        <div style="flex:2"><button type="submit" id="btn" data-i18n="f.submit">观 象 入 元</button></div>
       </div>
+      <button type="submit" id="btn" class="btn-ink" data-i18n="f.submit">观 象 入 元</button>
     </form>
 
-    <aside class="aside">
+    <aside class="aside reveal-group">
       <div class="cardx">
         <div class="xh">
           <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke-linecap="round"/></svg></span>
@@ -386,6 +538,8 @@
   <div class="hint" data-i18n="f.disclaimer">AI 输出仅供参考与自我思考,不构成任何预测或建议 · 决定权永远在你</div>
 </div>
 
+<!-- 农历⇄公历换算(UMD,全局挂 window.Solar / window.Lunar / window.LunarYear);须在下方模块脚本之前同步加载 -->
+<script src="/lunar.js"></script>
 <script>
 const I18N = {
   zh: {
@@ -395,6 +549,7 @@ const I18N = {
     'form.cap':'命盘信息','form.capsub':'出生四要素 + 此刻所问',
     'f.gender':'性别','f.female':'女','f.male':'男','f.place':'出生地','f.place_ph':'如 杭州',
     'f.date':'出生日期','f.time':'出生时间','f.q':'此刻的纠结','f.q_ph':'把你正在纠结的事说出来,越具体越好…',
+    'f.solar':'阳历','f.lunar':'阴历','f.solar_fallback':'公历直填','f.marital':'婚姻状况','f.single':'未婚','f.married':'已婚',
     'f.style':'解读风格','f.friend':'朋友版','f.pro':'专业版','f.submit':'观 象 入 元',
     'f.disclaimer':'AI 输出仅供参考与自我思考,不构成任何预测或建议 · 决定权永远在你',
     'f.loading_btn':'解 读 中…','loading':'正在为你点亮命运星图…','err':'出错了：','unavail':'解读暂不可用：',
@@ -413,6 +568,7 @@ const I18N = {
     'form.cap':'Birth details','form.capsub':'Four birth inputs + your question',
     'f.gender':'Gender','f.female':'Female','f.male':'Male','f.place':'Birthplace','f.place_ph':'e.g. Hangzhou',
     'f.date':'Birth date','f.time':'Birth time','f.q':'What\'s on your mind','f.q_ph':'Describe what you\'re wrestling with, the more specific the better…',
+    'f.solar':'Solar','f.lunar':'Lunar','f.solar_fallback':'Solar direct','f.marital':'Marital status','f.single':'Single','f.married':'Married',
     'f.style':'Tone','f.friend':'Friend','f.pro':'Pro','f.submit':'R E A D',
     'f.disclaimer':'AI output is for reflection only — not a prediction or directive · the decision is always yours',
     'f.loading_btn':'Reading…','loading':'Lighting up your chart…','err':'Error: ','unavail':'Reading unavailable: ',
@@ -433,12 +589,258 @@ function applyI18n(){
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.placeholder = t(el.getAttribute('data-i18n-ph')); });
   document.getElementById('langtog').textContent = LANG==='en'?'中':'EN';
 }
-document.getElementById('langtog').addEventListener('click', ()=>{ LANG = LANG==='en'?'zh':'en'; localStorage.setItem('lang',LANG); applyI18n(); });
+document.getElementById('langtog').addEventListener('click', ()=>{ LANG = LANG==='en'?'zh':'en'; localStorage.setItem('lang',LANG); applyI18n(); window.DateWheelRelabel?.(); });
 applyI18n();
 
 const f = document.getElementById('f');
 const btn = document.getElementById('btn');
 const result = document.getElementById('result');
+
+/* =========================================================================
+   出生日期拨转轮(阳历/阴历 · 纯手写 wheel picker)
+   - 全局 window.Solar / window.Lunar / window.LunarYear 来自 /lunar.js(UMD)
+   - 阴历闰月:lunar.js 约定「负月份」表示闰月(Lunar.fromYmd(y,-4,1) = 闰四月初一)
+   - 数据流:任何变化 → 解析出公历 YYYY-MM-DD 写入隐藏 #f-date(FormData 契约不变)
+   ========================================================================= */
+const DateWheel = (() => {
+  const SOLAR = window.Solar, LUNAR = window.Lunar, LUNARYEAR = window.LunarYear;
+  const hidden = document.getElementById('f-date');
+  const fallback = document.getElementById('f-date-fallback');
+  const wheelsEl = document.getElementById('wheels');
+  const cols = {
+    year:  { scroll: wheelsEl.querySelector('.wheel-scroll[data-col="year"]'),  input: wheelsEl.querySelector('.wheel-in[data-col="year"]') },
+    month: { scroll: wheelsEl.querySelector('.wheel-scroll[data-col="month"]'), input: wheelsEl.querySelector('.wheel-in[data-col="month"]') },
+    day:   { scroll: wheelsEl.querySelector('.wheel-scroll[data-col="day"]'),   input: wheelsEl.querySelector('.wheel-in[data-col="day"]') },
+  };
+  const ITEM_H = 33;
+  const LUNAR_MONTH_CN = ['','正','二','三','四','五','六','七','八','九','十','冬','腊'];
+  const LUNAR_DAY_CN = ['','初一','初二','初三','初四','初五','初六','初七','初八','初九','初十',
+    '十一','十二','十三','十四','十五','十六','十七','十八','十九','二十',
+    '廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
+  const Y_MIN = 1900, Y_MAX = 2100;
+
+  let ready = !!(SOLAR && LUNAR && LUNARYEAR);
+  let mode = 'solar';            // 'solar' | 'lunar'
+  let sel = { year: 1996, month: 8, day: 12 }; // 当前模式日历下的选中值(month<0 表示阴历闰月)
+
+  const en = () => LANG === 'en';
+
+  // ---- 各列可选项(返回 [{v, label}]) ----
+  function yearOpts() {
+    const out = [];
+    for (let y = Y_MIN; y <= Y_MAX; y++) out.push({ v: y, label: en() ? String(y) : y + '年' });
+    return out;
+  }
+  function monthOpts(year) {
+    if (mode === 'solar') {
+      const out = [];
+      for (let m = 1; m <= 12; m++) out.push({ v: m, label: en() ? String(m) : LUNAR_MONTH_CN[m] + '月' });
+      return out;
+    }
+    // 阴历:1..12,若该年有闰月则在其后插入「负月份」
+    const leap = LUNARYEAR ? LUNARYEAR.fromYear(year).getLeapMonth() : 0;
+    const out = [];
+    for (let m = 1; m <= 12; m++) {
+      out.push({ v: m, label: en() ? monthNumLabel(m) : LUNAR_MONTH_CN[m] + '月' });
+      if (leap && m === leap) out.push({ v: -m, label: en() ? 'Leap ' + monthNumLabel(m) : '闰' + LUNAR_MONTH_CN[m] + '月' });
+    }
+    return out;
+  }
+  function monthNumLabel(m) { return String(m); }
+  function dayCountOf(year, month) {
+    if (mode === 'solar') return SOLAR ? require_days_solar(year, month) : 31;
+    if (!LUNARYEAR) return 30;
+    const lm = LUNARYEAR.fromYear(year).getMonth(month);
+    return lm ? lm.getDayCount() : 30;
+  }
+  function require_days_solar(year, month) {
+    // 公历某月天数:用 lunar.js 的 Solar 取下月一号前一天,或直接 Date
+    return new Date(year, month, 0).getDate();
+  }
+  function dayOpts(year, month) {
+    const n = dayCountOf(year, month);
+    const out = [];
+    for (let d = 1; d <= n; d++) out.push({ v: d, label: mode === 'lunar' && !en() ? LUNAR_DAY_CN[d] : String(d) });
+    return out;
+  }
+
+  // ---- 渲染某一列 ----
+  function renderCol(name, opts, value) {
+    const { scroll } = cols[name];
+    scroll.innerHTML = '<div class="pad"></div>' +
+      opts.map(o => `<div class="wheel-item" role="option" data-v="${o.v}">${o.label}</div>`).join('') +
+      '<div class="pad"></div>';
+    setColValue(name, value, false);
+  }
+  function itemsOf(name) { return cols[name].scroll.querySelectorAll('.wheel-item'); }
+  function indexOfValue(name, value) {
+    const items = itemsOf(name);
+    for (let i = 0; i < items.length; i++) if (Number(items[i].dataset.v) === Number(value)) return i;
+    return 0;
+  }
+  function setColValue(name, value, smooth) {
+    const { scroll, input } = cols[name];
+    const idx = indexOfValue(name, value);
+    const items = itemsOf(name);
+    items.forEach((el, i) => el.classList.toggle('on', i === idx));
+    const prev = scroll.style.scrollBehavior;
+    if (!smooth) scroll.style.scrollBehavior = 'auto';
+    scroll.scrollTop = idx * ITEM_H;
+    if (!smooth) scroll.style.scrollBehavior = prev || '';
+    // 同步顶部直填输入框显示(数字型,阴历闰月加「闰」)
+    if (input && document.activeElement !== input) {
+      const raw = Number(items[idx]?.dataset.v ?? value);
+      input.value = name === 'month' && raw < 0 ? (en() ? 'L' + Math.abs(raw) : '闰' + Math.abs(raw)) : String(Math.abs(raw));
+    }
+  }
+  function valueAtScroll(name) {
+    const { scroll } = cols[name];
+    const items = itemsOf(name);
+    if (!items.length) return null;
+    let idx = Math.round(scroll.scrollTop / ITEM_H);
+    idx = Math.max(0, Math.min(items.length - 1, idx));
+    return { idx, v: Number(items[idx].dataset.v) };
+  }
+
+  // ---- 全量重渲三列(年变→月列可能变;月变→日列可能变) ----
+  function renderAll(smooth) {
+    renderCol('year', yearOpts(), sel.year);
+    const mOpts = monthOpts(sel.year);
+    if (!mOpts.some(o => o.v === sel.month)) sel.month = mOpts[0].v;
+    renderCol('month', mOpts, sel.month);
+    const dMax = dayCountOf(sel.year, sel.month);
+    if (sel.day > dMax) sel.day = dMax;
+    renderCol('day', dayOpts(sel.year, sel.month), sel.day);
+    commit();
+  }
+
+  // ---- 选中值 → 公历 YYYY-MM-DD,写入隐藏字段 & fallback ----
+  function toSolarYmd() {
+    if (!ready) return hidden.value || '1996-08-12';
+    try {
+      if (mode === 'solar') return SOLAR.fromYmd(sel.year, sel.month, sel.day).toYmd();
+      return LUNAR.fromYmd(sel.year, sel.month, sel.day).getSolar().toYmd();
+    } catch (err) {
+      return hidden.value || '1996-08-12';
+    }
+  }
+  function commit() {
+    const ymd = toSolarYmd();
+    hidden.value = ymd;
+    if (fallback && document.activeElement !== fallback) fallback.value = ymd;
+  }
+
+  // ---- 从一个公历 YYYY-MM-DD 反填当前模式(用于 fallback / 初始化) ----
+  function loadFromSolar(ymd) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd || '');
+    if (!m) return;
+    const y = +m[1], mo = +m[2], d = +m[3];
+    if (mode === 'solar') { sel = { year: y, month: mo, day: d }; }
+    else if (ready) {
+      const lu = SOLAR.fromYmd(y, mo, d).getLunar();
+      sel = { year: lu.getYear(), month: lu.getMonth(), day: lu.getDay() }; // getMonth() 已是负数表闰月
+    }
+    renderAll(false);
+  }
+
+  // ---- 交互:滚动结束吸附 → 更新 sel + 级联重渲 ----
+  let scrollTimers = {};
+  function onScroll(name) {
+    clearTimeout(scrollTimers[name]);
+    // 实时高亮中心项
+    const cur = valueAtScroll(name);
+    if (cur) itemsOf(name).forEach((el, i) => el.classList.toggle('on', i === cur.idx));
+    scrollTimers[name] = setTimeout(() => {
+      const r = valueAtScroll(name);
+      if (!r) return;
+      if (name === 'year') { sel.year = r.v; renderAll(false); }
+      else if (name === 'month') { sel.month = r.v; // 日列随月变
+        const dMax = dayCountOf(sel.year, sel.month); if (sel.day > dMax) sel.day = dMax;
+        renderCol('day', dayOpts(sel.year, sel.month), sel.day); commit();
+      } else { sel.day = r.v; commit(); }
+      setColValue(name, r.v, true); // 吸附到整行
+    }, 110);
+  }
+
+  // ---- 点击某项直接选中 ----
+  function onItemClick(name, e) {
+    const item = e.target.closest('.wheel-item');
+    if (!item) return;
+    const v = Number(item.dataset.v);
+    if (name === 'year') { sel.year = v; renderAll(true); }
+    else if (name === 'month') { sel.month = v;
+      const dMax = dayCountOf(sel.year, sel.month); if (sel.day > dMax) sel.day = dMax;
+      renderCol('day', dayOpts(sel.year, sel.month), sel.day); commit(); setColValue('month', v, true);
+    } else { sel.day = v; commit(); setColValue('day', v, true); }
+  }
+
+  // ---- 顶部直填输入:回车/失焦即定位 ----
+  function onInput(name, el) {
+    let raw = (el.value || '').trim();
+    let neg = false;
+    if (name === 'month') { neg = /^(闰|L|l|leap)/i.test(raw); raw = raw.replace(/[^\d]/g, ''); }
+    let n = parseInt(raw, 10);
+    if (isNaN(n)) { setColValue(name, sel[name], true); return; }
+    if (name === 'year') { n = Math.max(Y_MIN, Math.min(Y_MAX, n)); sel.year = n; renderAll(true); }
+    else if (name === 'month') {
+      let target = neg ? -Math.abs(n) : Math.abs(n);
+      const opts = monthOpts(sel.year);
+      if (!opts.some(o => o.v === target)) target = opts.find(o => Math.abs(o.v) === Math.abs(n))?.v ?? opts[0].v;
+      sel.month = target;
+      const dMax = dayCountOf(sel.year, sel.month); if (sel.day > dMax) sel.day = dMax;
+      renderCol('day', dayOpts(sel.year, sel.month), sel.day); commit(); setColValue('month', target, true);
+    } else {
+      const dMax = dayCountOf(sel.year, sel.month); n = Math.max(1, Math.min(dMax, n));
+      sel.day = n; commit(); setColValue('day', n, true);
+    }
+  }
+
+  // ---- 模式切换 阳历/阴历:保持所指向的同一天(公历不变),换算到另一历显示 ----
+  function switchMode(next) {
+    if (next === mode) return;
+    const curSolar = toSolarYmd(); // 切换前的公历基准
+    mode = next;
+    loadFromSolar(curSolar);       // 用同一公历在新历下反填
+  }
+
+  // ---- 事件绑定 ----
+  function bind() {
+    ['year', 'month', 'day'].forEach((name) => {
+      cols[name].scroll.addEventListener('scroll', () => onScroll(name), { passive: true });
+      cols[name].scroll.addEventListener('click', (e) => onItemClick(name, e));
+      const inp = cols[name].input;
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); onInput(name, inp); inp.blur(); } });
+      inp.addEventListener('blur', () => onInput(name, inp));
+    });
+    // 阳历/阴历分段
+    f.querySelectorAll('input[name="caltype"]').forEach((r) => {
+      r.addEventListener('change', () => { if (r.checked) switchMode(r.value); });
+    });
+    // 公历直填兜底
+    if (fallback) fallback.addEventListener('change', () => {
+      const ymd = fallback.value;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return;
+      hidden.value = ymd;
+      loadFromSolar(ymd); // 反填当前模式(阴历模式下会换算)
+    });
+  }
+
+  function init() {
+    if (!ready) { // lunar.js 未就绪:退化为纯 fallback 公历输入,隐藏字段跟随
+      if (fallback) fallback.addEventListener('change', () => { if (/^\d{4}-\d{2}-\d{2}$/.test(fallback.value)) hidden.value = fallback.value; });
+      wheelsEl.style.display = 'none';
+      // 阴历切换禁用
+      f.querySelectorAll('input[name="caltype"]').forEach((r) => { if (r.value === 'lunar') r.disabled = true; });
+      return;
+    }
+    loadFromSolar(hidden.value || '1996-08-12'); // 默认 1996-08-12(阳历)
+    bind();
+  }
+
+  return { init, relabel: () => renderAll(false) };
+})();
+DateWheel.init();
+window.DateWheelRelabel = DateWheel.relabel;
 
 // 最近一次排盘结果(供点选宫位联动三方四正用,纯前端读取,不再发请求)
 let lastZiweiData = null;
@@ -451,14 +853,15 @@ f.addEventListener('submit', async (e) => {
   const payload = {
     gender: d.gender,
     place: d.place,
-    datetime: `${d.date} ${d.time}`,
+    datetime: `${d.date} ${d.time}`, // d.date 恒为公历 YYYY-MM-DD(阴历模式已由拨轮换算),契约不变
     question: d.question,
     style: d.style,
+    marital: d.marital, // 'single' | 'married' —— 后端暂不读取,前端传上留口子给后续 AI 解读
     lang: LANG,
   };
   lastPayload = payload;
-  btn.disabled = true; btn.textContent = t('f.loading_btn');
-  result.innerHTML = `<div class="loading">${esc(t('loading'))}</div>`;
+  btn.disabled = true; btn.textContent = t('f.loading_btn'); btn.classList.add('loading');
+  result.innerHTML = `<div class="loading"><span class="ink-dots" aria-hidden="true"><i></i><i></i><i></i></span>${esc(t('loading'))}</div>`;
   try {
     const res = await fetch('/api/ziwei', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -479,18 +882,33 @@ f.addEventListener('submit', async (e) => {
     lastQuestion = payload.question;
     let html = renderZiwei(data.chart) + renderSanFang(data.sanfang, payload.question);
     if (data.text) {
-      html += `<div class="reading"><div class="meta">${esc(t('airead'))}</div>${esc(data.text)}</div>`;
+      html += `<div class="reading"><div class="meta">${esc(t('airead'))}</div><div class="reading-body">${esc(data.text)}</div></div>`;
     } else {
-      html += `<div class="reading"><div class="meta" style="border:none;padding:0;margin:0">${esc(t('offline_note'))}</div></div>`;
+      html += `<div class="reading"><div class="offline-note">${esc(t('offline_note'))}</div></div>`;
     }
     result.innerHTML = html;
+    result.classList.remove('reveal', 'in'); window.inkReveal?.(result); // 结果区整块显现(fx.js 钩子,reduced-motion 下 no-op)
     if (flyLinesOn) drawFlyLines(data.chart);
   } catch (err) {
     lastZiweiData = null;
     result.innerHTML = `<div class="reading"><span class="err">${esc(t('err'))}${esc(err.message)}</span></div>`;
   } finally {
-    btn.disabled = false; btn.textContent = t('f.submit');
+    btn.disabled = false; btn.textContent = t('f.submit'); btn.classList.remove('loading');
   }
+});
+
+// 格局标签点选:展开/收起该格局的白话释义(纯前端,事件委托)
+result.addEventListener('click', (e) => {
+  const tag = e.target.closest('.geju-tag[data-geju]');
+  if (!tag) return;
+  const i = tag.getAttribute('data-geju');
+  const desc = result.querySelector(`.geju-desc[data-geju-desc="${i}"]`);
+  if (!desc) return;
+  const open = desc.hasAttribute('hidden');
+  // 同组只展开一个:先收起全部,再按需展开当前
+  result.querySelectorAll('.geju-desc').forEach((d) => d.setAttribute('hidden', ''));
+  result.querySelectorAll('.geju-tag').forEach((b) => b.setAttribute('aria-expanded', 'false'));
+  if (open) { desc.removeAttribute('hidden'); tag.setAttribute('aria-expanded', 'true'); }
 });
 
 // 宫位点选:事件委托到 #result,点任意 .zw-cell 高亮其三方四正 + 切换解读文案(纯前端,不发请求)
@@ -758,8 +1176,38 @@ function renderZiwei(c) {
       <span style="display:inline-flex;align-items:center;gap:5px"><i style="width:11px;height:11px;border-radius:3px;display:inline-block;border:1.5px solid var(--bronze);background:rgba(156,123,63,.12)"></i>${lgDalim}</span>
       <span style="display:inline-flex;align-items:center;gap:5px"><i style="width:11px;height:11px;border-radius:3px;display:inline-block;border:1.5px solid var(--accent-2)"></i>${en ? 'Current year' : '今年流年'}</span>
       <label class="zw-fly-toggle"><input type="checkbox" class="zw-fly-check" ${flyChecked} />${esc(t('zw.fly.toggle'))}</label>
-    </div>${infoRow}${runInfoRow}
+    </div>${infoRow}${runInfoRow}${renderGeju(c)}
     <div class="hint" style="margin-top:10px;font-size:11px">${hint}${flyOn ? ` · ${esc(t('zw.fly.hint'))}` : ''}</div>
+  </div>`;
+}
+
+// 格局标签(规则版,消费 chart.格局;点标签展开白话释义)
+// level → 视觉分级:excellent/good=顺遂(墨绿/古铜)、neutral=中性、caution=宜留意(朱土)
+function renderGeju(c) {
+  const list = c.格局 || [];
+  if (!list.length) return '';
+  const en = LANG === 'en';
+  const lvlCls = { excellent: 'lv-ex', good: 'lv-good', neutral: 'lv-neu', caution: 'lv-caut' };
+  const lvlLbl = en
+    ? { excellent: 'strong', good: 'favorable', neutral: 'neutral', caution: 'watch' }
+    : { excellent: '资源足', good: '偏顺遂', neutral: '中性', caution: '宜留意' };
+  const title = en ? 'Chart patterns' : '命盘格局';
+  const sub = en
+    ? 'A backdrop tendency, not a verdict — tap a tag to read it in plain words.'
+    : '这是底色倾向,不是判决 —— 点标签看白话释义。';
+  const tags = list.map((g, i) => {
+    const cls = lvlCls[g.level] || 'lv-neu';
+    return `<button type="button" class="geju-tag ${cls}" data-geju="${i}" aria-expanded="false">
+      <span class="gj-dot" aria-hidden="true"></span><span class="gj-name">${esc(g.name)}</span><span class="gj-lvl">${lvlLbl[g.level] || ''}</span>
+    </button>`;
+  }).join('');
+  const descs = list.map((g, i) =>
+    `<div class="geju-desc" data-geju-desc="${i}" hidden><b>${esc(g.name)}</b>${esc(g.description)}</div>`
+  ).join('');
+  return `<div class="zw-geju">
+    <div class="gj-cap"><span class="gj-t">${title}</span><span class="gj-sub">${sub}</span></div>
+    <div class="gj-tags">${tags}</div>
+    <div class="gj-descs">${descs}</div>
   </div>`;
 }
 
@@ -781,6 +1229,7 @@ function renderSanFang(s, question) {
 
 function esc(s) { return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
 </script>
+<script src="/fx.js" defer></script>
 <script src="/ink.js" defer></script>
 </body>
 </html>

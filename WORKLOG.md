@@ -4,6 +4,77 @@
 
 ---
 
+## 2026-07-03(四)— 紫微解读模式整体替换为「赛博倪海夏」(移植 ziwei-2.0 interpret 模块)
+
+### 做了什么
+按用户决策(完全替换成「赛博倪海夏」/ 保持一次性非流式 / 两条解读路径都换 / 保留危机前置),把 ziwei-2.0 的 interpret 模块(SYSTEM_PROMPT + buildChartContext)移植进来,替换原「心易·天命」克制解读:
+- **`src/ziwei.js`**:①`ZIWEI_SYSTEM` 由 6 行克制版 → 原样移植 ziwei-2.0 的 ~300 行「赛博倪海夏」人设(十四主星/十二宫/四化表/格局/六煞/大限流年/相学/名言,下定论、引倪海夏原话、断吉凶)。②新增 `buildChartContext(chart)`(移植 ziwei-2.0 同名函数,**改读本项目 iztro 结构**:`十二宫[].主星/辅星`、化 lu/quan/ke/ji→禄权科忌、亮已是中文庙旺/陷),喂 LLM 的从「只三方四正 compact」升级为「十二宫全量 + 格局」。③`interpretZiwei` 改用新 system+context;`ZIWEI_SYSTEM`/`buildChartContext` 导出供 chat 复用。调用形态保持不变(sonnet / max_tokens 8000 / thinking adaptive / **非流式一次性返回**)。
+- **`src/chat.js`**:紫微(tianming)模式也切「赛博倪海夏」——`mode==='tianming' && hasProfile` 时走 `ZIWEI_SYSTEM` + `buildChartContext` 全量上下文(对话式深解);**其余模式(综合易问 suiwen / 六爻 renjiandao / 八宅 diyun)保持原「心易」克制顾问人设,人设不泄漏**。命盘上下文统一升级为 buildChartContext(替换原三方四正 summary)。
+- **保留**:`runZiwei` 的 `detectCrisis` 危机前置(自伤类话题走温柔陪伴,不排盘)—— 安全护栏与人设无关,不随替换移除。
+
+### 关键决策 / 注意
+- ⚠️ **产品调性反转**:从「不下定论、给视角」→「下定论、断吉凶、引倪海夏原话」。这是用户明确要的,不是技术升级。合规基调随之改变(风险自负)。
+- 两条紫微解读路径(`/api/ziwei` 一次性 + `/chat` tianming 多轮)现口径一致;六爻/八宅未受影响。
+- 上一步接入的三篇 knowledge/ziwei md 仍在(RAG 素材);格局标签前端渲染仍在。buildChartContext 里也带了格局行。
+
+### 验证
+- `npm test` 43/43 ✓(未破坏排盘/三方四正/hehun/liuyao/rag 等)。
+- 真调用(配 .env):`/api/ziwei` 与 `chat tianming` 均输出赛博倪海夏断吉凶风格(读全十二宫、引原话、给时机);`chat suiwen` 探针确认**未自称倪海夏、仍不下定论**(人设隔离正确)。
+- 改动未提交,等用户拍板。
+
+### 下一步
+1. 可选:格局标签/命盘释义补 EN。
+2. 可选:一次性 → 流式逐字(用户本轮选了暂不改)。
+
+---
+
+## 2026-07-03(三)— 接入开源 ziwei-2.0 的三项纯资产(知识/格局/星曜元数据)
+
+### 做了什么
+从 `~/Downloads/ziwei-2.0-main`(Next.js/TS 自写引擎,与本项目 Node/iztro 栈异构)挑出**零框架耦合的纯逻辑/知识资产**接入,不搬代码框架:
+- **P0 · 倪海夏系统提示词 → RAG 知识库**:将 ziwei-2.0 `interpret/route.ts` 里约 300 行的「赛博倪海夏」system prompt 拆成三篇 md 落 `knowledge/ziwei/`:`nihaixia-shisixing-detail.md`(十四主星详解)、`nihaixia-gongwei-sihua.md`(十二宫精要+四化表+大限流年)、`nihaixia-geju-liangci.md`(重要格局+辅星杂曜)。**改写语气以符合本站合规基调**:凶格一律读作"这个阶段变动/风险偏大、宜稳"的提示,去掉原文的宿命断语。RAG 已索引(ziwei 域 chunk 数 → 187),格局类查询命中新篇 top4。
+- **P1 · 格局识别(本项目此前没有的能力)**:新建 `src/ziwei-patterns.js`,把 ziwei-2.0 `patterns.ts` 的 11 条格局规则**改读本项目 iztro 数据结构**(`十二宫[].地支` 为地支字符、主星/辅星 `{名,化:'lu'|'quan'|'ke'|'ji'}`)。`runZiwei` 挂 `chart.格局`,并把格局摘要注入 `interpretZiwei` 的 compact payload;`ZIWEI_SYSTEM` 加一句"融入格局作底色、凶格读作宜稳"。
+- **P2 · 星曜元数据扩充**:从 `STAR_DESCRIPTIONS` 移植五行/性质/关键词为 `src/ziwei.js` 导出的 `STAR_META`(十四主星),供格局卡片/提示词扩充用(additive,不动原有 `STARS` 元组)。
+
+### 关键决策 / 注意
+- 判定原则:**能接的是"知识与规则",不是"代码与框架"**。ziwei-2.0 的自写安星引擎(本项目 iztro 更成熟)、React/Next 前端(栈不通)、命盘五行→风水补局(与本站八宅体系冲突)、真太阳时(本站已含 EOT 校正,更优)一律**未接**。
+- 格局规则本身 100% 复用,但因数据结构异构,`findMajorPalace`/`sanFangBranchIdx` 等全部按地支字符重写。
+- 已验证:紫府同宫/廉贞天相/机月同梁/日月同宫/化忌入迁 等多例正确命中(紫微天府同@申、廉贞天相同@子 程序化核对通过);`npm test` ziwei 12/12 ✓。
+
+### 前端渲染(同日追加)
+- `public/index.html` 命盘面板新增「命盘格局」区:`renderGeju(c)` 消费 `chart.格局`,标签 pill 按 level 分色(excellent→朱砂 / good→墨绿 / neutral→靛 / caution→朱土,全走 theme.css 语义 token,不抢主星名主色),点标签展开该格局白话释义(单开、可 toggle 收起,事件委托复用 `#result`)。副标题固定写"底色倾向,不是判决",承接合规基调。
+- **程序化核验(遵循记忆:命盘类界面优先断言,不肉眼看)**:Playwright 驱动真页面 —— 标签数/名称/level class/dot computed 色全对(朱砂 rgb(166,64,47)、墨绿 rgb(78,107,82)、朱土 rgb(168,94,51));释义初始 hidden→点开显示、aria-expanded 切换、单开、toggle-off 全过;1280 + 375 双视口无横向溢出、console 零错误。`npm test` 全站 43/43 ✓。
+- 改动未提交,等用户拍板。
+
+### 下一步
+1. 可选:chat.js 紫微深解路径也接 chart.格局。
+2. 可选:格局标签支持 EN 释义(当前 name/description 仅中文,EN 模式下标签名照显、释义为中文)。
+
+---
+
+## 2026-07-03(二)— 全站总设计「墨韵 Ink Luxe」:设计系统 + 六页视觉动效重设计
+
+### 做了什么
+- **设计系统建立**:`design-system/MASTER.md`(全站视觉唯一真源:铁律/token/组件规范/每道纹样/验收清单);`theme.css` 新增墨韵组件层(.btn-ink 墨玉按钮[朱砂印点+光泽扫过+墨晕涟漪+loading三墨点]/.btn-paper/.glass 玻璃卡/.inkline 朱砂扫线输入/.reveal 滚动显现/.seal-pulse 落印/.nav-frost 玻璃霜化导航/focus-visible 朱砂环/reduced-motion 总闸);`public/fx.js` 动效引擎(IntersectionObserver 显现+级差、按钮涟漪注入、nav 滚动态、window.inkReveal 钩子,全防御式)。
+- **核心设计决策「朱砂回魂」**:全站"朱砂"变量从青灰 #415E68 改回真朱砂 **#A6402F**,作为全站唯一暖色,只落在印章/主CTA印点/focus环/命宫框/关键角标;新增金线 #A8834C 仅做 hover 发丝线。
+- **六页并行重设计**(4 个 agent,各自 Playwright 自验合计 90 断言全过):
+  - landing:hero 书法逐字浮现+朱砂印落印、nav 玻璃霜化、三道卡专属 SVG 纹样(星环/罗盘玫瑰/卦爻)、全 section 滚动显现、定价卡玻璃化+最受欢迎朱砂顶线、CTA 全部墨玉化;补 EN 字典缺失的 triad.c。
+  - index(/app):星环纹样、玻璃表单、命盘 .zw-cell hover 内晕(修掉旧 hover 吃命宫框问题)、四化连线 1s 描画入场、命宫朱砂回归、侧栏级差显现;修 .loading 类名冲突(限定 #result .loading)。
+  - fengshui/renjiandao/hehun:罗盘玫瑰/卦爻/双环相扣纹样、上传区虚线发丝框+拖拽悬停朱砂、动爻硬编码色统一回 var(--cinnabar)、合参 compare/summary 卡错位入场;**修既有 bug:hehun 前端 `五行分布.缺` 为字符串"无"时 .map 崩溃导致整个结果区不渲染**(Array.isArray 守卫)。
+  - chat:模式按钮墨玉选中态+朱砂点、玻璃气泡(用户墨玉/AI宣纸)、三墨点流式指示、圆形墨玉发送键、弹窗玻璃化入场;**修既有 bug:MODE_ICON/modeLbl TDZ 声明晚于 init(),带历史会话刷新即 ReferenceError 白屏**(声明上移两行)。
+- **总验收**:npm test 43/43 ✓;六页 × 1280/375 双视口 12/12(无溢出/console 零错误)✓;落地页全部 .btn-ink computed 底色 rgb(31,43,49) 墨玉确认 ✓;各页 EN 无中文残留、reduced-motion 完整可用(agent 自验覆盖)。
+
+### 关键决策 / 注意
+- 设计语言:水墨底蕴 × 液态玻璃 × 一点朱砂;拒绝了智库推荐的粉紫 Liquid Glass 配色,只取其玻璃技法。
+- 功能零改动铁律执行:表单/fetch/i18n/四化吉凶动爻功能色语义全保;仅有的两处 JS 改动是修既有崩溃 bug。
+- 改动未提交,等用户拍板。
+
+### 下一步
+1. 用户过目后按命名习惯提交。
+2. P6 人间道解读按钮 90s 无输出 bug 仍挂着(注:本次 renjiandao 重设计自验中摇卦渲染正常,该 bug 可能在 AI 解读链路,需带 Key 复现)。
+
+---
+
 ## 2026-07-03 — 全站水墨山水主题落地(底色图 + 墨蓝灰配色重调) · 动态效果测试版
 
 ### 做了什么

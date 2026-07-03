@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>心易 · 人间道 六爻卦象</title>
 <link rel="stylesheet" href="/theme.css" />
+<script src="/fx.js" defer></script>
 <style>
   a { color:inherit; text-decoration:none; }
   .shell { max-width:1140px; margin:0 auto; padding:30px 24px 100px; position:relative; }
@@ -13,7 +14,7 @@
   .top .logo { display:flex; align-items:center; gap:9px; }
   .top .logo .seal-mini { width:27px; height:27px; border-radius:6px; background:var(--cinnabar); color:#F3EAD8;
     font-family:"Songti SC","Noto Serif SC",serif; font-size:15px; font-weight:700; display:grid; place-items:center;
-    box-shadow:0 2px 8px -2px rgba(178,58,46,.5); }
+    box-shadow:0 2px 8px -2px rgba(166,64,47,.5); }
   .top .logo .lt { font-family:"Songti SC","Noto Serif SC",serif; font-size:20px; font-weight:700; letter-spacing:4px; color:var(--accent); }
   .top .nav { display:flex; gap:18px; font-size:14px; color:var(--muted); align-items:center; flex-wrap:wrap; }
   .top .nav a:hover { color:var(--ink); }
@@ -22,7 +23,9 @@
     cursor:pointer; background:var(--card); letter-spacing:1px; font-family:inherit; display:inline-flex;
     align-items:center; min-height:34px; }
   .langtog:hover { color:var(--ink); border-color:var(--accent-2); }
-  .langtog:focus-visible { outline:2px solid var(--accent-2); outline-offset:2px; }
+  .langtog:focus-visible { outline:2px solid var(--cinnabar); outline-offset:2px; }
+  /* nav 玻璃霜化(.nav-frost 由 theme.css 提供,滚动态 .scrolled 由 fx.js 挂) */
+  .top.nav-frost { position:sticky; top:10px; z-index:30; border-radius:14px; padding:10px 16px; }
 
   .lead { text-align:center; max-width:760px; margin:30px auto 46px; }
   .lead .kick { font-family:var(--mono); font-size:12px; letter-spacing:3px; color:var(--cinnabar);
@@ -34,10 +37,14 @@
     -webkit-text-fill-color:transparent; }
   .lead .lede { color:var(--muted); font-size:16px; line-height:2; margin:18px auto 0; max-width:600px; }
   .lead .lede b { color:var(--ink); font-weight:600; }
+  /* 人间道道纹样:卦爻(六横爻两断四连,MASTER §3,装饰,aria-hidden) */
+  .lead .dao-motif { display:block; margin:16px auto 0; color:var(--muted); opacity:.9; transition:color var(--dur-2) var(--ease); }
+  .lead .dao-motif:hover { color:var(--cinnabar); }
 
   .studio { display:grid; grid-template-columns:minmax(0,1.42fr) minmax(0,1fr); gap:26px; align-items:start; }
 
-  form { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px; box-shadow:var(--shadow); }
+  /* 表单卡(玻璃化:视觉底/边/影交给 .glass,本规则只留骨架) */
+  form { border-radius:20px; padding:30px; }
   .form-cap { display:flex; align-items:baseline; gap:10px; margin-bottom:20px; }
   .form-cap h2 { font-family:"Songti SC","Noto Serif SC",serif; font-size:19px; letter-spacing:3px; color:var(--accent); margin:0; }
   .form-cap span { font-size:12px; color:var(--faint); letter-spacing:.5px; }
@@ -48,17 +55,15 @@
   input:focus,textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(42,38,32,.14); }
   .ritual-note { font-size:12px; color:var(--faint); margin:10px 2px 18px; line-height:1.7; }
 
-  button.go { width:100%; margin-top:8px; padding:15px; border:none; border-radius:12px; background:var(--grad);
-    color:#fff; font-family:inherit; font-size:16px; font-weight:600; letter-spacing:4px; cursor:pointer;
-    box-shadow:0 10px 34px -10px var(--glow); transition:filter .2s,transform .1s,opacity .2s; }
-  button.go:hover:not(:disabled){ filter:brightness(1.08); } button.go:active:not(:disabled){ transform:translateY(1px); }
-  button.go:disabled { opacity:.55; cursor:default; }
-  button.ghost { background:transparent; color:var(--accent-2); border:1px solid var(--line); box-shadow:none; }
-  button.ghost:hover:not(:disabled){ border-color:var(--accent-2); filter:none; }
+  /* 摇卦/解读按钮:视觉走 .btn-ink / .btn-paper(theme.css),这里只留布局级覆写;loading 视觉由 :disabled 叠加 */
+  button.go { width:100%; margin-top:8px; min-height:50px; font-size:16px; letter-spacing:4px; }
+  button.go:disabled { opacity:.82; cursor:default; pointer-events:none; }
+  button.btn-ink.go:disabled::before { animation:inkBlink 1s infinite var(--ease); }
 
   /* 侧栏 */
   .aside { display:flex; flex-direction:column; gap:16px; position:sticky; top:24px; }
-  .cardx { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px 22px 20px; box-shadow:var(--shadow-soft); }
+  /* 侧栏卡(玻璃化:视觉交给 .glass) */
+  .cardx { border-radius:16px; padding:22px 22px 20px; }
   .cardx .xh { display:flex; align-items:center; gap:11px; margin-bottom:14px; }
   .cardx .xh .ico { width:36px; height:36px; border-radius:10px; display:grid; place-items:center; background:var(--bg-2); border:1px solid var(--line); flex:none; }
   .cardx .xh .ico svg { width:21px; height:21px; stroke:var(--accent); fill:none; stroke-width:1.4; }
@@ -81,7 +86,8 @@
 
   /* 结果区(整宽) */
   #result { margin-top:30px; }
-  .panel { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px; box-shadow:var(--shadow); margin-bottom:20px; }
+  .panel { background:var(--glass); -webkit-backdrop-filter:blur(14px) saturate(1.05); backdrop-filter:blur(14px) saturate(1.05);
+    border:1px solid var(--line); border-radius:20px; padding:30px; box-shadow:var(--shadow-soft); margin-bottom:20px; }
   .panel .t { font-size:12px; color:var(--accent-2); letter-spacing:2px; margin-bottom:16px; }
 
   /* 卦象区 */
@@ -95,17 +101,23 @@
     animation:rise .5s ease forwards; }
   .yao .bar { width:48px; height:100%; border-radius:3px; background:linear-gradient(90deg,#2A2620,#46403A); box-shadow:0 1px 3px rgba(42,38,32,.2); }
   .yao.yin .bar { width:20px; }
-  .yao.moving .bar { background:linear-gradient(90deg,#B23A2E,#C8553D); box-shadow:0 1px 6px var(--gold-glow); }
-  .yao .mk { position:absolute; right:-22px; top:-3px; font-size:13px; color:var(--gold); }
+  /* 动爻=朱砂(功能色语义不变,青灰硬编码改回 var(--cinnabar)) */
+  .yao.moving .bar { background:var(--cinnabar); box-shadow:0 1px 6px rgba(166,64,47,.4); }
+  .yao .mk { position:absolute; right:-22px; top:-3px; font-size:13px; color:var(--cinnabar); }
   @keyframes rise { to { opacity:1; transform:translateY(0); } }
   .arrow { font-size:24px; color:var(--faint); }
   .castmeta { margin-top:18px; text-align:center; font-size:13px; color:var(--muted); line-height:1.9; }
-  .castmeta b { color:var(--ink); } .castmeta .gold { color:var(--gold); }
+  .castmeta b { color:var(--ink); } .castmeta .gold { color:var(--cinnabar); }
   .rule { margin-top:12px; font-size:12px; color:var(--faint); text-align:center; }
 
   .reading { white-space:pre-wrap; font-size:15px; line-height:2; color:var(--ink); }
   .err { color:var(--cinnabar); font-size:14px; }
-  .loading { text-align:center; color:var(--muted); padding:46px; letter-spacing:3px; animation:pulse 1.6s ease-in-out infinite; }
+  /* 等待态:玻璃卡 + 三墨点 + 醒目提示(流程不动只强化呈现) */
+  .loading { display:flex; flex-direction:column; align-items:center; gap:16px; text-align:center;
+    color:var(--muted); padding:56px 24px; letter-spacing:3px; border-radius:20px; margin-bottom:20px; }
+  .loading .ink-dots i { width:8px; height:8px; background:var(--cinnabar); }
+  .loading .load-txt { font-family:var(--serif); font-size:16px; letter-spacing:4px; color:var(--ink);
+    animation:pulse 1.6s ease-in-out infinite; }
   @keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
   .hint-foot { text-align:center; color:var(--faint); font-size:12px; margin-top:28px; letter-spacing:.5px; }
 
@@ -116,12 +128,20 @@
   @media (max-width:560px){
     .lead h1{letter-spacing:7px;} .shell{padding:24px 16px 76px;} form,.panel{padding:22px;} .top .nav{gap:13px; font-size:13px;}
   }
+  /* 页级动效全部受 reduced-motion 约束(theme.css/fx.js 已管组件层) */
+  @media (prefers-reduced-motion: reduce){
+    .yao { animation:none; opacity:1; transform:none; }
+    .loading .load-txt { animation:none; }
+    button.btn-ink.go:disabled::before { animation:none; }
+    .lead .dao-motif, .xlink { transition:none; }
+    .xlink:hover { transform:none; }
+  }
 </style>
 </head>
 <body>
 <div class="aurora" aria-hidden="true"></div>
 <div class="shell">
-  <div class="top">
+  <div class="top nav-frost">
     <a href="/" class="logo"><span class="seal-mini">易</span><span class="lt">心易</span></a>
     <div class="nav">
       <a href="/app" data-i18n="nav.tianming">天命</a>
@@ -134,28 +154,31 @@
 
   <header class="lead">
     <div class="kick"><span class="dot"></span><span data-i18n="hero.badge">人间道 · 周易六爻 · 卦图象解</span>　<span class="cn" data-i18n="hero.kickcn">观象悟辞</span></div>
+    <svg class="dao-motif" aria-hidden="true" width="64" height="64" viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <path d="M20 18 H76 M20 30 H42 M54 30 H76 M20 42 H76 M20 54 H76 M20 66 H42 M54 66 H76 M20 78 H76"/>
+    </svg>
     <h1 data-i18n="hero.title">人 间 道</h1>
     <p class="lede"><b data-i18n="hero.motto">人事尽其为。</b><span data-i18n="hero.sub">心中默念所问之事,摇一卦——观此刻处境之象、宜动宜静之时机,给的是视角不是定数。</span></p>
   </header>
 
   <div class="studio">
-    <form id="f">
+    <form id="f" class="glass">
       <div class="form-cap"><h2 data-i18n="form.cap">所问之事</h2><span data-i18n="form.capsub">一事一卦 · 心诚则灵</span></div>
       <label for="r-question" data-i18n="form.qlabel">你要问的事(一事一问，越具体越好)</label>
-      <textarea id="r-question" name="question" data-i18n-ph="form.qph" placeholder="例：手上这个新机会，现在该接还是再等等？"></textarea>
+      <textarea id="r-question" name="question" class="inkline" data-i18n-ph="form.qph" placeholder="例：手上这个新机会，现在该接还是再等等？"></textarea>
       <div class="ritual-note" data-i18n="form.ritual">起卦讲究心诚则灵：请先把问题在心里想清楚、默念一遍，再摇卦。一事一卦，不重复摇同一件事。</div>
-      <button type="submit" class="go" id="btn" data-i18n="form.cast">摇 卦</button>
+      <button type="submit" class="btn-ink go" id="btn" data-i18n="form.cast">摇 卦</button>
     </form>
 
-    <aside class="aside">
-      <div class="cardx">
+    <aside class="aside reveal-group">
+      <div class="cardx glass">
         <div class="xh">
           <span class="ico"><svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round"><path d="M5 7h14M5 12h6M13 12h6M5 17h14"/></svg></span>
           <h4 data-i18n="aside.about.t">人间道这一道</h4>
         </div>
         <p data-i18n="aside.about.p">周易六爻摇出一卦,以<b>卦图之象</b>映照你此刻所问的处境——本卦看当下,动爻与变卦看走向。它给的是<b>看待时机的视角</b>,不是写死的结局。</p>
       </div>
-      <div class="cardx">
+      <div class="cardx glass">
         <div class="xh">
           <span class="ico"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9" stroke-linecap="round"/></svg></span>
           <h4 data-i18n="aside.steps.t">怎么用</h4>
@@ -166,7 +189,7 @@
           <li><span class="n">3</span><span data-i18n="aside.s3">让它<b>观象悟辞</b>,把卦象翻成此刻处境与时机的人话。</span></li>
         </ol>
       </div>
-      <div class="cardx">
+      <div class="cardx glass">
         <div class="xh">
           <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 .7 1-5.5-4-3.9 5.5-.8z" stroke-linejoin="round"/></svg></span>
           <h4 data-i18n="aside.cross.t">三道互参</h4>
@@ -250,13 +273,14 @@ f.addEventListener('submit', async (e) => {
   if (!q) { result.innerHTML = `<div class="panel"><span class="err">${esc(t('need_q'))}</span></div>`; return; }
   lastQuestion = q;
   btn.disabled = true; btn.textContent = t('casting');
-  result.innerHTML = `<div class="loading">${esc(t('casting'))}</div>`;
+  result.innerHTML = `<div class="loading glass"><span class="ink-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="load-txt">${esc(t('casting'))}</span></div>`;
   try {
     const res = await fetch('/api/liuyao', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'cast failed');
     lastCast = data.cast;
     result.innerHTML = renderCast(data.cast);
+    window.inkReveal?.(result);
     document.getElementById('interpretBtn')?.addEventListener('click', interpret);
   } catch (err) {
     result.innerHTML = `<div class="panel"><span class="err">${esc(err.message)}</span></div>`;
@@ -294,8 +318,8 @@ function renderCast(c){
     </div>
     <div class="rule">${esc(c.取辞规则||'')}</div>
     <div style="display:flex; gap:12px; margin-top:22px">
-      <button class="go" id="interpretBtn" style="flex:2">${esc(t('interpret'))}</button>
-      <button class="go ghost" style="flex:1" onclick="document.getElementById('f').requestSubmit()">${esc(t('recast'))}</button>
+      <button class="btn-ink go" id="interpretBtn" style="flex:2">${esc(t('interpret'))}</button>
+      <button class="btn-paper go" style="flex:1" onclick="document.getElementById('f').requestSubmit()">${esc(t('recast'))}</button>
     </div>
   </div>`;
 }
@@ -304,7 +328,7 @@ async function interpret(){
   const ibtn = document.getElementById('interpretBtn');
   if (ibtn) { ibtn.disabled = true; ibtn.textContent = t('reading_load'); }
   const block = document.createElement('div');
-  block.innerHTML = `<div class="loading">${esc(t('reading_load'))}</div>`;
+  block.innerHTML = `<div class="loading glass"><span class="ink-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="load-txt">${esc(t('reading_load'))}</span></div>`;
   result.appendChild(block);
   try {
     const res = await fetch('/api/renjiandao', {
@@ -314,6 +338,7 @@ async function interpret(){
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'reading failed');
     block.innerHTML = `<div class="panel"><div class="t">${esc(t('hero.title'))}</div><div class="reading">${esc(data.text||'')}</div></div>`;
+    window.inkReveal?.(block);
   } catch (err) {
     block.innerHTML = `<div class="panel"><span class="err">${esc(err.message)}</span></div>`;
   } finally {

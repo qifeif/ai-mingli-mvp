@@ -17,8 +17,9 @@
   /* 主色=墨蓝灰,辅色=山岚青灰 */
   --accent: #26343B;        /* 胡桃木(标题/按钮/结构) */
   --accent-2: #486670;      /* 墨绿(小型强调) */
-  --cinnabar: #415E68;      /* 朱砂印 */
-  --cinnabar-soft: rgba(65, 94, 104, .10);
+  --cinnabar: #A6402F;      /* 朱砂印(全站唯一暖色:印章/主CTA/focus/命宫) */
+  --cinnabar-soft: rgba(166, 64, 47, .10);
+  --gilt: #A8834C;          /* 金线(仅 hover 发丝线/分隔提亮,不做底色) */
   --green: #365A55; --ochre: #6F7D78; --dai: #4F6873; --bronze: #7B8B88;
   --glow: rgba(38, 52, 59, .16);
   --grad: linear-gradient(160deg, #1F2B31, #4F6873);  /* 浓→淡胡桃木 */
@@ -37,6 +38,11 @@
   /* 阴影:水墨极淡 */
   --shadow: 0 1px 2px rgba(38,52,59,.05), 0 16px 40px -24px rgba(38,52,59,.24);
   --shadow-soft: 0 1px 2px rgba(38,52,59,.04), 0 10px 26px -16px rgba(38,52,59,.16);
+  /* 墨韵动效 */
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --dur-1: .18s; --dur-2: .32s; --dur-3: .56s;
+  /* 玻璃 */
+  --glass: rgba(250,251,249,.74);
 }
 
 * { box-sizing: border-box; }
@@ -101,4 +107,124 @@ a { color: inherit; }
 #ink-canvas {
   position: fixed; inset: 0; z-index: 60; pointer-events: none;
   mix-blend-mode: multiply;
+}
+
+/* ============================================================
+   墨韵 Ink Luxe · 组件层(设计真源见 design-system/MASTER.md)
+   ============================================================ */
+
+/* ---- 玻璃卡 ---- */
+.glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(14px) saturate(1.05);
+  backdrop-filter: blur(14px) saturate(1.05);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-soft);
+}
+.glass.lift { transition: transform var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease); }
+.glass.lift:hover { transform: translateY(-3px); border-color: rgba(168,131,76,.44); box-shadow: var(--shadow); }
+
+/* ---- 按钮体系 ---- */
+.btn-ink, .btn-paper, .btn-ghost2 {
+  position: relative; overflow: hidden; isolation: isolate;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 26px; border-radius: var(--r-pill);
+  font-family: var(--serif); font-size: 15px; letter-spacing: 1.5px;
+  cursor: pointer; user-select: none; text-decoration: none;
+  transition: transform var(--dur-1) var(--ease), box-shadow var(--dur-2) var(--ease),
+              background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+.btn-ink {
+  background: var(--ink-strong); color: #F4F1EA; border: 1px solid transparent;
+  box-shadow: 0 2px 10px -4px rgba(31,43,49,.5);
+}
+.btn-ink::before { /* 朱砂印点 */
+  content: ""; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--cinnabar); box-shadow: 0 0 0 2px rgba(166,64,47,.22);
+  flex: none;
+}
+.btn-ink::after { /* 光泽扫过 */
+  content: ""; position: absolute; top: 0; bottom: 0; left: -70%; width: 46%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.14), transparent);
+  transform: skewX(-18deg); transition: left var(--dur-3) var(--ease); pointer-events: none;
+}
+.btn-ink:hover { transform: translateY(-1px); box-shadow: 0 6px 20px -6px rgba(31,43,49,.55); }
+.btn-ink:hover::after { left: 120%; }
+.btn-ink:active { transform: translateY(0) scale(.985); }
+.btn-paper {
+  background: rgba(250,251,249,.8); color: var(--ink); border: 1px solid var(--line);
+}
+.btn-paper:hover { background: rgba(38,52,59,.06); border-color: rgba(38,52,59,.3); }
+.btn-ghost2 { background: transparent; color: var(--muted); border: 1px solid transparent; }
+.btn-ghost2:hover { border-color: var(--line); color: var(--ink); }
+
+/* 墨晕涟漪(fx.js 在按钮内注入 .ink-ripple span,动画结束自删) */
+.ink-ripple {
+  position: absolute; border-radius: 50%; pointer-events: none; z-index: -1;
+  background: radial-gradient(circle, rgba(166,64,47,.30) 0%, rgba(166,64,47,.12) 40%, transparent 70%);
+  transform: scale(0); animation: inkRipple .55s var(--ease) forwards;
+}
+.btn-ink .ink-ripple { background: radial-gradient(circle, rgba(255,255,255,.28) 0%, rgba(255,255,255,.10) 40%, transparent 70%); }
+@keyframes inkRipple { to { transform: scale(1); opacity: 0; } }
+
+/* loading 三墨点 */
+.btn-ink.loading, .btn-paper.loading { pointer-events: none; opacity: .82; }
+.btn-ink.loading::before { animation: inkBlink 1s infinite var(--ease); }
+.ink-dots { display: inline-flex; gap: 6px; align-items: center; }
+.ink-dots i {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--muted);
+  animation: inkBounce 1.05s infinite var(--ease);
+}
+.ink-dots i:nth-child(2) { animation-delay: .14s; }
+.ink-dots i:nth-child(3) { animation-delay: .28s; }
+@keyframes inkBounce { 0%,100% { transform: translateY(0); opacity: .5; } 40% { transform: translateY(-4px); opacity: 1; } }
+@keyframes inkBlink { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+/* ---- 输入:朱砂扫线 ---- */
+.field input, .field select, .field textarea,
+input.inkline, select.inkline, textarea.inkline {
+  background-image: linear-gradient(var(--cinnabar), var(--cinnabar));
+  background-repeat: no-repeat; background-size: 0% 2px; background-position: left bottom;
+  transition: background-size var(--dur-2) var(--ease), border-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+}
+.field input:focus, .field select:focus, .field textarea:focus,
+input.inkline:focus, select.inkline:focus, textarea.inkline:focus {
+  background-size: 100% 2px; outline: none;
+  border-color: rgba(166,64,47,.45);
+  box-shadow: 0 1px 0 0 rgba(166,64,47,.2);
+}
+
+/* ---- focus 可见环(全站) ---- */
+:where(a, button, [role="button"], input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--cinnabar); outline-offset: 2px; border-radius: 4px;
+}
+
+/* ---- 滚动显现 ---- */
+.reveal { opacity: 0; transform: translateY(14px); transition: opacity var(--dur-2) var(--ease), transform var(--dur-2) var(--ease); transition-delay: var(--d, 0ms); will-change: opacity, transform; }
+.reveal.in { opacity: 1; transform: none; }
+
+/* ---- 印章落印 ---- */
+.seal-pulse { animation: sealDrop .7s var(--ease) both; transform-origin: center; }
+@keyframes sealDrop { 0% { opacity: 0; transform: scale(1.12); } 60% { opacity: 1; } 100% { opacity: 1; transform: scale(1); } }
+
+/* ---- nav 玻璃霜化滚动态(fx.js 挂 .scrolled) ---- */
+.nav-frost {
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+  backdrop-filter: blur(12px) saturate(1.05);
+  background: rgba(247,249,246,.66);
+  border-bottom: 1px solid transparent;
+  transition: background var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+}
+.nav-frost.scrolled { background: rgba(247,249,246,.86); border-bottom-color: var(--line-soft); box-shadow: 0 8px 24px -18px rgba(38,52,59,.28); }
+
+/* ---- 通用微交互 ---- */
+:where(a, button, [role="button"], .seg label, .zw-cell, .dao) { cursor: pointer; }
+
+/* ---- reduced motion:全部静止 ---- */
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .seal-pulse { animation: none; }
+  .btn-ink::after { display: none; }
+  .ink-dots i { animation: none; }
+  .glass.lift, .btn-ink, .btn-paper { transition: none; }
 }

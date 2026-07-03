@@ -7,7 +7,8 @@
  * export streamChat(client, opts) — async generator，每次 yield 一段文字
  */
 
-import { computeZiwei, summarizeSanFang } from './ziwei.js';
+import { computeZiwei, buildChartContext, ZIWEI_SYSTEM } from './ziwei.js';
+import { detectPatterns }                  from './ziwei-patterns.js';
 import { recommendDirections }             from './bazhai.js';
 import { castHexagram }                    from './liuyao.js';
 import { detectCrisis }                    from './pipeline.js';
@@ -21,25 +22,12 @@ const CLASSIFY_MODEL = process.env.LLM_CLASSIFY_MODEL || process.env.LLM_TEXT_MO
 function buildSystem(profile, mode, lang = 'zh', extras = {}) {
   let chartCtx = '', hexCtx = '', fsCtx = '';
 
-  // 紫微命盘
+  // 紫微命盘：喂十二宫全量上下文(与 /api/ziwei 一致,供赛博倪海夏深解)
   if (profile?.datetime && profile?.gender) {
     try {
       const chart = computeZiwei(profile);
-      const sf    = summarizeSanFang(chart, lang);
-      const sp    = chart.三方四正;
-      const mingStars = sp?.命宫?.主星?.map(s => `${s.名}${s.化 ? `·${s.化}` : ''}`).join('、') || '空宫';
-
-      chartCtx = `
-## 用户命盘（紫微斗数·真太阳时已校正）
-- 五行局：${chart.五行局}　命主：${chart.命主}　身主：${chart.身主}
-- 生肖：${chart.生肖}　命宫（${chart.命宫地支}）坐：${mingStars}
-- 三方四正：
-  · 命宫 ${sf.chips[0]}
-  · 迁移 ${sf.chips[1]}
-  · 财帛 ${sf.chips[2]}
-  · 官禄 ${sf.chips[3]}
-- 命盘要点：${sf.段落[1]}
-`;
+      chart.格局 = detectPatterns(chart);
+      chartCtx = `\n## 用户命盘（紫微斗数·真太阳时已校正）\n${buildChartContext(chart)}\n`;
     } catch (e) {
       chartCtx = `\n（命盘计算异常：${e.message}，可忽略命盘作通识解读）\n`;
     }
@@ -90,6 +78,18 @@ function buildSystem(profile, mode, lang = 'zh', extras = {}) {
     ? '\n\n# Output language\nRespond in natural English. Render Chinese terms with pinyin + meaning.'
     : '';
 
+  // 紫微深解(tianming)模式:走「赛博倪海夏」人设,与 /api/ziwei 一次性解读口径一致。
+  // 命盘上下文(chartCtx)已由 buildChartContext 拼成十二宫全量。
+  if (mode === 'tianming' && hasProfile) {
+    return `${ZIWEI_SYSTEM}${langRule}
+
+---
+
+以下是命主的完整命盘数据，请基于此进行对话式解读（多轮问答，紧扣命盘作答，不重复堆砌整盘信息）：
+${chartCtx}`;
+  }
+
+  // 其余模式(综合易理/六爻/八宅):保持「心易」克制对话顾问人设。
   return `你是「心易」AI 易理顾问，用自然流畅的对话，从易理（周易、紫微斗数、六爻、八宅风水等东方智慧）角度帮用户看清处境、想明白选择。
 ${chartCtx}${hexCtx}${fsCtx}
 # 当前解读角度

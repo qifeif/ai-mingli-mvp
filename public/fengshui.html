@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>心易 · 地运 方位推荐</title>
 <link rel="stylesheet" href="/theme.css" />
+<script src="/fx.js" defer></script>
 <style>
   a { color:inherit; text-decoration:none; }
   .shell { max-width:1140px; margin:0 auto; padding:30px 24px 100px; position:relative; }
@@ -13,7 +14,7 @@
   .top .logo { display:flex; align-items:center; gap:9px; }
   .top .logo .seal-mini { width:27px; height:27px; border-radius:6px; background:var(--cinnabar); color:#F3EAD8;
     font-family:"Songti SC","Noto Serif SC",serif; font-size:15px; font-weight:700; display:grid; place-items:center;
-    box-shadow:0 2px 8px -2px rgba(178,58,46,.5); }
+    box-shadow:0 2px 8px -2px rgba(166,64,47,.5); }
   .top .logo .lt { font-family:"Songti SC","Noto Serif SC",serif; font-size:20px; font-weight:700; letter-spacing:4px; color:var(--accent); }
   .top .nav { display:flex; gap:18px; font-size:14px; color:var(--muted); align-items:center; flex-wrap:wrap; }
   .top .nav a:hover { color:var(--ink); }
@@ -22,7 +23,9 @@
     cursor:pointer; background:var(--card); letter-spacing:1px; font-family:inherit; display:inline-flex;
     align-items:center; min-height:34px; }
   .langtog:hover { color:var(--ink); border-color:var(--accent-2); }
-  .langtog:focus-visible { outline:2px solid var(--accent-2); outline-offset:2px; }
+  .langtog:focus-visible { outline:2px solid var(--cinnabar); outline-offset:2px; }
+  /* nav 玻璃霜化(.nav-frost 由 theme.css 提供,滚动态 .scrolled 由 fx.js 挂) */
+  .top.nav-frost { position:sticky; top:10px; z-index:30; border-radius:14px; padding:10px 16px; }
 
   .lead { text-align:center; max-width:760px; margin:30px auto 46px; }
   .lead .kick { font-family:var(--mono); font-size:12px; letter-spacing:3px; color:var(--cinnabar);
@@ -34,10 +37,14 @@
     -webkit-text-fill-color:transparent; }
   .lead .lede { color:var(--muted); font-size:16px; line-height:2; margin:18px auto 0; max-width:600px; }
   .lead .lede b { color:var(--ink); font-weight:600; }
+  /* 地运道纹样:罗盘玫瑰(MASTER §3,装饰,aria-hidden) */
+  .lead .dao-motif { display:block; margin:16px auto 0; color:var(--muted); opacity:.9; transition:color var(--dur-2) var(--ease); }
+  .lead .dao-motif:hover { color:var(--cinnabar); }
 
   .studio { display:grid; grid-template-columns:minmax(0,1.42fr) minmax(0,1fr); gap:26px; align-items:start; }
 
-  form { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px; box-shadow:var(--shadow); }
+  /* 表单卡(玻璃化:视觉底/边/影交给 .glass,本规则只留骨架) */
+  form { border-radius:20px; padding:30px; }
   .form-cap { display:flex; align-items:baseline; gap:10px; margin-bottom:22px; }
   .form-cap h2 { font-family:"Songti SC","Noto Serif SC",serif; font-size:19px; letter-spacing:3px; color:var(--accent); margin:0; }
   .form-cap span { font-size:12px; color:var(--faint); letter-spacing:.5px; }
@@ -48,23 +55,27 @@
   input:focus,select:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(42,38,32,.14); }
   select option { background:#fff; }
 
-  .upload { border:1.5px dashed var(--line); border-radius:14px; padding:24px; text-align:center; cursor:pointer;
-    color:var(--muted); transition:border-color .2s,background .2s; background:var(--bg-2); }
-  .upload:hover { border-color:var(--accent-2); background:rgba(110,103,91,.06); }
-  .upload .big { font-size:30px; margin-bottom:8px; }
+  /* 上传区:虚线发丝框 + 居中图标;拖入/悬停朱砂高亮(JS 上传逻辑不动) */
+  .upload { border:1px dashed var(--line); border-radius:14px; padding:28px 24px; text-align:center; cursor:pointer;
+    color:var(--muted); transition:border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease);
+    background:rgba(250,251,249,.55); }
+  .upload:hover { border-color:var(--cinnabar); background:rgba(250,251,249,.85); }
+  .upload .big { margin-bottom:8px; }
+  .upload .big svg { display:block; margin:0 auto; stroke:var(--muted); transition:stroke var(--dur-1) var(--ease); }
+  .upload:hover .big svg { stroke:var(--cinnabar); }
   .upload .hint { font-size:12px; color:var(--faint); margin-top:6px; }
   .upload img { max-width:100%; max-height:280px; border-radius:10px; margin-top:6px; }
   #file { display:none; }
 
-  button.go { width:100%; margin-top:8px; padding:15px; border:none; border-radius:12px; background:var(--grad);
-    color:#fff; font-family:inherit; font-size:16px; font-weight:600; letter-spacing:4px; cursor:pointer;
-    box-shadow:0 10px 34px -10px var(--glow); transition:filter .2s,transform .1s,opacity .2s; }
-  button.go:hover:not(:disabled){ filter:brightness(1.08); } button.go:active:not(:disabled){ transform:translateY(1px); }
-  button.go:disabled { opacity:.55; cursor:default; }
+  /* 提交按钮:视觉走 .btn-ink(theme.css),这里只留布局级覆写;loading 视觉由 :disabled 叠加 */
+  button.go { width:100%; margin-top:8px; min-height:50px; font-size:16px; letter-spacing:4px; }
+  button.go:disabled { opacity:.82; cursor:default; pointer-events:none; }
+  button.go:disabled::before { animation:inkBlink 1s infinite var(--ease); }
 
   /* 侧栏 */
   .aside { display:flex; flex-direction:column; gap:16px; position:sticky; top:24px; }
-  .cardx { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px 22px 20px; box-shadow:var(--shadow-soft); }
+  /* 侧栏卡(玻璃化:视觉交给 .glass) */
+  .cardx { border-radius:16px; padding:22px 22px 20px; }
   .cardx .xh { display:flex; align-items:center; gap:11px; margin-bottom:14px; }
   .cardx .xh .ico { width:36px; height:36px; border-radius:10px; display:grid; place-items:center; background:var(--bg-2); border:1px solid var(--line); flex:none; }
   .cardx .xh .ico svg { width:21px; height:21px; stroke:var(--accent); fill:none; stroke-width:1.4; }
@@ -89,7 +100,8 @@
   #result { margin-top:30px; }
   .res-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
   .res-grid .span2 { grid-column:1 / -1; }
-  .panel { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px; box-shadow:var(--shadow); }
+  .panel { background:var(--glass); -webkit-backdrop-filter:blur(14px) saturate(1.05); backdrop-filter:blur(14px) saturate(1.05);
+    border:1px solid var(--line); border-radius:20px; padding:30px; box-shadow:var(--shadow-soft); }
   .panel .t { font-size:12px; color:var(--accent-2); letter-spacing:2px; margin-bottom:16px; }
 
   .gua-head { display:flex; align-items:center; gap:16px; }
@@ -101,9 +113,13 @@
 
   .luopan { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:4px; }
   .cell { border:1px solid var(--line); border-radius:13px; padding:14px 8px; text-align:center; background:var(--bg-2);
-    min-height:96px; display:flex; flex-direction:column; justify-content:center; gap:3px; }
+    min-height:96px; display:flex; flex-direction:column; justify-content:center; gap:3px;
+    transition:box-shadow var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease); }
   .cell.good { border-color:var(--good-line); background:var(--good-bg); }
   .cell.bad { border-color:var(--bad-line); background:var(--bad-bg); }
+  /* 罗盘方位块 hover 内晕(吉凶各随其功能色) */
+  .cell.good:hover { box-shadow:inset 0 0 22px -8px rgba(78,107,82,.5); border-color:var(--good); }
+  .cell.bad:hover { box-shadow:inset 0 0 22px -8px rgba(168,94,51,.45); border-color:var(--bad); }
   .cell.center { border-color:rgba(156,123,63,.5); box-shadow:0 0 22px -6px var(--glow); background:var(--card); }
   .cell .dir { font-size:11px; color:var(--faint); letter-spacing:1px; }
   .cell .star { font-family:"Songti SC",serif; font-size:20px; letter-spacing:1px; }
@@ -126,7 +142,12 @@
   .reading { white-space:pre-wrap; font-size:15px; line-height:2; color:var(--ink); }
   .err { color:var(--cinnabar); font-size:14px; }
   .note { font-size:12px; color:var(--faint); margin-top:8px; }
-  .loading { text-align:center; color:var(--muted); padding:46px; letter-spacing:3px; animation:pulse 1.6s ease-in-out infinite; }
+  /* 等待态:玻璃卡 + 三墨点 + 醒目提示(视觉解读可达 24s+,流程不动只强化呈现) */
+  .loading { display:flex; flex-direction:column; align-items:center; gap:16px; text-align:center;
+    color:var(--muted); padding:56px 24px; letter-spacing:3px; border-radius:20px; }
+  .loading .ink-dots i { width:8px; height:8px; background:var(--cinnabar); }
+  .loading .load-txt { font-family:var(--serif); font-size:16px; letter-spacing:4px; color:var(--ink);
+    animation:pulse 1.6s ease-in-out infinite; }
   @keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
   .hint-foot { text-align:center; color:var(--faint); font-size:12px; margin-top:28px; letter-spacing:.5px; }
 
@@ -139,12 +160,19 @@
     .row{flex-direction:column; gap:16px;} .lead h1{letter-spacing:7px;} .shell{padding:24px 16px 76px;}
     form,.panel{padding:22px;} .top .nav{gap:13px; font-size:13px;}
   }
+  /* 页级动效全部受 reduced-motion 约束(theme.css/fx.js 已管组件层) */
+  @media (prefers-reduced-motion: reduce){
+    .loading .load-txt { animation:none; }
+    button.go:disabled::before { animation:none; }
+    .lead .dao-motif, .upload, .upload .big svg, .cell, .xlink { transition:none; }
+    .xlink:hover { transform:none; }
+  }
 </style>
 </head>
 <body>
 <div class="aurora" aria-hidden="true"></div>
 <div class="shell">
-  <div class="top">
+  <div class="top nav-frost">
     <a href="/" class="logo"><span class="seal-mini">易</span><span class="lt">心易</span></a>
     <div class="nav">
       <a href="/app" data-i18n="nav.tianming">天命</a>
@@ -157,27 +185,35 @@
 
   <header class="lead">
     <div class="kick"><span class="dot"></span><span data-i18n="hero.badge">地运 · 东西四命 · 八宅方位</span>　<span class="cn" data-i18n="hero.kickcn">顺势调场</span></div>
+    <svg class="dao-motif" aria-hidden="true" width="72" height="72" viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+      <circle cx="48" cy="48" r="38"/>
+      <polygon points="70.2 57.2, 57.2 70.2, 38.8 70.2, 25.8 57.2, 25.8 38.8, 38.8 25.8, 57.2 25.8, 70.2 38.8"/>
+      <path d="M48 14 L51.5 48 L48 82 L44.5 48 Z"/>
+      <path d="M14 48 L48 44.5 L82 48 L48 51.5 Z"/>
+      <path d="M26.8 26.8 L40.9 40.9 M69.2 26.8 L55.1 40.9 M69.2 69.2 L55.1 55.1 M26.8 69.2 L40.9 55.1"/>
+      <circle cx="48" cy="48" r="3"/>
+    </svg>
     <h1 data-i18n="hero.title">方 位 推 荐</h1>
     <p class="lede"><b data-i18n="hero.motto">天命定其势,地运调其场。</b><span data-i18n="hero.sub">报出生与身份,上传户型图——按八宅东西四命,看你该睡哪个方位、把环境调到帮你的那一面。</span></p>
   </header>
 
   <div class="studio">
-    <form id="f">
+    <form id="f" class="glass">
       <div class="form-cap"><h2 data-i18n="form.cap">居所信息</h2><span data-i18n="form.capsub">本命卦 + 户型朝向</span></div>
       <div class="row">
         <div>
           <label for="d-gender" data-i18n="f.gender">性别</label>
-          <select id="d-gender" name="gender"><option value="女" data-i18n="f.female">女</option><option value="男" data-i18n="f.male">男</option></select>
+          <select id="d-gender" name="gender" class="inkline"><option value="女" data-i18n="f.female">女</option><option value="男" data-i18n="f.male">男</option></select>
         </div>
         <div>
           <label for="d-date" data-i18n="f.date">出生日期(定本命卦)</label>
-          <input id="d-date" type="date" name="date" value="1996-08-12" />
+          <input id="d-date" type="date" name="date" value="1996-08-12" class="inkline" />
         </div>
       </div>
       <div class="row">
         <div>
           <label for="d-goal" data-i18n="f.goal">身份定位 · 主要诉求</label>
-          <select id="d-goal" name="goal">
+          <select id="d-goal" name="goal" class="inkline">
             <option value="wealth" data-i18n="f.g_wealth">求财运 · 拼事业</option>
             <option value="health" data-i18n="f.g_health">求健康 · 保平安</option>
             <option value="love" data-i18n="f.g_love">求姻缘 · 旺人际</option>
@@ -186,7 +222,7 @@
         </div>
         <div>
           <label for="d-facing" data-i18n="f.facing">户型图「正上方」朝向</label>
-          <select id="d-facing" name="facing">
+          <select id="d-facing" name="facing" class="inkline">
             <option value="北" data-i18n="dir.N">北</option><option value="东北" data-i18n="dir.NE">东北</option><option value="东" data-i18n="dir.E">东</option><option value="东南" data-i18n="dir.SE">东南</option>
             <option value="南" data-i18n="dir.S">南</option><option value="西南" data-i18n="dir.SW">西南</option><option value="西" data-i18n="dir.W">西</option><option value="西北" data-i18n="dir.NW">西北</option>
           </select>
@@ -195,23 +231,23 @@
       <div style="margin-bottom:18px">
         <label for="file" data-i18n="f.upload">户型图(可选 · 上传后给出逐间方位点评)</label>
         <div class="upload" id="drop">
-          <div id="ph"><div class="big" aria-hidden="true"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="var(--accent-2)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5 9 4z"/><path d="M9 4v13M15 6.5v13"/></svg></div><span data-i18n="f.upload_cta">点此上传 / 拖入户型图</span><div class="hint" data-i18n="f.upload_hint">支持 PNG / JPG · 看不清的图建议标注指北针</div></div>
+          <div id="ph"><div class="big" aria-hidden="true"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5 9 4z"/><path d="M9 4v13M15 6.5v13"/></svg></div><span data-i18n="f.upload_cta">点此上传 / 拖入户型图</span><div class="hint" data-i18n="f.upload_hint">支持 PNG / JPG · 看不清的图建议标注指北针</div></div>
           <img id="preview" alt="已上传的户型图预览" style="display:none" />
         </div>
         <input type="file" id="file" accept="image/*" />
       </div>
-      <button type="submit" class="go" id="btn" data-i18n="f.submit">勘 定 方 位</button>
+      <button type="submit" class="btn-ink go" id="btn" data-i18n="f.submit">勘 定 方 位</button>
     </form>
 
-    <aside class="aside">
-      <div class="cardx">
+    <aside class="aside reveal-group">
+      <div class="cardx glass">
         <div class="xh">
           <span class="ico"><svg viewBox="0 0 24 24"><polygon points="12,3 17,5.5 19.5,12 17,18.5 12,21 7,18.5 4.5,12 7,5.5"/><circle cx="12" cy="12" r="2.6"/><path d="M12 4.5v3M12 16.5v3M5.5 12h3M15.5 12h3" stroke-linecap="round"/></svg></span>
           <h4 data-i18n="aside.about.t">地运这一道</h4>
         </div>
         <p data-i18n="aside.about.p">八宅以你的出生定<b>本命卦</b>,分东四命/西四命,再把住宅八个方位分出生气、天医、延年等吉凶。看的是<b>居所怎么顺你的势</b>——不是迷信,是把环境调到帮你的那一面。</p>
       </div>
-      <div class="cardx">
+      <div class="cardx glass">
         <div class="xh">
           <span class="ico"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9" stroke-linecap="round"/></svg></span>
           <h4 data-i18n="aside.steps.t">怎么用</h4>
@@ -222,7 +258,7 @@
           <li><span class="n">3</span><span data-i18n="aside.s3">可选上传户型图,得到<b>逐间</b>方位点评与摆布建议。</span></li>
         </ol>
       </div>
-      <div class="cardx">
+      <div class="cardx glass">
         <div class="xh">
           <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 .7 1-5.5-4-3.9 5.5-.8z" stroke-linejoin="round"/></svg></span>
           <h4 data-i18n="aside.cross.t">三道互参</h4>
@@ -306,7 +342,7 @@ let imageDataUrl = '';
 
 drop.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
-['dragover','dragenter'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.style.borderColor = 'var(--accent-2)'; }));
+['dragover','dragenter'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.style.borderColor = 'var(--cinnabar)'; }));
 ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.style.borderColor = ''; }));
 drop.addEventListener('drop', e => { if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
 
@@ -355,7 +391,7 @@ f.addEventListener('submit', async (e) => {
   if (imageDataUrl) payload.image = imageDataUrl;
 
   btn.disabled = true; btn.textContent = t('f.loading_btn');
-  result.innerHTML = `<div class="loading">${esc(t('loading'))}</div>`;
+  result.innerHTML = `<div class="loading glass"><span class="ink-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="load-txt">${esc(t('loading'))}</span></div>`;
   try {
     const res = await fetch('/api/fengshui', {
       method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload),
@@ -363,6 +399,7 @@ f.addEventListener('submit', async (e) => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || '请求失败');
     result.innerHTML = render(data);
+    window.inkReveal?.(result);
   } catch (err) {
     result.innerHTML = `<div class="panel"><span class="err">${esc(t('err'))}${esc(err.message)}</span></div>`;
   } finally {
