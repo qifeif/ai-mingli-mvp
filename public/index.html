@@ -27,16 +27,22 @@
   /* nav 玻璃霜化(.nav-frost 由 theme.css 提供,滚动态 .scrolled 由 fx.js 挂) */
   .top.nav-frost { position:sticky; top:10px; z-index:30; border-radius:14px; padding:10px 16px; }
 
-  /* 编辑式 HERO(极简:紧凑标题,去星环装饰,增留白) */
-  .lead { text-align:center; max-width:640px; margin:22px auto 36px; }
+  /* 编辑式 HERO */
+  .lead { text-align:center; max-width:760px; margin:30px auto 46px; }
   .lead .kick { font-family:var(--mono); font-size:12px; letter-spacing:3px; color:var(--cinnabar);
     text-transform:uppercase; display:inline-flex; align-items:center; gap:8px; }
-  .lead .kick .dot { width:6px; height:6px; border-radius:50%; background:var(--accent-2); }
+  .lead .kick .dot { width:6px; height:6px; border-radius:50%; background:var(--accent-2); box-shadow:0 0 10px var(--glow); }
   .lead .kick .cn { font-family:var(--serif); letter-spacing:4px; color:var(--muted); }
-  .lead h1 { font-family:"Songti SC","Noto Serif SC",serif; font-size:clamp(34px,5vw,48px); font-weight:600;
-    letter-spacing:10px; margin:12px 0 0; color:var(--ink-strong); }
-  .lead .lede { color:var(--muted); font-size:15px; line-height:1.9; margin:16px auto 0; max-width:560px; }
+  .lead h1 { font-family:"Songti SC","Noto Serif SC",serif; font-size:clamp(40px,7vw,62px); font-weight:600;
+    letter-spacing:12px; margin:14px 0 0; background:var(--grad); -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; filter:drop-shadow(0 4px 28px rgba(42,38,32,.28)); }
+  .lead .lede { color:var(--muted); font-size:16px; line-height:2; margin:18px auto 0; max-width:600px; }
   .lead .lede b { color:var(--ink); font-weight:600; }
+  /* 天命道纹样:星环(MASTER §3,装饰,aria-hidden) */
+  .lead .dao-ring { display:block; margin:0 auto 14px; color:var(--muted);
+    transition:color var(--dur-2) var(--ease), opacity var(--dur-2) var(--ease), transform var(--dur-2) var(--ease); }
+  .lead .dao-ring:hover { color:var(--cinnabar); }
+  .lead .dao-ring.in, .lead .dao-ring:not(.reveal) { opacity:.9; }
 
   /* ===== 命例库(MetaSight 风格卡片列表 · 墨韵化) ===== */
   .mingli { margin-bottom:24px; }
@@ -461,50 +467,8 @@
   @media (prefers-reduced-motion: reduce) {
     #result .loading { animation:none; }
     .zw-fly-svg path { animation:none; }
-    .seg span::after, .zw-cell::after { transition:none; }
+    .seg span::after, .zw-cell::after, .lead .dao-ring { transition:none; }
   }
-
-  /* ============================================================
-     极简层(MetaSight 化 · 仅本页):清透宣纸底 + 平面卡 + 去玻璃。
-     全部页内作用域,不改 theme.css,其余 5 页不受影响。
-     ============================================================ */
-  /* A. 背景:把全局山水纱抬到近纯宣纸(山影仅约 5% 透出) */
-  body::after {
-    background:
-      linear-gradient(180deg,
-        rgba(237,241,239,.93) 0%,
-        rgba(237,241,239,.95) 40%,
-        rgba(237,241,239,.97) 100%),
-      #EDF1EF url('/bg-xinyi-product.webp') center top / cover no-repeat;
-  }
-  body::before { opacity:.16; } /* 纤维纹更淡 */
-  /* 工具页顶部暖晕:极简下弱化,免抢白 */
-  .aurora { display:none; }
-
-  /* B. 卡面平面化:实底近白 + 1px 发丝边 + 无重影,圆角统一 16px */
-  .ml-card, .chart-panel, .reading, .zw-panel, .sfsz, form#f {
-    background:#FBFCFB; box-shadow:none; border-radius:16px;
-  }
-  .chart-panel, .reading, .zw-panel, .sfsz { border:1px solid var(--line); }
-  /* 卡 hover:只走发丝边微深,去金线转色 + 去投影抬升 */
-  .ml-card { box-shadow:none; }
-  .ml-card:hover { transform:translateY(-2px); border-color:rgba(38,52,59,.28); box-shadow:none; }
-  .ml-card.active { border-color:var(--cinnabar); box-shadow:inset 0 0 0 1px var(--cinnabar); }
-
-  /* 弹窗:去玻璃(theme.css .glass 的 backdrop-blur)→ 实底近白平面卡 */
-  .ml-dialog.glass {
-    background:#FBFCFB; -webkit-backdrop-filter:none; backdrop-filter:none;
-    border:1px solid var(--line); box-shadow:var(--shadow-soft);
-  }
-  /* 背景遮罩去模糊,保留半透墨底(仍可聚焦弹窗) */
-  .ml-backdrop { -webkit-backdrop-filter:none; backdrop-filter:none; }
-
-  /* C. 主 CTA(theme.css .btn-ink)去光泽扫过 + 压平投影 */
-  form#f button#btn.btn-ink { box-shadow:none; }
-  form#f button#btn.btn-ink::after { display:none; }
-
-  /* D. 留白:HERO 与命例库之间更透气 */
-  .mingli { margin-bottom:32px; }
 </style>
 </head>
 <body>
@@ -522,6 +486,18 @@
   </div>
 
   <header class="lead reveal-group">
+    <svg class="dao-ring" viewBox="0 0 88 88" width="72" height="72" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+      <circle cx="44" cy="44" r="40" opacity=".55"/>
+      <circle cx="44" cy="44" r="27" opacity=".85"/>
+      <g fill="currentColor" stroke="none">
+        <circle cx="78" cy="44" r="1.5"/><circle cx="73.44" cy="61" r="1.5"/><circle cx="61" cy="73.44" r="1.5"/>
+        <circle cx="44" cy="78" r="1.5"/><circle cx="27" cy="73.44" r="1.5"/><circle cx="14.56" cy="61" r="1.5"/>
+        <circle cx="10" cy="44" r="1.5"/><circle cx="14.56" cy="27" r="1.5"/><circle cx="27" cy="14.56" r="1.5"/>
+        <circle cx="44" cy="10" r="1.5"/><circle cx="61" cy="14.56" r="1.5"/><circle cx="73.44" cy="27" r="1.5"/>
+      </g>
+      <path d="M33 52 L44 36 L56 49"/>
+      <g fill="currentColor" stroke="none"><circle cx="33" cy="52" r="2.2"/><circle cx="44" cy="36" r="2.2"/><circle cx="56" cy="49" r="2.2"/></g>
+    </svg>
     <div class="kick"><span class="dot"></span><span data-i18n="hero.badge">天命 · 紫薇八字 · 真太阳时</span>　<span class="cn" data-i18n="hero.kickcn">观象入元</span></div>
     <h1 data-i18n="hero.title">天 命</h1>
     <p class="lede"><b data-i18n="hero.motto">由易入理,三才合一。</b><span data-i18n="hero.sub">把纠结说给它听,它陪你把选择想清楚——四柱见性格倾向与能量节奏,是依据,不是判决。</span></p>

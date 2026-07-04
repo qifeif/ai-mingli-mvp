@@ -4,28 +4,6 @@
 
 ---
 
-## 2026-07-04(六·二)— 天命页 + 落地页 深简化(MetaSight 极简风,保留墨韵底色)
-
-### 做了什么
-用户要求参考 MetaSight 极简风,但"只深简化,不抢墨韵底"。范围:仅 index(天命)+ landing(落地)两页,**全部页面级 override,不动 theme.css**(其余 5 页零影响)。
-- **背景**:水墨山水底图(theme.css `body::after` 全局)在这两页被 override 成近纯宣纸(纸纱 opacity 抬到 .93→.97,山只剩 ~5% 隐约),噪点纹降到 .16,隐去顶部 aurora 晕。→ 干净留白,墨韵色底仍在。
-- **卡片扁平化**:.ml-card/.chart-panel/.reading/.zw-panel/.sfsz/form + landing 的 .dao/.feat/.tier/.faq/.cf-mock 去玻璃(backdrop-blur)、去重阴影、统一 16px 圆角、实底 #FBFCFB + 1px 发丝线;hover 只压深边框(去金线+抬升)。弹窗 .ml-dialog 去玻璃。
-- **按钮**:#btn.btn-ink 去光泽扫过+阴影(theme.css 全局 .btn-ink 未动);landing CTA 去阴影。
-- **hero 简化**:天命页删旋转星盘环 dao-ring SVG、标题缩小去渐变投影、压缩留白;落地页删巨型太极八卦 SVG、hero 由白字压图改宣纸暗字、去 100svh 撑高,section 留白加大。
-
-### 验证(Playwright)
-- 两页极简效果 ✓(截图确认:faint wash / 扁平发丝卡 / 紧凑 hero / 无星盘八卦,墨韵色+朱砂在)。
-- **其它 5 页零影响** ✓:git 仅改 index+landing 两文件;地运页截图确认仍是完整墨韵(水墨底/玻璃卡/罗盘 SVG/侧栏卡)。
-- 落地页各 section 慢速滚动 reveal 全触发(0 hidden;之前"blank"是全页截图未触发 IO 的假象,非 bug)。
-- 移动端 375 两页无横向溢出;console 零错;npm test 43/43。
-- 改动未提交,等用户拍板。
-
-### 下一步
-1. 若满意,可把极简风铺到其余功能页(地运/人间道/合参/对话)。
-2. nav-frost 玻璃暂保留(合理:滚动时压内容需可读),如要全平可再改。
-
----
-
 ## 2026-07-04(六)— 解读排版优化(前端 markdown 渲染)+ 隐去人名(改易理口径)
 
 ### 做了什么
