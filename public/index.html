@@ -148,10 +148,6 @@
     .ml-tagpick .tg, .ml-close, .btn-cancel { transition:none; }
   }
 
-  /* 工作台(表单已移入弹窗,此处只余引导侧栏,单列布局) */
-  .studio { display:block; }
-  .studio .aside { position:static; }
-
   /* 表单卡(玻璃化:视觉底/边/影交给 .glass,本规则只留骨架) */
   form { border-radius:20px; padding:30px; }
   .form-cap { display:flex; align-items:baseline; gap:10px; margin-bottom:22px; }
@@ -223,35 +219,6 @@
     .wheel-item { transition:none; }
   }
 
-  /* 侧栏 */
-  .aside { display:flex; flex-direction:column; gap:16px; position:sticky; top:24px; }
-  .cardx { background:var(--glass); border:1px solid var(--line); border-radius:16px; padding:22px 22px 20px;
-    -webkit-backdrop-filter:blur(14px) saturate(1.05); backdrop-filter:blur(14px) saturate(1.05);
-    box-shadow:var(--shadow-soft); }
-  .cardx .xh { display:flex; align-items:center; gap:11px; margin-bottom:14px; }
-  .cardx .xh .ico { width:36px; height:36px; border-radius:10px; display:grid; place-items:center;
-    background:var(--bg-2); border:1px solid var(--line); flex:none; }
-  .cardx .xh .ico svg { width:21px; height:21px; stroke:var(--accent); fill:none; stroke-width:1.4; }
-  .cardx .xh h4 { font-family:"Songti SC","Noto Serif SC",serif; font-size:16px; letter-spacing:2px; color:var(--accent); margin:0; }
-  .cardx p { font-size:13.5px; color:var(--muted); line-height:1.95; margin:0; }
-  .cardx p b { color:var(--ink); font-weight:600; }
-
-  .steps { list-style:none; margin:0; padding:0; display:grid; gap:13px; }
-  .steps li { display:flex; gap:12px; font-size:13.5px; color:var(--muted); line-height:1.7; }
-  .steps li .n { flex:none; width:24px; height:24px; border-radius:50%; background:var(--bg-2); border:1px solid var(--line);
-    color:var(--accent-2); font-family:var(--mono); font-size:12px; display:grid; place-items:center; margin-top:1px; }
-  .steps li b { color:var(--ink); font-weight:600; }
-
-  .cross { display:grid; gap:10px; }
-  .xlink { display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--line); border-radius:12px;
-    background:var(--bg-2); transition:border-color var(--dur-2) var(--ease), transform var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease); }
-  .xlink:hover { border-color:rgba(168,131,76,.5); transform:translateY(-3px); box-shadow:var(--shadow-soft); }
-  .xlink .ico { width:38px; height:38px; border-radius:50%; background:var(--bg); border:1px solid var(--line);
-    display:grid; place-items:center; flex:none; }
-  .xlink .ico svg { width:21px; height:21px; stroke:var(--accent); fill:none; stroke-width:1.4; }
-  .xlink .xt b { display:block; font-family:"Songti SC","Noto Serif SC",serif; color:var(--accent); letter-spacing:1px; font-size:14px; }
-  .xlink .xt span { color:var(--faint); font-size:12px; }
-  .xlink .arr { margin-left:auto; color:var(--faint); font-size:18px; }
 
   /* 结果区(整宽) */
   #result { margin-top:30px; }
@@ -464,10 +431,6 @@
     color:var(--muted); padding:48px; letter-spacing:3px; animation:pulse 1.6s ease-in-out infinite; }
   @keyframes pulse { 0%,100% { opacity:.5; } 50% { opacity:1; } }
 
-  @media (max-width: 900px) {
-    .studio { grid-template-columns:1fr; }
-    .aside { position:static; }
-  }
   @media (max-width: 560px) {
     .lead h1 { letter-spacing:8px; }
     .shell { padding:24px 16px 76px; }
@@ -488,8 +451,7 @@
   @media (prefers-reduced-motion: reduce) {
     #result .loading { animation:none; }
     .zw-fly-svg path { animation:none; }
-    .seg span::after, .zw-cell::after, .xlink, .lead .dao-ring { transition:none; }
-    .xlink:hover { transform:none; }
+    .seg span::after, .zw-cell::after, .lead .dao-ring { transition:none; }
   }
 </style>
 </head>
@@ -657,47 +619,6 @@
     </div>
   </div>
 
-  <div class="studio">
-    <aside class="aside reveal-group">
-      <div class="cardx">
-        <div class="xh">
-          <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke-linecap="round"/></svg></span>
-          <h4 data-i18n="aside.about.t">天命这一道</h4>
-        </div>
-        <p data-i18n="aside.about.p">紫微斗数以出生时刻安十二宫、布主星,<b>三方四正</b>合看,照见你的性格底色、资源格局与当下时机。它是<b>依据,不是判决</b>——给你一面更清楚照见自己的镜子。</p>
-      </div>
-      <div class="cardx">
-        <div class="xh">
-          <span class="ico"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9" stroke-linecap="round"/></svg></span>
-          <h4 data-i18n="aside.steps.t">怎么用</h4>
-        </div>
-        <ol class="steps">
-          <li><span class="n">1</span><span data-i18n="aside.s1">填出生信息,<b>出生地</b>用于真太阳时校正,越准越好。</span></li>
-          <li><span class="n">2</span><span data-i18n="aside.s2">写下此刻最纠结的<b>一件事</b>,越具体,解读越贴。</span></li>
-          <li><span class="n">3</span><span data-i18n="aside.s3">读命盘 + AI 解读,把它当<b>参考</b>,决定权仍在你。</span></li>
-        </ol>
-      </div>
-      <div class="cardx">
-        <div class="xh">
-          <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 .7 1-5.5-4-3.9 5.5-.8z" stroke-linejoin="round"/></svg></span>
-          <h4 data-i18n="aside.cross.t">三道互参</h4>
-        </div>
-        <div class="cross">
-          <a class="xlink" href="/diyun">
-            <span class="ico"><svg viewBox="0 0 24 24"><polygon points="12,3 17,5.5 19.5,12 17,18.5 12,21 7,18.5 4.5,12 7,5.5"/><circle cx="12" cy="12" r="2.5"/></svg></span>
-            <span class="xt"><b data-i18n="cross.diyun">地运 · 调你的场</b><span data-i18n="cross.diyun.d">八宅方位,把居所调到帮你的那一面</span></span>
-            <span class="arr">→</span>
-          </a>
-          <a class="xlink" href="/renjiandao">
-            <span class="ico"><svg viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round"><path d="M6 7h12M6 12h5M15 12h3M6 17h12"/></svg></span>
-            <span class="xt"><b data-i18n="cross.renjiandao">人间道 · 问时机</b><span data-i18n="cross.renjiandao.d">摇一卦,看眼下处境宜动宜静</span></span>
-            <span class="arr">→</span>
-          </a>
-        </div>
-      </div>
-    </aside>
-  </div>
-
   <div id="result"></div>
   <div class="hint" data-i18n="f.disclaimer">AI 输出仅供参考与自我思考,不构成任何预测或建议 · 决定权永远在你</div>
 </div>
@@ -725,9 +646,6 @@ const I18N = {
     'f.loading_btn':'解 读 中…','loading':'正在为你点亮命运星图…','err':'出错了：','unavail':'解读暂不可用：',
     'offline_note':'以上为离线排盘结果;配置 ANTHROPIC_API_KEY 后即可获得 AI 解读。','airead':'AI 深度解读','scene':'场景 · ',
     'sc.decision':'抉择','sc.emotion':'情感','sc.timing':'时机','sc.self':'自我认知',
-    'aside.about.t':'天命这一道','aside.about.p':'紫微斗数以出生时刻安十二宫、布主星,三方四正合看,照见你的性格底色、资源格局与当下时机。它是依据,不是判决——给你一面更清楚照见自己的镜子。',
-    'aside.steps.t':'怎么用','aside.s1':'填出生信息,出生地用于真太阳时校正,越准越好。','aside.s2':'写下此刻最纠结的一件事,越具体,解读越贴。','aside.s3':'读命盘 + AI 解读,把它当参考,决定权仍在你。',
-    'aside.cross.t':'三道互参','cross.diyun':'地运 · 调你的场','cross.diyun.d':'八宅方位,把居所调到帮你的那一面','cross.renjiandao':'人间道 · 问时机','cross.renjiandao.d':'摇一卦,看眼下处境宜动宜静',
     'zw.year.now':'当前','zw.year.prev':'查看上一年','zw.year.next':'查看下一年',
     'zw.fly.toggle':'四化飞星连线','zw.fly.hint':'虚线示意,命宫 → 化禄/权/科/忌 落宫',
   },
@@ -750,9 +668,6 @@ const I18N = {
     'f.loading_btn':'Reading…','loading':'Lighting up your chart…','err':'Error: ','unavail':'Reading unavailable: ',
     'offline_note':'Above is the offline chart; set ANTHROPIC_API_KEY to get the AI reading.','airead':'AI reading','scene':'Topic · ',
     'sc.decision':'Decision','sc.emotion':'Relationship','sc.timing':'Timing','sc.self':'Self',
-    'aside.about.t':'About Tian Ming','aside.about.p':'Zi Wei Dou Shu lays out twelve palaces and the major stars from your birth moment; reading the triad and opposition together reveals your temperament, resources and timing. A basis, not a verdict — a clearer mirror for seeing yourself.',
-    'aside.steps.t':'How to use','aside.s1':'Enter your birth details; birthplace drives true-solar-time correction — accuracy matters.','aside.s2':'Write the one thing on your mind; the more specific, the closer the reading.','aside.s3':'Read the chart + AI reading as a reference — the decision stays yours.',
-    'aside.cross.t':'Cross-reference','cross.diyun':'Di Yun · tune your space','cross.diyun.d':'Eight Mansions — set your home to the side that helps you','cross.renjiandao':'Ren Jian Dao · ask the timing','cross.renjiandao.d':'Cast a hexagram — see whether to move or wait',
     'zw.year.now':'Now','zw.year.prev':'View previous year','zw.year.next':'View next year',
     'zw.fly.toggle':'Mutagen flow lines','zw.fly.hint':'Dashed lines: Life palace → where Lu/Quan/Ke/Ji land',
   },
