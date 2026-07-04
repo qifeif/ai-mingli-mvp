@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>心易 · 合参 双人八字对照</title>
+<link rel="stylesheet" href="/theme.css" />
+<script src="/fx.js" defer></script>
+<style>
+  a { color:inherit; text-decoration:none; }
+  .shell { max-width:1140px; margin:0 auto; padding:30px 24px 100px; position:relative; }
+
+  /* 顶栏 */
+  .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .top .logo { display:flex; align-items:center; gap:9px; }
+  .top .logo .seal-mini { width:27px; height:27px; border-radius:6px; background:var(--cinnabar); color:#F3EAD8;
+    font-family:"Songti SC","Noto Serif SC",serif; font-size:15px; font-weight:700; display:grid; place-items:center;
+    box-shadow:0 2px 8px -2px rgba(166,64,47,.5); }
+  .top .logo .lt { font-family:"Songti SC","Noto Serif SC",serif; font-size:20px; font-weight:700; letter-spacing:4px; color:var(--accent); }
+  .top .nav { display:flex; gap:18px; font-size:14px; color:var(--muted); align-items:center; flex-wrap:wrap; }
+  .top .nav a:hover { color:var(--ink); }
+  .top .nav a.on { color:var(--accent); font-weight:600; }
+  .langtog { border:1px solid var(--line); border-radius:999px; padding:6px 13px; font-size:12px; color:var(--muted);
+    cursor:pointer; background:var(--card); letter-spacing:1px; font-family:inherit; display:inline-flex;
+    align-items:center; min-height:34px; }
+  .langtog:hover { color:var(--ink); border-color:var(--accent-2); }
+  .langtog:focus-visible { outline:2px solid var(--cinnabar); outline-offset:2px; }
+  /* nav 玻璃霜化(.nav-frost 由 theme.css 提供,滚动态 .scrolled 由 fx.js 挂) */
+  .top.nav-frost { position:sticky; top:10px; z-index:30; border-radius:14px; padding:10px 16px; }
+
+  /* 编辑式 HERO */
+  .lead { text-align:center; max-width:760px; margin:30px auto 46px; }
+  .lead .kick { font-family:var(--mono); font-size:12px; letter-spacing:3px; color:var(--cinnabar);
+    text-transform:uppercase; display:inline-flex; align-items:center; gap:8px; }
+  .lead .kick .dot { width:6px; height:6px; border-radius:50%; background:var(--accent-2); box-shadow:0 0 10px var(--glow); }
+  .lead .kick .cn { font-family:var(--serif); letter-spacing:4px; color:var(--muted); }
+  .lead h1 { font-family:"Songti SC","Noto Serif SC",serif; font-size:clamp(40px,7vw,62px); font-weight:600;
+    letter-spacing:12px; margin:14px 0 0; background:var(--grad); -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; filter:drop-shadow(0 4px 28px rgba(42,38,32,.28)); }
+  .lead .lede { color:var(--muted); font-size:16px; line-height:2; margin:18px auto 0; max-width:600px; }
+  .lead .lede b { color:var(--ink); font-weight:600; }
+  /* 合参道纹样:双环相扣,交叠处一点朱砂(MASTER §3,装饰,aria-hidden) */
+  .lead .dao-motif { display:block; margin:16px auto 0; color:var(--muted); opacity:.9; transition:color var(--dur-2) var(--ease); }
+  .lead .dao-motif:hover { color:var(--cinnabar); }
+
+  /* 工作台双栏 */
+  .studio { display:grid; grid-template-columns:minmax(0,1.42fr) minmax(0,1fr); gap:26px; align-items:start; }
+
+  /* 表单卡(玻璃化:视觉底/边/影交给 .glass,本规则只留骨架) */
+  form { border-radius:20px; padding:30px; }
+  .form-cap { display:flex; align-items:baseline; gap:10px; margin-bottom:22px; }
+  .form-cap h2 { font-family:"Songti SC","Noto Serif SC",serif; font-size:19px; letter-spacing:3px; color:var(--accent); margin:0; }
+  .form-cap span { font-size:12px; color:var(--faint); letter-spacing:.5px; }
+  .row { display:flex; gap:16px; margin-bottom:18px; } .row>div { flex:1; min-width:0; }
+  label { display:block; font-size:12px; color:var(--muted); margin-bottom:8px; letter-spacing:1px; }
+  input, select, textarea { width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:11px;
+    background:var(--bg-2); color:var(--ink); font-family:inherit; font-size:15px; transition:border-color .2s, box-shadow .2s; }
+  input::placeholder, textarea::placeholder { color:var(--faint); }
+  textarea { resize:vertical; min-height:92px; line-height:1.7; }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(42,38,32,.16); }
+  select option { background:#fff; }
+  /* 提交按钮:视觉走 .btn-ink(theme.css),这里只留布局级覆写;loading 视觉由 :disabled 叠加 */
+  button#btn { width:100%; margin-top:6px; min-height:50px; font-size:16px; letter-spacing:4px; }
+  button#btn:disabled{ opacity:.82; cursor:default; pointer-events:none; }
+  button#btn:disabled::before { animation:inkBlink 1s infinite var(--ease); }
+
+  /* 分段选择(与天命页同款,墨色调) */
+  .seg { display:flex; width:100%; background:var(--bg-2); border:1px solid var(--line); border-radius:11px; padding:4px; gap:4px; }
+  .seg label { flex:1; position:relative; margin:0; }
+  .seg input { position:absolute; inset:0; opacity:0; margin:0; cursor:pointer; }
+  .seg span { display:block; text-align:center; padding:9px 6px; border-radius:8px; font-size:14px; color:var(--muted);
+    letter-spacing:1px; transition:all .18s; pointer-events:none; }
+  .seg label:hover span { color:var(--ink); }
+  .seg input:checked + span { background:var(--grad); color:#fff; box-shadow:0 6px 16px -8px var(--glow); }
+  .seg input:focus-visible + span { box-shadow:0 0 0 2px rgba(166,64,47,.55); }
+  /* seg 选中态朱砂印点(呼应 .btn-ink 的朱砂细节) */
+  .seg span::before { content:""; display:inline-block; width:6px; height:6px; border-radius:50%; background:transparent;
+    margin-right:7px; vertical-align:1px; transition:background var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease); }
+  .seg input:checked + span::before { background:var(--cinnabar); box-shadow:0 0 0 2px rgba(166,64,47,.28); }
+
+  /* 甲/乙 表单分组(合参特有:两组出生信息,甲乙发丝线左右呼应) */
+  .pgroup { border-top:1px dashed var(--line); padding-top:18px; margin-top:4px; }
+  .pgroup .pg-cap { display:flex; align-items:center; gap:9px; margin-bottom:14px; }
+  .pgroup .pg-cap::after { content:""; flex:1; height:1px; background:linear-gradient(90deg, var(--line), transparent); }
+  .pgroup .pg-cap .ptag { width:26px; height:26px; border-radius:50%; color:#F3EAD8; flex:none;
+    font-family:"Songti SC","Noto Serif SC",serif; font-size:14px; font-weight:700; display:grid; place-items:center; }
+  .ptag.a { background:var(--cinnabar); box-shadow:0 2px 8px -2px rgba(166,64,47,.5); }
+  .ptag.b { background:var(--accent-2); box-shadow:0 2px 8px -2px rgba(51,69,58,.5); }
+  .pgroup .pg-cap h3 { font-family:"Songti SC","Noto Serif SC",serif; font-size:15px; letter-spacing:2px; color:var(--accent); margin:0; }
+
+  /* 侧栏 */
+  .aside { display:flex; flex-direction:column; gap:16px; position:sticky; top:24px; }
+  /* 侧栏卡(玻璃化:视觉交给 .glass) */
+  .cardx { border-radius:16px; padding:22px 22px 20px; }
+  .cardx .xh { display:flex; align-items:center; gap:11px; margin-bottom:14px; }
+  .cardx .xh .ico { width:36px; height:36px; border-radius:10px; display:grid; place-items:center;
+    background:var(--bg-2); border:1px solid var(--line); flex:none; }
+  .cardx .xh .ico svg { width:21px; height:21px; stroke:var(--accent); fill:none; stroke-width:1.4; }
+  .cardx .xh h4 { font-family:"Songti SC","Noto Serif SC",serif; font-size:16px; letter-spacing:2px; color:var(--accent); margin:0; }
+  .cardx p { font-size:13.5px; color:var(--muted); line-height:1.95; margin:0; }
+  .cardx p b { color:var(--ink); font-weight:600; }
+
+  .steps { list-style:none; margin:0; padding:0; display:grid; gap:13px; }
+  .steps li { display:flex; gap:12px; font-size:13.5px; color:var(--muted); line-height:1.7; }
+  .steps li .n { flex:none; width:24px; height:24px; border-radius:50%; background:var(--bg-2); border:1px solid var(--line);
+    color:var(--accent-2); font-family:var(--mono); font-size:12px; display:grid; place-items:center; margin-top:1px; }
+  .steps li b { color:var(--ink); font-weight:600; }
+
+  .cross { display:grid; gap:10px; }
+  .xlink { display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--line); border-radius:12px;
+    background:var(--bg-2); transition:border-color .2s, transform .2s; }
+  .xlink:hover { border-color:var(--bronze); transform:translateX(2px); }
+  .xlink .ico { width:38px; height:38px; border-radius:50%; background:var(--bg); border:1px solid var(--line);
+    display:grid; place-items:center; flex:none; }
+  .xlink .ico svg { width:21px; height:21px; stroke:var(--accent); fill:none; stroke-width:1.4; }
+  .xlink .xt b { display:block; font-family:"Songti SC","Noto Serif SC",serif; color:var(--accent); letter-spacing:1px; font-size:14px; }
+  .xlink .xt span { color:var(--faint); font-size:12px; }
+  .xlink .arr { margin-left:auto; color:var(--faint); font-size:18px; }
+
+  /* 结果区(整宽,卡片玻璃化) */
+  #result { margin-top:30px; }
+  .reading { background:var(--glass); -webkit-backdrop-filter:blur(14px) saturate(1.05); backdrop-filter:blur(14px) saturate(1.05);
+    border:1px solid var(--line); border-radius:20px; padding:34px;
+    white-space:pre-wrap; font-size:16px; line-height:2; box-shadow:var(--shadow-soft); }
+  .meta { font-size:12px; color:var(--accent-2); margin-bottom:20px; letter-spacing:.5px; padding-bottom:16px; border-bottom:1px solid var(--line); }
+  .crisis { border-color:rgba(110,103,91,.5); box-shadow:0 0 0 1px rgba(110,103,91,.25), var(--shadow); }
+  .err { color:var(--cinnabar); font-size:14px; }
+  .hint { text-align:center; color:var(--faint); font-size:12px; margin-top:30px; letter-spacing:.5px; }
+  /* 等待态:玻璃卡 + 三墨点 + 醒目提示(流程不动只强化呈现) */
+  .loading { display:flex; flex-direction:column; align-items:center; gap:16px; text-align:center;
+    color:var(--muted); padding:56px 24px; letter-spacing:3px; border-radius:20px; }
+  .loading .ink-dots i { width:8px; height:8px; background:var(--cinnabar); }
+  .loading .load-txt { font-family:var(--serif); font-size:16px; letter-spacing:4px; color:var(--ink);
+    animation:pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity:.5; } 50% { opacity:1; } }
+
+  /* 结果分节标题 */
+  .sec-cap { display:flex; align-items:baseline; gap:12px; margin:26px 0 14px; flex-wrap:wrap; }
+  .sec-cap:first-child { margin-top:0; }
+  .sec-cap h3 { font-family:"Songti SC","Noto Serif SC",serif; font-size:20px; letter-spacing:4px; margin:0;
+    background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .sec-cap .mode-pill { font-size:11px; color:var(--cinnabar); border:1px solid rgba(166,64,47,.35); background:var(--cinnabar-soft); border-radius:999px; padding:3px 11px; letter-spacing:1px; }
+  .sec-cap .corr { font-size:11px; color:var(--faint); letter-spacing:.3px; }
+
+  /* ===== 两人四柱简卡并排(玻璃化,左右呼应错位入场) ===== */
+  .duo { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+  .pcard { background:var(--glass); -webkit-backdrop-filter:blur(14px) saturate(1.05); backdrop-filter:blur(14px) saturate(1.05);
+    border:1px solid var(--line); border-radius:20px; padding:26px; box-shadow:var(--shadow-soft); min-width:0; }
+  .pcard .ph { display:flex; align-items:center; gap:10px; margin-bottom:4px; flex-wrap:wrap; }
+  .pcard .ph .pname { font-family:"Songti SC","Noto Serif SC",serif; font-size:17px; letter-spacing:2px; color:var(--accent); }
+  .pcard .ph .corr { font-size:11px; color:var(--faint); margin-left:auto; }
+  .pcard .pbase { font-size:12px; color:var(--faint); margin-bottom:16px; letter-spacing:.3px; line-height:1.6; }
+  .pcard .t { font-size:12px; color:var(--accent-2); letter-spacing:2px; margin:16px 0 10px; }
+  .pillars { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .pillar { text-align:center; border:1px solid var(--line); border-radius:13px; padding:12px 4px; background:var(--bg-2); min-width:0; }
+  .pillar.day { border-color:rgba(110,103,91,.55); box-shadow:0 0 0 1px rgba(110,103,91,.25), 0 0 24px -6px var(--glow); }
+  .pillar .pos { font-size:11px; color:var(--faint); letter-spacing:1px; margin-bottom:8px; }
+  .pillar .gz { font-family:"Songti SC","Noto Serif SC",serif; font-size:26px; line-height:1.25; color:var(--ink); }
+  .pillar.day .gz { background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .pillar .gz.en { font-size:13px; line-height:1.5; letter-spacing:.3px; }
+  .daymain { display:flex; align-items:center; gap:14px; border:1px solid var(--line); border-radius:13px; padding:12px 14px; background:var(--bg-2); }
+  .daymain .big { font-family:"Songti SC",serif; font-size:30px; background:var(--grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; flex:none; }
+  .daymain .big.en { font-size:20px; }
+  .daymain .dm-txt { font-size:13px; color:var(--muted); min-width:0; }
+  .daymain .dm-txt b { color:var(--ink); font-weight:600; }
+  .pill { display:inline-block; font-size:11px; padding:2px 9px; border-radius:999px; border:1px solid var(--line); color:var(--accent-2); margin-left:6px; }
+  .wx-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:13px; }
+  .wx-row .wx-name { flex:none; min-width:22px; color:var(--muted); }
+  .wx-bar { flex:1; height:9px; border-radius:999px; background:var(--bg-2); overflow:hidden; }
+  .wx-bar > i { display:block; height:100%; border-radius:999px; background:var(--grad); }
+  .wx-row .wx-n { width:18px; text-align:right; color:var(--faint); font-size:12px; flex:none; }
+  .wx-note { font-size:12px; color:var(--faint); margin-top:8px; } .wx-note b { color:var(--accent-2); }
+
+  /* ===== compare 维度卡(玻璃化) ===== */
+  .cmp-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+  .cmp-card { background:var(--glass); -webkit-backdrop-filter:blur(14px) saturate(1.05); backdrop-filter:blur(14px) saturate(1.05);
+    border:1px solid var(--line); border-radius:16px; padding:24px; box-shadow:var(--shadow-soft); min-width:0; }
+  .cmp-card.span2 { grid-column:1 / -1; }
+  .cmp-card .ch { font-size:12px; color:var(--accent-2); letter-spacing:2px; margin-bottom:14px; }
+  .cmp-card .hua { font-size:14px; color:var(--muted); line-height:1.95; margin-top:12px; }
+  .cmp-vs { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .cmp-vs .side { font-family:"Songti SC","Noto Serif SC",serif; font-size:17px; color:var(--ink); }
+  .cmp-vs .side .who { font-size:11px; color:var(--faint); font-family:var(--sans); margin-right:5px; }
+  .rel-badge { display:inline-block; font-size:12px; padding:3px 12px; border-radius:999px; border:1px solid var(--line);
+    background:var(--bg-2); color:var(--accent-2); letter-spacing:1px; }
+  .rel-badge.good { color:var(--good); border-color:var(--good-line); background:var(--good-bg); }
+  .rel-badge.bad { color:var(--bad); border-color:var(--bad-line); background:var(--bad-bg); }
+  .ss-look + .ss-look { border-top:1px solid var(--line-soft); padding-top:12px; margin-top:12px; }
+  .ss-look .who { font-size:12px; color:var(--faint); letter-spacing:.5px; }
+  .ss-look .name { font-family:"Songti SC","Noto Serif SC",serif; font-size:16px; color:var(--accent); margin:0 6px; }
+  .ss-look .hua { margin-top:6px; }
+  .zhi-list { display:grid; gap:12px; }
+  .zhi-item { border:1px solid var(--line); border-radius:12px; padding:13px 15px; background:var(--bg-2); }
+  .zhi-item .zline { display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-bottom:6px; }
+  .zhi-item .pair { font-family:"Songti SC","Noto Serif SC",serif; font-size:16px; color:var(--ink); }
+  .zhi-item .pos-s { font-size:11px; color:var(--faint); }
+  .zhi-item .hua { margin-top:0; font-size:13.5px; }
+  .zhi-none { font-size:14px; color:var(--muted); line-height:1.9; }
+  .wxc-wrap { overflow-x:auto; margin-top:12px; }
+  .wxc { width:100%; border-collapse:collapse; font-size:13px; }
+  .wxc th, .wxc td { padding:6px 8px; border-top:1px solid var(--line-soft); text-align:center; color:var(--muted); }
+  .wxc th { color:var(--faint); font-weight:500; letter-spacing:1px; }
+  .wxc td.el { font-family:"Songti SC","Noto Serif SC",serif; color:var(--ink); }
+  .wxc .mk { font-size:11px; color:var(--good); border:1px solid var(--good-line); background:var(--good-bg); border-radius:999px; padding:1px 8px; white-space:nowrap; }
+  .dy-vs { display:grid; gap:8px; margin-bottom:4px; }
+  .dy-vs .dline { display:flex; align-items:baseline; gap:8px; font-size:14px; color:var(--muted); }
+  .dy-vs .dline .who { font-size:11px; color:var(--faint); flex:none; }
+  .dy-vs .dline b { font-family:"Songti SC","Noto Serif SC",serif; color:var(--ink); font-weight:600; }
+
+  /* ===== summary 四块(玻璃化) ===== */
+  .sum-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+  .sum-card { background:var(--glass); -webkit-backdrop-filter:blur(14px) saturate(1.05); backdrop-filter:blur(14px) saturate(1.05);
+    border:1px solid var(--line); border-radius:16px; padding:24px 26px; box-shadow:var(--shadow-soft); min-width:0; }
+  .sum-card h5 { font-family:"Songti SC","Noto Serif SC",serif; font-size:16px; letter-spacing:2px; margin:0 0 12px;
+    color:var(--accent); display:flex; align-items:center; gap:9px; }
+  .sum-card h5 .sn { flex:none; width:22px; height:22px; border-radius:50%; background:var(--bg-2); border:1px solid var(--line);
+    color:var(--accent-2); font-family:var(--mono); font-size:11px; display:grid; place-items:center; }
+  .sum-card p { font-size:14.5px; color:var(--muted); line-height:2; margin:0; }
+
+  #result > .reading { margin-top:26px; }
+
+  /* 动态结果卡入场级差(fx.js 只处理静态 .reveal-group,动态节点用 CSS 动画补齐;只动 transform/opacity) */
+  @keyframes cardIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+  .duo > .pcard, .cmp-grid > .cmp-card, .sum-grid > .sum-card { animation:cardIn var(--dur-2) var(--ease) backwards; }
+  .duo > .pcard:nth-child(2), .cmp-grid > .cmp-card:nth-child(2), .sum-grid > .sum-card:nth-child(2) { animation-delay:.08s; }
+  .cmp-grid > .cmp-card:nth-child(3), .sum-grid > .sum-card:nth-child(3) { animation-delay:.16s; }
+  .cmp-grid > .cmp-card:nth-child(4), .sum-grid > .sum-card:nth-child(4) { animation-delay:.24s; }
+  .cmp-grid > .cmp-card:nth-child(5) { animation-delay:.32s; }
+
+  @media (max-width: 900px) {
+    .studio { grid-template-columns:1fr; }
+    .aside { position:static; }
+    .duo, .cmp-grid, .sum-grid { grid-template-columns:1fr; }
+  }
+  @media (max-width: 560px) {
+    .lead h1 { letter-spacing:8px; }
+    .shell { padding:24px 16px 76px; }
+    .row { flex-direction:column; gap:16px; align-items:stretch !important; }
+    form, .reading { padding:22px; }
+    .pcard, .cmp-card, .sum-card { padding:18px; }
+    .top .nav { gap:13px; font-size:13px; }
+    .pillars { gap:5px; }
+    .pillar .gz { font-size:22px; }
+    .pillar .gz.en { font-size:11px; }
+  }
+  /* 页级动效全部受 reduced-motion 约束(theme.css/fx.js 已管组件层) */
+  @media (prefers-reduced-motion: reduce){
+    .duo > .pcard, .cmp-grid > .cmp-card, .sum-grid > .sum-card { animation:none; }
+    .loading .load-txt { animation:none; }
+    button#btn:disabled::before { animation:none; }
+    .lead .dao-motif, .seg span, .seg span::before, .xlink { transition:none; }
+    .xlink:hover { transform:none; }
+  }
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"></div>
+<div class="shell">
+  <div class="top nav-frost">
+    <a href="/" class="logo"><span class="seal-mini">易</span><span class="lt">心易</span></a>
+    <div class="nav">
+      <a href="/app" data-i18n="nav.tianming">天命</a>
+      <a href="/diyun" data-i18n="nav.diyun">地运</a>
+      <a href="/renjiandao" data-i18n="nav.renjiandao">人间道</a>
+      <a href="/#pricing" data-i18n="nav.pricing">定价</a>
+      <button class="langtog" id="langtog" type="button" aria-label="切换中英文 / Switch language">EN</button>
+    </div>
+  </div>
+
+  <header class="lead">
+    <div class="kick"><span class="dot"></span><span data-i18n="hero.badge">合参 · 双人八字 · 婚恋与合伙</span>　<span class="cn" data-i18n="hero.kickcn">两盘合观</span></div>
+    <svg class="dao-motif" aria-hidden="true" width="72" height="52" viewBox="0 0 132 96" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="48" cy="48" r="30"/>
+      <circle cx="84" cy="48" r="30"/>
+      <circle cx="66" cy="48" r="3.5" fill="var(--cinnabar)" stroke="none"/>
+    </svg>
+    <h1 data-i18n="hero.title">合 参</h1>
+    <p class="lede"><b data-i18n="hero.motto">一人一盘,合而参之。</b><span data-i18n="hero.sub">把两个人的八字放在一起对照——日主生克、十神互看、地支合冲、五行互补,看的是互动倾向与相处线索,是画像,不是判决。</span></p>
+  </header>
+
+  <div class="studio">
+    <form id="f" class="glass">
+      <div class="form-cap"><h2 data-i18n="form.cap">两盘信息</h2><span data-i18n="form.capsub">两人出生信息 + 此刻所问</span></div>
+      <div class="row">
+        <div>
+          <label data-i18n="f.rel">合参类型</label>
+          <div class="seg">
+            <label><input type="radio" name="relation" value="love" checked /><span data-i18n="f.rel_love">婚恋合参</span></label>
+            <label><input type="radio" name="relation" value="partner" /><span data-i18n="f.rel_partner">合伙合参</span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="pgroup">
+        <div class="pg-cap"><span class="ptag a">甲</span><h3 data-i18n="f.pa">甲 · 第一人</h3></div>
+        <div class="row">
+          <div>
+            <label data-i18n="f.gender">性别</label>
+            <div class="seg">
+              <label><input type="radio" name="genderA" value="女" /><span data-i18n="f.female">女</span></label>
+              <label><input type="radio" name="genderA" value="男" checked /><span data-i18n="f.male">男</span></label>
+            </div>
+          </div>
+          <div>
+            <label for="fa-place" data-i18n="f.place">出生地</label>
+            <input id="fa-place" name="placeA" value="北京" class="inkline" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="fa-date" data-i18n="f.date">出生日期</label>
+            <input id="fa-date" type="date" name="dateA" value="1990-06-15" class="inkline" />
+          </div>
+          <div>
+            <label for="fa-time" data-i18n="f.time">出生时间</label>
+            <input id="fa-time" type="time" name="timeA" value="08:30" class="inkline" />
+          </div>
+        </div>
+      </div>
+
+      <div class="pgroup">
+        <div class="pg-cap"><span class="ptag b">乙</span><h3 data-i18n="f.pb">乙 · 第二人</h3></div>
+        <div class="row">
+          <div>
+            <label data-i18n="f.gender">性别</label>
+            <div class="seg">
+              <label><input type="radio" name="genderB" value="女" checked /><span data-i18n="f.female">女</span></label>
+              <label><input type="radio" name="genderB" value="男" /><span data-i18n="f.male">男</span></label>
+            </div>
+          </div>
+          <div>
+            <label for="fb-place" data-i18n="f.place">出生地</label>
+            <input id="fb-place" name="placeB" value="上海" class="inkline" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="fb-date" data-i18n="f.date">出生日期</label>
+            <input id="fb-date" type="date" name="dateB" value="1992-12-01" class="inkline" />
+          </div>
+          <div>
+            <label for="fb-time" data-i18n="f.time">出生时间</label>
+            <input id="fb-time" type="time" name="timeB" value="22:10" class="inkline" />
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:18px">
+        <label for="f-question" data-i18n="f.q">想一起看清的事(可选)</label>
+        <textarea id="f-question" name="question" class="inkline" data-i18n-ph="f.q_ph" placeholder="比如:我们最近总在小事上吵架,该怎么磨合?越具体越好…"></textarea>
+      </div>
+      <button type="submit" id="btn" class="btn-ink" data-i18n="f.submit">两 盘 合 参</button>
+    </form>
+
+    <aside class="aside reveal-group">
+      <div class="cardx glass">
+        <div class="xh">
+          <span class="ico"><svg viewBox="0 0 24 24"><circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/></svg></span>
+          <h4 data-i18n="aside.about.t">合参是什么</h4>
+        </div>
+        <p data-i18n="aside.about.p">合参把两张八字盘放在一起对照:日主看气质生克,十神看彼此角色,地支看合冲刑害,五行看互补长短。它照见的是互动模式,不是姻缘或成败的判决——给你们一面看清彼此的镜子。</p>
+      </div>
+      <div class="cardx glass">
+        <div class="xh">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9" stroke-linecap="round"/></svg></span>
+          <h4 data-i18n="aside.steps.t">怎么用</h4>
+        </div>
+        <ol class="steps">
+          <li><span class="n">1</span><span data-i18n="aside.s1">选类型:<b>婚恋</b>看相处沟通,<b>合伙</b>看分工机制。</span></li>
+          <li><span class="n">2</span><span data-i18n="aside.s2">填两个人的出生信息,<b>出生地</b>用于真太阳时校正。</span></li>
+          <li><span class="n">3</span><span data-i18n="aside.s3">读四维对照与摘要,把它当<b>参考</b>,关系由你们自己定。</span></li>
+        </ol>
+      </div>
+      <div class="cardx glass">
+        <div class="xh">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 .7 1-5.5-4-3.9 5.5-.8z" stroke-linejoin="round"/></svg></span>
+          <h4 data-i18n="aside.cross.t">三道互参</h4>
+        </div>
+        <div class="cross">
+          <a class="xlink" href="/app">
+            <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke-linecap="round"/></svg></span>
+            <span class="xt"><b data-i18n="cross.tianming">天命 · 看自己</b><span data-i18n="cross.tianming.d">紫微命盘,先照见自己的底色</span></span>
+            <span class="arr">→</span>
+          </a>
+          <a class="xlink" href="/diyun">
+            <span class="ico"><svg viewBox="0 0 24 24"><polygon points="12,3 17,5.5 19.5,12 17,18.5 12,21 7,18.5 4.5,12 7,5.5"/><circle cx="12" cy="12" r="2.5"/></svg></span>
+            <span class="xt"><b data-i18n="cross.diyun">地运 · 调你的场</b><span data-i18n="cross.diyun.d">八宅方位,把居所调到帮你的那一面</span></span>
+            <span class="arr">→</span>
+          </a>
+          <a class="xlink" href="/renjiandao">
+            <span class="ico"><svg viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round"><path d="M6 7h12M6 12h5M15 12h3M6 17h12"/></svg></span>
+            <span class="xt"><b data-i18n="cross.renjiandao">人间道 · 问时机</b><span data-i18n="cross.renjiandao.d">摇一卦,看眼下处境宜动宜静</span></span>
+            <span class="arr">→</span>
+          </a>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div id="result"></div>
+  <div class="hint" data-i18n="f.disclaimer">合参说的是互动倾向,仅供参考与自我思考,不构成任何预测或婚恋/合作建议 · 关系的决定权永远在你们手里</div>
+</div>
+
+<script>
+const I18N = {
+  zh: {
+    'nav.tianming':'天命','nav.diyun':'地运','nav.renjiandao':'人间道','nav.pricing':'定价',
+    'hero.badge':'合参 · 双人八字 · 婚恋与合伙','hero.kickcn':'两盘合观','hero.title':'合 参',
+    'hero.motto':'一人一盘,合而参之。','hero.sub':'把两个人的八字放在一起对照——日主生克、十神互看、地支合冲、五行互补,看的是互动倾向与相处线索,是画像,不是判决。',
+    'form.cap':'两盘信息','form.capsub':'两人出生信息 + 此刻所问',
+    'f.rel':'合参类型','f.rel_love':'婚恋合参','f.rel_partner':'合伙合参',
+    'f.pa':'甲 · 第一人','f.pb':'乙 · 第二人',
+    'f.gender':'性别','f.female':'女','f.male':'男','f.place':'出生地','f.place_ph':'如 杭州',
+    'f.date':'出生日期','f.time':'出生时间','f.q':'想一起看清的事(可选)','f.q_ph':'比如:我们最近总在小事上吵架,该怎么磨合?越具体越好…',
+    'f.submit':'两 盘 合 参','f.loading_btn':'合 参 中…',
+    'f.disclaimer':'合参说的是互动倾向,仅供参考与自我思考,不构成任何预测或婚恋/合作建议 · 关系的决定权永远在你们手里',
+    'loading':'正在对照两张命盘…','err':'出错了：',
+    'offline_note':'以上为离线规则版合参;配置 ANTHROPIC_API_KEY 后可获得 AI 深化解读。','airead':'AI 深度解读',
+    'v.miss':'请补全两个人的出生日期与时间','v.bad':'出生日期或时间格式不对,请检查后重试',
+    'aside.about.t':'合参是什么','aside.about.p':'合参把两张八字盘放在一起对照:日主看气质生克,十神看彼此角色,地支看合冲刑害,五行看互补长短。它照见的是互动模式,不是姻缘或成败的判决——给你们一面看清彼此的镜子。',
+    'aside.steps.t':'怎么用','aside.s1':'选类型:婚恋看相处沟通,合伙看分工机制。','aside.s2':'填两个人的出生信息,出生地用于真太阳时校正。','aside.s3':'读四维对照与摘要,把它当参考,关系由你们自己定。',
+    'aside.cross.t':'三道互参','cross.tianming':'天命 · 看自己','cross.tianming.d':'紫微命盘,先照见自己的底色',
+    'cross.diyun':'地运 · 调你的场','cross.diyun.d':'八宅方位,把居所调到帮你的那一面',
+    'cross.renjiandao':'人间道 · 问时机','cross.renjiandao.d':'摇一卦,看眼下处境宜动宜静',
+    'r.duo.t':'两 盘 并 观','r.cmp.t':'四 维 对 照','r.sum.t':'合 参 摘 要',
+    'r.py':'年柱','r.pm':'月柱','r.pd':'日柱','r.ph':'时柱',
+    'r.dm':'日主','r.wx':'五行分布','r.lack':'缺','r.excess':'过旺',
+    'r.corr':'✦ 已做真太阳时校正','r.uncorr':'· 未校正(建议补全出生地)',
+    'cmp.rz':'日主关系','cmp.ss':'十神互看','cmp.zhi':'地支合冲刑害','cmp.wx':'五行互补','cmp.dy':'大运节奏',
+    'cmp.zhi_none':'两盘地支之间没有明显的合冲刑害——这不等于零摩擦,日常习惯差异才是主要来源。',
+    'cmp.wx.deg':'互补度','cmp.ss.ab':'甲眼中的乙','cmp.ss.ba':'乙眼中的甲',
+    'wxc.el':'五行','wxc.a':'甲','wxc.b':'乙','wxc.mk':'互补',
+    'sum.love':'婚恋合参','sum.partner':'合伙合参','sum.rule':'规则版',
+    'sum.t1':'关系画像','sum.t2':'互补与分工','sum.t3':'摩擦提醒','sum.t4':'相处建议',
+  },
+  en: {
+    'nav.tianming':'Tian Ming','nav.diyun':'Di Yun','nav.renjiandao':'Ren Jian Dao','nav.pricing':'Pricing',
+    'hero.badge':'Dual-Chart Reading · Two BaZi Charts · Love & Partnership','hero.kickcn':'Two charts, one reading','hero.title':'D U A L   C H A R T',
+    'hero.motto':'Two charts, read as one.','hero.sub':'Place two BaZi charts side by side — day masters, Ten-God views, branch combinations and elemental complementarity. It reads interaction tendencies and clues for getting along: a portrait, never a verdict.',
+    'form.cap':'Two charts','form.capsub':'Both birth details + your question',
+    'f.rel':'Reading type','f.rel_love':'Love','f.rel_partner':'Business partnership',
+    'f.pa':'Person A · first chart','f.pb':'Person B · second chart',
+    'f.gender':'Gender','f.female':'Female','f.male':'Male','f.place':'Birthplace','f.place_ph':'e.g. Hangzhou',
+    'f.date':'Birth date','f.time':'Birth time','f.q':'What you two want to see clearly (optional)','f.q_ph':'e.g. We keep bickering over small things lately — how do we mesh? The more specific, the better…',
+    'f.submit':'C O M P A R E','f.loading_btn':'Reading…',
+    'f.disclaimer':'A dual-chart reading describes interaction tendencies, for reflection only — not a prediction or advice on love or business · the decision always stays with the two of you',
+    'loading':'Comparing the two charts…','err':'Error: ',
+    'offline_note':'Above is the offline rule-based reading; set ANTHROPIC_API_KEY to get the AI reading.','airead':'AI reading',
+    'v.miss':'Please complete birth date and time for both people','v.bad':'Birth date or time looks invalid — please check and retry',
+    'aside.about.t':'What is a dual-chart reading','aside.about.p':'It places two BaZi charts side by side: day masters for temperament dynamics, Ten Gods for the roles you play to each other, earthly branches for harmony and clash, five elements for complementarity. It mirrors interaction patterns — never a verdict on the relationship or the venture.',
+    'aside.steps.t':'How to use','aside.s1':'Pick a type: Love reads how you get along; Partnership reads roles and mechanisms.','aside.s2':'Enter both birth details; birthplace drives true-solar-time correction.','aside.s3':'Read the four-way comparison and summary as a reference — the relationship stays yours to shape.',
+    'aside.cross.t':'Cross-reference','cross.tianming':'Tian Ming · see yourself','cross.tianming.d':'Zi Wei chart — see your own baseline first',
+    'cross.diyun':'Di Yun · tune your space','cross.diyun.d':'Eight Mansions — set your home to the side that helps you',
+    'cross.renjiandao':'Ren Jian Dao · ask the timing','cross.renjiandao.d':'Cast a hexagram — see whether to move or wait',
+    'r.duo.t':'Two Charts Side by Side','r.cmp.t':'Four-Way Comparison','r.sum.t':'Reading Summary',
+    'r.py':'Year','r.pm':'Month','r.pd':'Day','r.ph':'Hour',
+    'r.dm':'Day master','r.wx':'Five elements','r.lack':'Missing','r.excess':'Excess',
+    'r.corr':'✦ true-solar corrected','r.uncorr':'· uncorrected (add birthplace)',
+    'cmp.rz':'Day masters','cmp.ss':'Ten-God mutual view','cmp.zhi':'Branch harmony & clash','cmp.wx':'Elemental complementarity','cmp.dy':'Luck-cycle rhythm',
+    'cmp.zhi_none':'No prominent clash, punishment or harm shows up between the two charts — which does not mean zero friction; everyday habit gaps are the main source.',
+    'cmp.wx.deg':'Complementarity','cmp.ss.ab':'B in A’s chart','cmp.ss.ba':'A in B’s chart',
+    'wxc.el':'Element','wxc.a':'A','wxc.b':'B','wxc.mk':'Complement',
+    'sum.love':'Love reading','sum.partner':'Partnership reading','sum.rule':'Rule-based',
+    'sum.t1':'Relationship portrait','sum.t2':'Complementarity & roles','sum.t3':'Friction points','sum.t4':'Suggested moves',
+  },
+};
+let LANG = localStorage.getItem('lang') || 'zh';
+function t(k){ return (I18N[LANG]&&I18N[LANG][k]) || (I18N.zh[k]||k); }
+function applyI18n(){
+  document.documentElement.lang = LANG==='en'?'en':'zh-CN';
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.placeholder = t(el.getAttribute('data-i18n-ph')); });
+  document.getElementById('langtog').textContent = LANG==='en'?'中':'EN';
+}
+document.getElementById('langtog').addEventListener('click', ()=>{ LANG = LANG==='en'?'zh':'en'; localStorage.setItem('lang',LANG); applyI18n(); });
+applyI18n();
+
+// ===== EN 模式术语对照(数据层白话恒为中文,EN 渲染时用罗马字 + 意译,风格同 ziwei.js 的 STAR_EN) =====
+const GAN_EN = { 甲:'Jia', 乙:'Yi', 丙:'Bing', 丁:'Ding', 戊:'Wu', 己:'Ji', 庚:'Geng', 辛:'Xin', 壬:'Ren', 癸:'Gui' };
+const ZHI_EN = { 子:'Zi', 丑:'Chou', 寅:'Yin', 卯:'Mao', 辰:'Chen', 巳:'Si', 午:'Wu', 未:'Wei', 申:'Shen', 酉:'You', 戌:'Xu', 亥:'Hai' };
+const WX_EN = { 木:'Wood', 火:'Fire', 土:'Earth', 金:'Metal', 水:'Water' };
+const SS_EN = {
+  比肩:'Peer (bijian)', 劫财:'Rival Peer (jiecai)', 食神:'Gourmet Output (shishen)', 伤官:'Maverick Output (shangguan)',
+  正财:'Steady Wealth (zhengcai)', 偏财:'Windfall Wealth (piancai)', 正官:'Proper Authority (zhengguan)', 七杀:'Fierce Authority (qisha)',
+  正印:'Nurturing Seal (zhengyin)', 偏印:'Uncanny Seal (pianyin)',
+};
+// 十神互看 EN 短注(与后端 SHISHEN_HUDONG 同调:说互动倾向,不下判决)
+const SS_GLOSS_EN = {
+  比肩:'Like looking in a mirror — equals who understand each other’s pride, and neither bows first.',
+  劫财:'Shoulder-to-shoulder drive; action in sync, with quiet rivalry over resources and the wheel.',
+  食神:'They put you at ease and draw you out — a nourishing, savour-life pairing.',
+  伤官:'They spark your talent and expression — and your urge to challenge their rules.',
+  正财:'You want to run this bond well and provide steadily; just don’t turn it into a task list.',
+  偏财:'A natural pull that brings chances and novelty; heats up fast, needs focus to stay warm.',
+  正官:'They make you mind your manners — restraint with respect, order built in.',
+  七杀:'Pressure and push in one: at best mutual spurring, at worst mutual tension.',
+  正印:'They feel like a safety net — warm and accepting; watch for one-way dependence.',
+  偏印:'They catch your moods and unspoken thoughts — tacit depth that needs breathing room.',
+};
+const DM_REL_EN = { 相生:'Generating', 相克:'Controlling', 相合:'Combining', 同气:'Same element' };
+const DM_DIR_EN = { 甲生乙:'A nourishes B', 乙生甲:'B nourishes A', 甲克乙:'A tends to steer B', 乙克甲:'B tends to steer A' };
+const DM_GLOSS_EN = {
+  相生:'One side naturally feeds the other energy — a warm flow; mind one-way overdraft, and let the nourished side give back.',
+  相克:'One side tends to steer, the other feels shaped — turn “managing” into “negotiating” and this drive becomes mutual growth.',
+  相合:'A natural pull and tacit understanding — but “combining” can also mean swallowing disagreements; talk them out.',
+  同气:'Same element, kindred temperaments — easy resonance, overlapping blind spots; invite a third perspective on big calls.',
+};
+const ZHI_REL_EN = { 六合:'Six Harmony', 六冲:'Clash', 三合:'Trine', 相刑:'Punishment', 相害:'Harm' };
+const ZHI_GLOSS_EN = {
+  六合:'Natural closeness — these two energies find each other easy to talk to.',
+  六冲:'Pace and stance collide — often one pushes while the other holds; sync rhythm before debating right and wrong.',
+  三合:'Same camp, effortless teamwork — cooperation here feels smooth and cheap.',
+  相刑:'Nagging friction and inner wear — the quieter it stays, the tighter it winds; saying it plainly loosens it.',
+  相害:'Small daily matters grind the most — divide chores and logistics early and it smooths out.',
+};
+const STRENGTH_EN = { 偏旺:'Strong', 中和偏旺:'Fairly balanced', 偏弱:'Somewhat weak', 弱:'Weak' };
+const DEG_EN = { 高:'High', 中:'Moderate', 低:'Low' };
+const DEG_GLOSS_EN = {
+  高:'One side’s gap is the other’s strong suit — divide work along this line and say thank you instead of keeping score.',
+  中:'There is one clear spot where one of you covers the other — hand that lane over with trust.',
+  低:'Same-rhythm profiles: plenty of resonance, but shared blind spots too — bring in an outside view on important matters.',
+};
+const GENDER_EN = { 男:'Male', 女:'Female' };
+const POS_EN = { 年:'year', 月:'month', 日:'day', 时:'hour' };
+function gzTxt(gz, en){ return en ? String(gz||'').split('').map((ch,i)=> (i===0 ? GAN_EN[ch] : ZHI_EN[ch]) || ch).join('<br>') : esc(gz||''); }
+function pairTxt(p, en){ return en ? String(p||'').split('-').map((z)=>ZHI_EN[z]||z).join(' – ') : esc(p||''); }
+function posTxt(s, en){
+  if (!en) return esc(s||'');
+  const m = /^甲(.)支-乙(.)支$/.exec(s||'');
+  return m ? `A ${POS_EN[m[1]]||m[1]} × B ${POS_EN[m[2]]||m[2]} branch` : esc(s||'');
+}
+function dmTxt(s, en){ // '辛(金)' → 'Xin (Metal)'
+  if (!en) return esc(s||'');
+  const m = /^(.)\((.)\)$/.exec(s||'');
+  return m ? `${GAN_EN[m[1]]||m[1]} (${WX_EN[m[2]]||m[2]})` : esc(s||'');
+}
+
+const f = document.getElementById('f');
+const btn = document.getElementById('btn');
+const result = document.getElementById('result');
+
+f.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const d = Object.fromEntries(new FormData(f));
+  // 前端基本校验:两人日期时间必填 + 日期可解析
+  if (!d.dateA || !d.timeA || !d.dateB || !d.timeB) {
+    result.innerHTML = `<div class="reading"><span class="err">${esc(t('v.miss'))}</span></div>`;
+    return;
+  }
+  const dtA = `${d.dateA} ${d.timeA}`;
+  const dtB = `${d.dateB} ${d.timeB}`;
+  if (isNaN(new Date(`${d.dateA}T${d.timeA}`)) || isNaN(new Date(`${d.dateB}T${d.timeB}`))) {
+    result.innerHTML = `<div class="reading"><span class="err">${esc(t('v.bad'))}</span></div>`;
+    return;
+  }
+  const payload = {
+    personA: { gender: d.genderA, datetime: dtA, ...(d.placeA.trim() ? { place: d.placeA.trim() } : {}) },
+    personB: { gender: d.genderB, datetime: dtB, ...(d.placeB.trim() ? { place: d.placeB.trim() } : {}) },
+    relation: d.relation,
+    question: (d.question || '').trim(),
+    lang: LANG,
+  };
+  btn.disabled = true; btn.textContent = t('f.loading_btn');
+  result.innerHTML = `<div class="loading glass"><span class="ink-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="load-txt">${esc(t('loading'))}</span></div>`;
+  try {
+    const res = await fetch('/api/hehun', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || '合参失败');
+
+    // 危机短路:只给温柔陪伴,不展示命盘对比
+    if (data.type === 'crisis') {
+      result.innerHTML = `<div class="reading crisis">${esc(data.text)}</div>`;
+      return;
+    }
+
+    // 两盘并排 + 四维对照 + 规则版摘要恒展示;AI 深化有则附下方,无 Key 则降级提示
+    let html = renderPersons(data) + renderCompare(data.compare) + renderSummary(data.summary, data.relation);
+    if (data.text) {
+      html += `<div class="reading"><div class="meta">${esc(t('airead'))}</div>${esc(data.text)}</div>`;
+    } else {
+      html += `<div class="reading"><div class="meta" style="border:none;padding:0;margin:0">${esc(t('offline_note'))}</div></div>`;
+    }
+    result.innerHTML = html;
+    window.inkReveal?.(result);
+  } catch (err) {
+    result.innerHTML = `<div class="reading"><span class="err">${esc(t('err'))}${esc(err.message)}</span></div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = t('f.submit');
+  }
+});
+
+// ===== 两人四柱简卡并排(四柱干支 + 日主 + 五行分布) =====
+function renderPersons(data) {
+  return `<div class="sec-cap"><h3>${esc(t('r.duo.t'))}</h3></div>
+  <div class="duo">${personCard(data.personA, 'A')}${personCard(data.personB, 'B')}</div>`;
+}
+
+function personCard(p, key) {
+  const en = LANG === 'en';
+  const c = p.chart || {};
+  const b = c.基本 || {};
+  const label = en ? key : (p.label || (key === 'A' ? '甲' : '乙'));
+  const gender = en ? (GENDER_EN[p.gender] || p.gender) : p.gender;
+  const corr = b.已校正真太阳时 ? t('r.corr') : t('r.uncorr');
+
+  // 四柱(日柱高亮)
+  const posKeys = [['年', 'r.py'], ['月', 'r.pm'], ['日', 'r.pd'], ['时', 'r.ph']];
+  const pillars = posKeys.map(([k, tk]) =>
+    `<div class="pillar${k === '日' ? ' day' : ''}"><div class="pos">${esc(t(tk))}</div><div class="gz${en ? ' en' : ''}">${gzTxt((c.四柱 || {})[k], en)}</div></div>`
+  ).join('');
+
+  // 日主(EN 模式白话为中文,只展示天干/五行/旺衰)
+  const dm = c.日主 || {};
+  const dmBig = en ? (GAN_EN[dm.天干] || dm.天干 || '') : (dm.天干 || '');
+  const dmWx = en ? (WX_EN[dm.五行] || dm.五行 || '') : (dm.五行 || '');
+  const dmStr = en ? (STRENGTH_EN[dm.旺衰] || dm.旺衰 || '') : (dm.旺衰 || '');
+  const dmHua = !en && dm.白话 ? `<div style="margin-top:4px">${esc(dm.白话)}</div>` : '';
+  const daymain = `<div class="daymain"><span class="big${en ? ' en' : ''}">${esc(dmBig)}</span>
+    <div class="dm-txt"><b>${esc(dmWx)}</b><span class="pill">${esc(dmStr)}</span>${dmHua}</div></div>`;
+
+  // 五行分布(条形 + 缺/过旺备注)
+  const wx = c.五行分布 || {};
+  const keys = ['木', '火', '土', '金', '水'];
+  const max = Math.max(...keys.map((k) => wx[k] || 0), 1);
+  const rows = keys.map((k) => {
+    const n = wx[k] || 0;
+    return `<div class="wx-row"><span class="wx-name">${en ? WX_EN[k] : k}</span><span class="wx-bar"><i style="width:${Math.round((n / max) * 100)}%"></i></span><span class="wx-n">${n}</span></div>`;
+  }).join('');
+  // 后端"缺/过旺"无内容时可能给字符串"无":非数组一律按空处理,避免渲染崩溃
+  const lacks = (Array.isArray(wx.缺) ? wx.缺 : []).map((k) => en ? WX_EN[k] || k : k).join('、');
+  const excess = (Array.isArray(wx.过旺) ? wx.过旺 : []).map((k) => en ? WX_EN[k] || k : k).join('、');
+  const notes = [];
+  if (lacks) notes.push(`${t('r.lack')}:<b>${esc(lacks)}</b>`);
+  if (excess) notes.push(`${t('r.excess')}:<b>${esc(excess)}</b>`);
+  const note = notes.length ? `<div class="wx-note">${notes.join(' · ')}</div>` : '';
+
+  return `<div class="pcard">
+    <div class="ph"><span class="ptag ${key === 'A' ? 'a' : 'b'}">${esc(label)}</span><span class="pname">${esc(label)} · ${esc(gender)}</span><span class="corr">${esc(corr)}</span></div>
+    <div class="pbase">${esc(b.公历生日 || '')}${b.出生地 ? ` · ${esc(b.出生地)}` : ''}</div>
+    ${pillars ? `<div class="pillars">${pillars}</div>` : ''}
+    <div class="t">${esc(t('r.dm'))}</div>${daymain}
+    <div class="t">${esc(t('r.wx'))}</div>${rows}${note}
+  </div>`;
+}
+
+// ===== compare 维度卡:日主关系 / 十神互看 / 地支 / 五行互补(/ 大运节奏,可选) =====
+function renderCompare(cmp) {
+  if (!cmp) return '';
+  const en = LANG === 'en';
+
+  // ① 日主关系
+  const rz = cmp.日主 || {};
+  const relLbl = en ? (DM_REL_EN[rz.关系] || rz.关系 || '') : (rz.关系 || '');
+  const dirLbl = rz.方向 ? (en ? (DM_DIR_EN[rz.方向] || rz.方向) : rz.方向) : '';
+  const rzTone = rz.关系 === '相克' ? 'bad' : (rz.关系 === '相合' || rz.关系 === '相生') ? 'good' : '';
+  const rzHua = en ? (DM_GLOSS_EN[rz.关系] || '') : (rz.白话 || '');
+  const rzCard = `<div class="cmp-card">
+    <div class="ch">${esc(t('cmp.rz'))}</div>
+    <div class="cmp-vs">
+      <span class="side"><span class="who">${en ? 'A' : '甲'}</span>${dmTxt(rz.甲, en)}</span>
+      <span class="rel-badge ${rzTone}">${esc(relLbl)}${dirLbl ? ` · ${esc(dirLbl)}` : ''}</span>
+      <span class="side"><span class="who">${en ? 'B' : '乙'}</span>${dmTxt(rz.乙, en)}</span>
+    </div>
+    ${rzHua ? `<div class="hua">${esc(rzHua)}</div>` : ''}
+  </div>`;
+
+  // ② 十神互看
+  const ss = cmp.十神 || {};
+  const ssRow = (view, whoKey) => {
+    if (!view) return '';
+    const name = en ? (SS_EN[view.十神] || view.十神 || '') : (view.十神 || '');
+    const hua = en ? (SS_GLOSS_EN[view.十神] || '') : (view.白话 || '');
+    return `<div class="ss-look"><span class="who">${esc(t(whoKey))}</span><span class="name">${esc(name)}</span>
+      ${hua ? `<div class="hua">${esc(hua)}</div>` : ''}</div>`;
+  };
+  const ssCard = `<div class="cmp-card">
+    <div class="ch">${esc(t('cmp.ss'))}</div>
+    ${ssRow(ss.甲视乙, 'cmp.ss.ab')}${ssRow(ss.乙视甲, 'cmp.ss.ba')}
+  </div>`;
+
+  // ③ 地支合冲刑害(可能为空数组)
+  const zhi = cmp.地支 || [];
+  const zhiItems = zhi.map((z) => {
+    const tone = (z.关系 === '六合' || z.关系 === '三合') ? 'good' : 'bad';
+    const relName = en ? (ZHI_REL_EN[z.关系] || z.关系) : z.关系;
+    const hua = en ? (ZHI_GLOSS_EN[z.关系] || '') : (z.白话 || '');
+    return `<div class="zhi-item">
+      <div class="zline"><span class="pair">${pairTxt(z.对, en)}</span><span class="rel-badge ${tone}">${esc(relName)}</span><span class="pos-s">${posTxt(z.位, en)}</span></div>
+      ${hua ? `<div class="hua">${esc(hua)}</div>` : ''}
+    </div>`;
+  }).join('');
+  const zhiCard = `<div class="cmp-card span2">
+    <div class="ch">${esc(t('cmp.zhi'))}</div>
+    ${zhi.length ? `<div class="zhi-list">${zhiItems}</div>` : `<div class="zhi-none">${esc(t('cmp.zhi_none'))}</div>`}
+  </div>`;
+
+  // ④ 五行互补(互补度 + 明细表)
+  const wx = cmp.五行互补 || {};
+  const degLbl = en ? (DEG_EN[wx.互补度] || wx.互补度 || '') : (wx.互补度 || '');
+  const degTone = wx.互补度 === '高' ? 'good' : wx.互补度 === '低' ? 'bad' : '';
+  const wxHua = en ? (DEG_GLOSS_EN[wx.互补度] || '') : (wx.白话 || '');
+  const detail = wx.明细 || {};
+  const wxRows = ['木', '火', '土', '金', '水'].filter((k) => detail[k]).map((k) => {
+    const d = detail[k];
+    const mk = d.互补 ? `<span class="mk">${en ? (d.互补 === '甲补乙' ? 'A → B' : 'B → A') : d.互补}</span>` : '<span style="color:var(--faint)">—</span>';
+    return `<tr><td class="el">${en ? WX_EN[k] : k}</td><td>${d.甲 ?? 0}</td><td>${d.乙 ?? 0}</td><td>${mk}</td></tr>`;
+  }).join('');
+  const wxTable = wxRows ? `<div class="wxc-wrap"><table class="wxc">
+    <tr><th>${esc(t('wxc.el'))}</th><th>${esc(t('wxc.a'))}</th><th>${esc(t('wxc.b'))}</th><th>${esc(t('wxc.mk'))}</th></tr>${wxRows}
+  </table></div>` : '';
+  const dy = cmp.大运节奏; // 可选:两盘都有当前大运才出现
+  const wxCard = `<div class="cmp-card${dy ? '' : ' span2'}">
+    <div class="ch">${esc(t('cmp.wx'))}</div>
+    <div><span class="who" style="font-size:12px;color:var(--faint)">${esc(t('cmp.wx.deg'))}</span> <span class="rel-badge ${degTone}">${esc(degLbl)}</span></div>
+    ${wxTable}
+    ${wxHua ? `<div class="hua">${esc(wxHua)}</div>` : ''}
+  </div>`;
+
+  // ⑤ 大运节奏(可选,前端容忍缺失)
+  let dyCard = '';
+  if (dy) {
+    const same = dy.甲?.主十神 === dy.乙?.主十神;
+    const dyHua = en
+      ? (same
+        ? 'Both of you run on the same decade theme right now — easy resonance, but you can share the same tunnel vision.'
+        : 'Your current decade themes differ — before judging the other’s pace, ask what they care most about at this stage.')
+      : (dy.白话 || '');
+    const dLine = (side, whoZh, whoEn) => side
+      ? `<div class="dline"><span class="who">${en ? whoEn : whoZh}</span><b>${en ? String(side.干支 || '').split('').map((ch, i) => (i === 0 ? GAN_EN[ch] : ZHI_EN[ch]) || ch).join('-') : esc(side.干支 || '')}</b><span>· ${en ? (SS_EN[side.主十神] || side.主十神 || '') : esc(side.主十神 || '')}</span></div>`
+      : '';
+    dyCard = `<div class="cmp-card">
+      <div class="ch">${esc(t('cmp.dy'))}</div>
+      <div class="dy-vs">${dLine(dy.甲, '甲', 'A')}${dLine(dy.乙, '乙', 'B')}</div>
+      ${dyHua ? `<div class="hua">${esc(dyHua)}</div>` : ''}
+    </div>`;
+  }
+
+  return `<div class="sec-cap" style="margin-top:26px"><h3>${esc(t('r.cmp.t'))}</h3></div>
+  <div class="cmp-grid reveal-group">${rzCard}${ssCard}${zhiCard}${wxCard}${dyCard}</div>`;
+}
+
+// ===== summary 四块(服务端已按 lang 出中英文,前端只配标题) =====
+function renderSummary(sum, relation) {
+  if (!sum) return '';
+  const modeLbl = relation === 'partner' ? t('sum.partner') : t('sum.love');
+  const blocks = [['关系画像', 'sum.t1'], ['互补与分工', 'sum.t2'], ['摩擦提醒', 'sum.t3'], ['相处建议', 'sum.t4']];
+  const cards = blocks.map(([key, tk], i) =>
+    `<div class="sum-card"><h5><span class="sn">${i + 1}</span>${esc(t(tk))}</h5><p>${esc(sum[key] || '')}</p></div>`
+  ).join('');
+  return `<div class="sec-cap" style="margin-top:26px"><h3>${esc(t('r.sum.t'))}</h3><span class="mode-pill">${esc(modeLbl)} · ${esc(t('sum.rule'))}</span></div>
+  <div class="sum-grid reveal-group">${cards}</div>`;
+}
+
+function esc(s) { return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+</script>
+<script src="/ink.js" defer></script>
+</body>
+</html>

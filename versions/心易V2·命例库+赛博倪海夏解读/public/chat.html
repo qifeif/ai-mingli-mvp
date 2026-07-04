@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>心易 · 对话</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet"/>
+<script src="/fx.js" defer></script>
+<style>
+:root{
+  /* 墨韵 Ink Luxe token(与 theme.css 同值内联,真源 design-system/MASTER.md) */
+  --bg:#EDF1EF; --bg-2:#E1E8E7; --card:rgba(247,249,246,.88); --glass:rgba(250,251,249,.74);
+  --ink:#26343B; --ink-strong:#1F2B31; --muted:#526872; --faint:#697B82;
+  --line:rgba(38,52,59,.16); --line-soft:rgba(38,52,59,.08);
+  --accent:#26343B; --accent-2:#486670;
+  --cinnabar:#A6402F; --cinnabar-soft:rgba(166,64,47,.10); --gilt:#A8834C;
+  --green:#4E6B52; --greens:rgba(78,107,82,.12);
+  --grad:linear-gradient(160deg,#1F2B31,#4F6873);
+  --sh:0 1px 2px rgba(38,52,59,.05),0 16px 40px -24px rgba(38,52,59,.24);
+  --shs:0 1px 2px rgba(38,52,59,.04),0 10px 26px -16px rgba(38,52,59,.16);
+  --ease:cubic-bezier(.22,.61,.36,1); --dur-1:.18s; --dur-2:.32s; --dur-3:.56s;
+  /* 旧名别名(容错) */
+  --bg2:var(--bg-2); --ink2:var(--ink-strong); --red:var(--cinnabar); --reds:var(--cinnabar-soft); --lines:var(--line-soft);
+  --sans:"Geist",-apple-system,"PingFang SC","Noto Sans SC",system-ui,sans-serif;
+  --serif:"Songti SC","Noto Serif SC","STSong",serif;
+  --kai:"Ma Shan Zheng","Kaiti SC","STKaiti",serif;
+  --mono:"Geist Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--sans);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.22;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.28'/%3E%3C/svg%3E");
+  mix-blend-mode:multiply;}
+/* 山水底 + 宣纸色纱(fixed 层替代 background-attachment:fixed,规避 iOS Safari 兼容坑) */
+body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    linear-gradient(180deg,rgba(237,241,239,.62) 0%,rgba(237,241,239,.72) 30%,rgba(237,241,239,.82) 58%,rgba(237,241,239,.72) 100%),
+    #EDF1EF url('/bg-xinyi-product.webp') center top / cover no-repeat;}
+
+/* ── 全局布局 ── */
+.shell{display:flex;height:100vh;height:100dvh;}
+
+/* ── 墨韵组件层(内联复刻自 theme.css 组件层) ── */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity var(--dur-2) var(--ease),transform var(--dur-2) var(--ease);transition-delay:var(--d,0ms);will-change:opacity,transform;}
+.reveal.in{opacity:1;transform:none;}
+.seal-pulse{animation:sealDrop .7s var(--ease) both;transform-origin:center;}
+@keyframes sealDrop{0%{opacity:0;transform:scale(1.12);}60%{opacity:1;}100%{opacity:1;transform:scale(1);}}
+.btn-ink,.btn-paper{position:relative;overflow:hidden;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:44px;padding:0 26px;border-radius:999px;font-family:var(--serif);font-size:15px;letter-spacing:1.5px;
+  cursor:pointer;user-select:none;text-decoration:none;
+  transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-2) var(--ease),background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease);}
+.btn-ink{background:var(--ink-strong);color:#F4F1EA;border:1px solid transparent;box-shadow:0 2px 10px -4px rgba(31,43,49,.5);}
+.btn-ink::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--cinnabar);box-shadow:0 0 0 2px rgba(166,64,47,.22);flex:none;}
+.btn-ink::after{content:"";position:absolute;top:0;bottom:0;left:-70%;width:46%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.14),transparent);transform:skewX(-18deg);transition:left var(--dur-3) var(--ease);pointer-events:none;}
+.btn-ink:hover{transform:translateY(-1px);box-shadow:0 6px 20px -6px rgba(31,43,49,.55);}
+.btn-ink:hover::after{left:120%;}
+.btn-ink:active{transform:translateY(0) scale(.985);}
+.btn-paper{background:rgba(250,251,249,.8);color:var(--ink);border:1px solid var(--line);}
+.btn-paper:hover{background:rgba(38,52,59,.06);border-color:rgba(38,52,59,.3);}
+.ink-ripple{position:absolute;border-radius:50%;pointer-events:none;z-index:-1;background:radial-gradient(circle,rgba(166,64,47,.30) 0%,rgba(166,64,47,.12) 40%,transparent 70%);transform:scale(0);animation:inkRipple .55s var(--ease) forwards;}
+.btn-ink .ink-ripple{background:radial-gradient(circle,rgba(255,255,255,.28) 0%,rgba(255,255,255,.10) 40%,transparent 70%);}
+@keyframes inkRipple{to{transform:scale(1);opacity:0;}}
+.ink-dots{display:inline-flex;gap:6px;align-items:center;}
+.ink-dots i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:inkBounce 1.05s infinite var(--ease);}
+.ink-dots i:nth-child(2){animation-delay:.14s;}
+.ink-dots i:nth-child(3){animation-delay:.28s;}
+@keyframes inkBounce{0%,100%{transform:translateY(0);opacity:.5;}40%{transform:translateY(-4px);opacity:1;}}
+:where(a,button,[role="button"],input,select,textarea,summary):focus-visible{outline:2px solid var(--cinnabar);outline-offset:2px;border-radius:4px;}
+
+/* ── 侧栏(玻璃) ── */
+.sb{width:244px;flex:none;border-right:1px solid var(--line);background:var(--glass);
+  -webkit-backdrop-filter:blur(14px) saturate(1.05);backdrop-filter:blur(14px) saturate(1.05);
+  display:flex;flex-direction:column;overflow:hidden;transition:transform var(--dur-2) var(--ease);}
+.sb-hd{padding:14px 12px 12px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;gap:9px;}
+.logo-lk{display:flex;align-items:center;gap:9px;text-decoration:none;flex:1;min-width:0;}
+.seal{width:28px;height:28px;border-radius:7px;background:var(--cinnabar);color:#F4F1EA;
+  font-family:var(--serif);font-size:15px;font-weight:700;display:grid;place-items:center;
+  box-shadow:0 2px 8px -2px rgba(166,64,47,.4);flex:none;}
+.logo-t{font-family:var(--serif);font-size:18px;font-weight:700;letter-spacing:4px;color:var(--ink-strong);}
+.ic-btn{position:relative;width:32px;height:32px;border:1px solid var(--line);border-radius:8px;background:rgba(250,251,249,.8);
+  color:var(--muted);cursor:pointer;display:grid;place-items:center;flex:none;
+  transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease);}
+.ic-btn::after{content:"";position:absolute;inset:-6px;border-radius:inherit;}
+.ic-btn:hover{color:var(--ink);border-color:rgba(38,52,59,.3);background:rgba(38,52,59,.06);}
+.ic-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;}
+.sb-body{flex:1;overflow-y:auto;padding:8px 6px;}
+.sb-mt{font-size:11px;letter-spacing:1.5px;color:var(--faint);padding:10px 8px 4px;font-family:var(--mono);}
+/* 空状态:墨滴涟漪纹样(同心三弧) */
+.sb-empty-art{display:flex;justify-content:center;padding:36px 0 0;color:var(--faint);}
+.sb-empty-art svg{width:64px;height:64px;}
+.sb-empty-art svg path{animation:rippleIdle 3.2s var(--ease) infinite;}
+.sb-empty-art svg path:nth-of-type(2){animation-delay:.4s;}
+.sb-empty-art svg path:nth-of-type(3){animation-delay:.8s;}
+@keyframes rippleIdle{0%,100%{opacity:.45;}50%{opacity:1;}}
+.sb-empty-art:has(+ .sb-empty[style*="none"]){display:none;}
+.sb-empty{text-align:center;padding:12px 16px 32px;color:var(--faint);font-size:13px;line-height:2;}
+.hi{padding:9px 10px;border-radius:9px;cursor:pointer;border:1px solid transparent;border-left:2px solid transparent;
+  transition:background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease);
+  display:flex;flex-direction:column;gap:2px;}
+.hi:hover{background:rgba(38,52,59,.06);}
+.hi.on{background:rgba(38,52,59,.07);border-color:var(--line-soft);border-left-color:var(--cinnabar);}
+.hi-t{font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hi-m{font-size:11.5px;color:var(--faint);}
+
+/* ── 主区 ── */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+
+/* 顶栏(玻璃霜化;对话页固定视口,滚动态省略) */
+.topbar{padding:12px 20px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;gap:12px;flex:none;
+  background:rgba(247,249,246,.66);
+  -webkit-backdrop-filter:blur(12px) saturate(1.05);backdrop-filter:blur(12px) saturate(1.05);}
+.hbg{display:none;} /* mobile hamburger */
+.mode-row{display:flex;gap:6px;flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;
+  padding:5px 4px;margin:-5px -4px;scrollbar-width:none;}
+.mode-row::-webkit-scrollbar{display:none;}
+.mt{position:relative;display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;
+  border:1px solid var(--line);background:rgba(250,251,249,.8);cursor:pointer;font-family:inherit;
+  font-size:13.5px;color:var(--muted);letter-spacing:.3px;white-space:nowrap;flex:none;
+  transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease);}
+.mt::before{content:"";width:6px;height:6px;border-radius:50%;background:rgba(38,52,59,.16);flex:none;
+  transition:background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease);}
+.mt::after{content:"";position:absolute;inset:-5px -2px;border-radius:inherit;} /* 触控热区 ≥44 */
+.mt:hover{color:var(--ink);background:rgba(38,52,59,.06);}
+.mt .ico{display:none;} /* 旧字符图标隐藏,选中态以朱砂圆点表意 */
+.mt.on{background:var(--ink-strong);border-color:var(--ink-strong);color:#F4F1EA;font-weight:600;}
+.mt.on::before{background:var(--cinnabar);box-shadow:0 0 0 2px rgba(166,64,47,.30);}
+.prof-btn{position:relative;display:flex;align-items:center;gap:7px;padding:8px 14px;border:1px solid var(--line);
+  border-radius:999px;background:rgba(250,251,249,.8);color:var(--muted);font-family:inherit;
+  font-size:13px;cursor:pointer;white-space:nowrap;flex:none;
+  transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease);}
+.prof-btn::after{content:"";position:absolute;inset:-5px 0;border-radius:inherit;}
+.prof-btn:hover{border-color:rgba(38,52,59,.3);background:rgba(38,52,59,.06);color:var(--ink);}
+.prof-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex:none;}
+.prof-dot.empty{background:var(--faint);}
+.langtog{position:relative;border:1px solid var(--line);border-radius:999px;padding:8px 13px;background:rgba(250,251,249,.8);
+  color:var(--muted);font-family:inherit;font-size:12.5px;cursor:pointer;flex:none;
+  transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease);}
+.langtog::after{content:"";position:absolute;inset:-5px 0;border-radius:inherit;}
+.langtog:hover{color:var(--ink);border-color:rgba(38,52,59,.3);background:rgba(38,52,59,.06);}
+
+/* ── 表单(修改生辰弹窗使用):focus 朱砂扫线 ── */
+.fl{margin-bottom:16px;}
+.fl label{display:block;font-size:12px;color:var(--muted);letter-spacing:.8px;margin-bottom:7px;}
+.fl input[type=text],.fl input[type=datetime-local]{width:100%;padding:11px 14px;
+  border:1px solid var(--line);border-radius:10px;background-color:var(--bg-2);
+  color:var(--ink);font-family:inherit;font-size:14.5px;outline:none;
+  background-image:linear-gradient(var(--cinnabar),var(--cinnabar));background-repeat:no-repeat;
+  background-size:0% 2px;background-position:left bottom;
+  transition:background-size var(--dur-2) var(--ease),border-color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease);}
+.fl input:focus{border-color:rgba(166,64,47,.45);background-size:100% 2px;box-shadow:0 1px 0 0 rgba(166,64,47,.2);}
+.fl input::placeholder{color:var(--faint);}
+.seg{display:flex;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:4px;gap:4px;}
+.seg label{flex:1;position:relative;cursor:pointer;}
+.seg input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;}
+.seg span{display:block;text-align:center;padding:8px;border-radius:7px;font-size:14px;
+  color:var(--muted);letter-spacing:1px;transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease);pointer-events:none;}
+.seg label:hover span{color:var(--ink);}
+.seg input:checked+span{background:var(--grad);color:#fff;box-shadow:0 4px 12px -4px rgba(31,43,49,.3);}
+
+/* ── 聊天视图 ── */
+#chatView{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.msgs{max-width:740px;width:100%;margin:0 auto;padding:24px 24px 16px;display:flex;flex-direction:column;gap:20px;}
+
+/* 新气泡入场:fade + 上移 8px */
+@keyframes bubIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.msg,.welcome-msg{animation:bubIn .24s var(--ease) both;}
+
+/* 欢迎气泡(AI 首条,玻璃宣纸) */
+.welcome-msg{background:var(--glass);
+  -webkit-backdrop-filter:blur(14px) saturate(1.05);backdrop-filter:blur(14px) saturate(1.05);
+  border:1px solid var(--line);border-radius:16px 16px 16px 4px;
+  padding:16px 20px;max-width:88%;box-shadow:var(--shs);overflow-wrap:break-word;}
+.welcome-msg p{font-size:15px;color:var(--ink);line-height:1.8;margin-bottom:8px;}
+.welcome-msg p:last-child{margin:0;}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;}
+.ck{position:relative;padding:8px 15px;border:1px solid var(--line);border-radius:999px;background:rgba(250,251,249,.8);
+  color:var(--muted);font-size:13.5px;font-family:inherit;cursor:pointer;letter-spacing:.3px;
+  transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease);}
+.ck::after{content:"";position:absolute;inset:-4px -1px;border-radius:inherit;}
+.ck:hover{background:rgba(38,52,59,.06);border-color:rgba(38,52,59,.3);color:var(--ink);}
+
+/* 消息 */
+.msg{display:flex;flex-direction:column;gap:3px;}
+.msg.usr{align-items:flex-end;}
+.msg.ai{align-items:flex-start;}
+.bub{padding:12px 17px;max-width:88%;font-size:15px;line-height:1.78;overflow-wrap:break-word;}
+.msg.usr .bub{background:var(--ink-strong);color:#F4F1EA;border-radius:16px 16px 4px 16px;
+  box-shadow:0 6px 18px -12px rgba(31,43,49,.55);}
+.msg.ai .bub{background:var(--glass);
+  -webkit-backdrop-filter:blur(14px) saturate(1.05);backdrop-filter:blur(14px) saturate(1.05);
+  border:1px solid var(--line);color:var(--ink);border-radius:16px 16px 16px 4px;box-shadow:var(--shs);}
+.mt-tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--faint);
+  padding:0 2px;margin-bottom:2px;}
+.ts{font-size:11px;color:var(--faint);padding:0 3px;margin-top:2px;}
+.ai-txt p{margin:0 0 9px;}
+.ai-txt p:last-child{margin:0;}
+.ai-txt strong{color:var(--ink-strong);font-weight:600;}
+.cursor{display:inline-block;width:2px;height:1em;background:var(--muted);margin-left:2px;
+  animation:cur .7s step-end infinite;vertical-align:text-bottom;}
+@keyframes cur{0%,100%{opacity:1;}50%{opacity:0;}}
+/* AI 等待指示:三墨点(.ink-dots 视觉;::before/::after 兜出三枚同辈墨点,JS 结构不动) */
+.typing{display:inline-flex;align-items:center;gap:6px;padding:15px 18px;
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(14px) saturate(1.05);backdrop-filter:blur(14px) saturate(1.05);
+  border:1px solid var(--line);border-radius:16px 16px 16px 4px;box-shadow:var(--shs);}
+.typing::before,.typing::after{content:"";}
+.typing::before,.typing::after,.typing i{display:block;width:6px;height:6px;border-radius:50%;
+  background:var(--muted);animation:inkBounce 1.05s infinite var(--ease);}
+.typing i{animation-delay:.14s;}
+.typing::after{animation-delay:.28s;}
+.typing i i{display:none;}
+/* 危机:温和宣纸底 + 朱砂发丝左线(文案与结构不动) */
+.crisis{background:rgba(250,251,249,.85);border:1px solid var(--line);
+  border-left:2px solid rgba(166,64,47,.6);border-radius:4px 14px 14px 4px;padding:16px 18px;}
+.crisis-h{font-size:13px;color:var(--cinnabar);font-weight:600;letter-spacing:.4px;margin-bottom:8px;}
+/* 六爻标签 */
+.hex-tag{display:inline-flex;align-items:center;gap:8px;padding:5px 12px;margin-bottom:10px;
+  background:var(--bg-2);border:1px solid var(--line);border-radius:8px;font-size:13px;
+  color:var(--muted);font-family:var(--serif);}
+.hex-tag b{color:var(--ink);}
+/* 错误 */
+.err-bub,.msg.ai .bub.err-bub{background:rgba(168,94,51,.08);border-color:rgba(168,94,51,.28);color:var(--ink);}
+
+/* ── 底部输入(玻璃吸底) ── */
+.chatbar{border-top:1px solid var(--line-soft);background:rgba(247,249,246,.66);
+  -webkit-backdrop-filter:blur(12px) saturate(1.05);backdrop-filter:blur(12px) saturate(1.05);
+  padding:12px 20px 16px;flex:none;}
+.cbar-inner{max-width:740px;margin:0 auto;}
+.cbar-row{display:flex;gap:10px;align-items:flex-end;}
+.ctxt{flex:1;min-width:0;padding:12px 16px;border:1px solid var(--line);border-radius:14px;
+  background-color:rgba(250,251,249,.85);color:var(--ink);font-family:inherit;font-size:15px;
+  resize:none;outline:none;line-height:1.6;min-height:46px;max-height:160px;overflow-y:auto;
+  background-image:linear-gradient(var(--cinnabar),var(--cinnabar));background-repeat:no-repeat;
+  background-size:0% 2px;background-position:left bottom;
+  transition:background-size var(--dur-2) var(--ease),border-color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease);}
+.ctxt:focus{border-color:rgba(166,64,47,.45);background-size:100% 2px;box-shadow:0 1px 0 0 rgba(166,64,47,.2);}
+.ctxt::placeholder{color:var(--faint);}
+/* 发送键 = .btn-ink 圆形变体(纸飞机;墨晕涟漪由 fx.js 注入) */
+.send{width:46px;height:46px;min-height:46px;padding:0;border-radius:50%;flex:none;}
+.send::before{display:none;}
+.send svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:1.8;}
+.send:disabled{opacity:.4;cursor:default;transform:none;box-shadow:0 2px 10px -4px rgba(31,43,49,.4);}
+.send:disabled::after{display:none;}
+
+/* ── 档案弹窗(玻璃卡 + 发丝线,入场 scale .96→1 fade) ── */
+.ov{position:fixed;inset:0;z-index:200;background:rgba(31,43,49,.42);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:grid;place-items:center;padding:20px;
+  animation:ovFade .24s var(--ease) both;}
+@keyframes ovFade{from{opacity:0;}to{opacity:1;}}
+.ov-card{background:rgba(250,251,249,.92);
+  -webkit-backdrop-filter:blur(14px) saturate(1.05);backdrop-filter:blur(14px) saturate(1.05);
+  border:1px solid var(--line);border-radius:20px;width:100%;max-width:400px;
+  box-shadow:0 24px 64px -16px rgba(31,43,49,.34);animation:ovIn .24s var(--ease) both;}
+@keyframes ovIn{from{opacity:0;transform:scale(.96);}to{opacity:1;transform:none;}}
+.ov-hd{padding:20px 22px 16px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;gap:11px;}
+.ov-hd h3{font-family:var(--serif);font-size:16px;letter-spacing:2px;color:var(--ink-strong);}
+.ov-hd p{font-size:12px;color:var(--faint);margin-top:2px;}
+.ov-body{padding:18px 22px;}
+.ov-ft{padding:14px 22px 18px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line-soft);}
+
+/* ── 响应式 ── */
+@media(max-width:680px){
+  .sb{position:fixed;inset:0 auto 0 0;z-index:100;transform:translateX(-100%);
+    background:rgba(247,249,246,.92);box-shadow:4px 0 28px rgba(31,43,49,.16);}
+  .sb.open{transform:translateX(0);}
+  .hbg{display:grid!important;}
+  .topbar{padding:10px 12px;gap:6px;}
+  .mode-row{gap:4px;}
+  .mt{padding:7px 11px;font-size:12.5px;}
+  .prof-btn span:not(.prof-dot){display:none;}
+  .prof-btn{padding:9px;}
+  .langtog{padding:7px 10px;font-size:11.5px;}
+  .msgs{padding:16px 14px 12px;}
+  .chatbar{padding:10px 12px 14px;}
+}
+
+/* ── backdrop-filter 兜底(不支持时提高底不透明度保对比) ── */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .sb,.topbar,.chatbar{background:rgba(247,249,246,.95);}
+  .msg.ai .bub,.welcome-msg,.typing{background:rgba(250,251,249,.95);}
+  .ov-card{background:#F7F9F6;}
+}
+
+/* ── reduced motion:页面静止但完整 ── */
+@media (prefers-reduced-motion: reduce){
+  .msg,.welcome-msg,.ov,.ov-card,.seal-pulse{animation:none;}
+  .typing::before,.typing::after,.typing i,.ink-dots i{animation:none;}
+  .cursor{animation:none;}
+  .sb-empty-art svg path{animation:none;}
+  .reveal{opacity:1;transform:none;transition:none;}
+  .btn-ink::after{display:none;}
+  .ink-ripple{display:none;}
+  .btn-ink,.btn-paper,.mt,.ck,.hi,.ic-btn,.prof-btn,.langtog,.ctxt,.sb,.seg span,.fl input,.send{transition:none;}
+  .btn-ink:hover,.send:hover{transform:none;}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- 侧栏 -->
+  <aside class="sb" id="sb">
+    <div class="sb-hd">
+      <a class="logo-lk" href="/"><span class="seal">易</span><span class="logo-t">心易</span></a>
+      <button class="ic-btn" id="newBtn" title="新对话">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </div>
+    <div class="sb-body" id="sbBody">
+      <div class="sb-empty-art" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="7.6" r="1.1" fill="currentColor" stroke="none"/>
+          <path d="M8.8 11a3.2 3.2 0 0 0 6.4 0"/>
+          <path d="M6.2 11a5.8 5.8 0 0 0 11.6 0"/>
+          <path d="M3.6 11a8.4 8.4 0 0 0 16.8 0"/>
+        </svg>
+      </div>
+      <p class="sb-empty" id="sbEmpty" data-i18n="sb.empty">暂无对话记录</p>
+      <div id="histList"></div>
+    </div>
+  </aside>
+
+  <!-- 主区 -->
+  <div class="main" id="main">
+
+    <!-- 顶栏 -->
+    <div class="topbar">
+      <button class="ic-btn hbg" id="hbg" aria-label="打开会话列表 / Open sessions">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>
+      </button>
+      <div class="mode-row" id="modeRow">
+        <button class="mt on" data-mode="suiwen"><span class="ico">◎</span><span data-i18n="mode.suiwen">随问</span></button>
+        <button class="mt" data-mode="tianming"><span class="ico">✦</span><span data-i18n="mode.tianming">天命</span></button>
+        <button class="mt" data-mode="renjiandao"><span class="ico">☰</span><span data-i18n="mode.renjiandao">人间道</span></button>
+        <button class="mt" data-mode="diyun"><span class="ico">⌂</span><span data-i18n="mode.diyun">地运</span></button>
+      </div>
+      <button class="prof-btn" id="profBtn">
+        <span class="prof-dot empty" id="profDot"></span>
+        <span id="profLabel" data-i18n="prof.setup">设置生辰</span>
+      </button>
+      <button class="langtog" id="langtog" type="button" aria-label="切换中英文 / Switch language">EN</button>
+    </div>
+
+    <!-- 聊天视图 -->
+    <div id="chatView" style="display:flex;flex:1;overflow-y:auto;flex-direction:column;">
+      <div class="msgs" id="msgs"></div>
+    </div>
+
+    <!-- 底部输入 -->
+    <div class="chatbar" id="chatbar">
+      <div class="cbar-inner">
+        <div class="cbar-row">
+          <textarea class="ctxt" id="cTxt" rows="1" placeholder="心有所问…" data-i18n-ph="mode.ph.suiwen"></textarea>
+          <button class="send btn-ink" id="sendBtn" aria-label="发送 / Send">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2 15 22l-4-9-9-4Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 档案弹窗(修改生辰) -->
+<div class="ov" id="ov" style="display:none;">
+  <div class="ov-card">
+    <div class="ov-hd">
+      <span class="seal seal-pulse" style="width:32px;height:32px;font-size:16px;">易</span>
+      <div><h3 data-i18n="modal.title">修改生辰档案</h3><p data-i18n="modal.hint">数据仅存于本机 localStorage</p></div>
+    </div>
+    <div class="ov-body">
+      <div class="fl"><label data-i18n="modal.dob">出生日期 & 时间 *</label><input type="datetime-local" id="oDt"/></div>
+      <div class="fl"><label data-i18n="modal.gender">性别 *</label>
+        <div class="seg">
+          <label><input type="radio" name="oGender" value="male" checked/><span data-i18n="modal.male">男</span></label>
+          <label><input type="radio" name="oGender" value="female"/><span data-i18n="modal.female">女</span></label>
+        </div>
+      </div>
+      <div class="fl"><label data-i18n="modal.name">称呼</label><input type="text" id="oName" placeholder="可选" data-i18n-ph="modal.name.ph"/></div>
+      <div class="fl" style="margin:0"><label data-i18n="modal.city">出生城市</label><input type="text" id="oCity" placeholder="可选，提升精度" data-i18n-ph="modal.city.ph"/></div>
+    </div>
+    <div class="ov-ft">
+      <button class="btn-c btn-paper" id="ovCancel" data-i18n="modal.cancel">取消</button>
+      <button class="btn-ok btn-ink" id="ovOk" data-i18n="modal.save">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  工具
+// ═══════════════════════════════════════════════════
+const $  = id => document.getElementById(id);
+const ls = { get: k => { try { return JSON.parse(localStorage.getItem(k)) } catch { return null } },
+              set: (k,v) => localStorage.setItem(k, JSON.stringify(v)) };
+
+// ═══════════════════════════════════════════════════
+//  i18n
+// ═══════════════════════════════════════════════════
+const I18N = {
+  zh: {
+    'sb.empty':'暂无对话记录','sb.today':'今天','sb.week':'近7天','sb.earlier':'更早',
+    'prof.setup':'设置生辰','prof.set':'已设生辰',
+    'mode.suiwen':'随问','mode.tianming':'天命','mode.renjiandao':'人间道','mode.diyun':'地运',
+    'mode.ph.suiwen':'随便问…','mode.ph.tianming':'关于命盘的任何问题…','mode.ph.renjiandao':'说说你想卜问的事…','mode.ph.diyun':'关于居所方位的问题…',
+    'modal.title':'修改生辰档案','modal.hint':'数据仅存于本机 localStorage',
+    'modal.dob':'出生日期 & 时间 *','modal.gender':'性别 *','modal.male':'男','modal.female':'女',
+    'modal.name':'称呼','modal.name.ph':'可选','modal.city':'出生城市','modal.city.ph':'可选，提升精度',
+    'modal.cancel':'取消','modal.save':'保存',
+    'welcome.suiwen.on':  name => `易理观人生，心诚则有应${name}。<br>你的命盘已在，有什么困惑或想看清的，直接说。`,
+    'welcome.suiwen.off': () => `易理观人生，心诚则有应。<br>有什么困惑、纠结、或难以抉择的，说出来——不用提供生辰也能聊。`,
+    'welcome.tianming.on':  name => `紫微布星河，命宫藏天机${name}。<br>你的命盘已排就，三方四正、大限流年——想从哪里看起？`,
+    'welcome.tianming.off': () => `紫微布星河，命宫藏天机。<br>可以先聊紫微斗数的基础，或点右上角「设置生辰」让我帮你解盘。`,
+    'welcome.renjiandao': () => `心有所问，卦自有应。<br>说出当下最想卜问的那件事，我借六爻卦象帮你把处境看清、时机想明白。`,
+    'welcome.diyun.on':  name => `山河有气，方位藏理${name}。<br>你的本命卦已推算就绪，关于居所方位随时问。`,
+    'welcome.diyun.off': () => `山河有气，方位藏理。<br>提供生辰后我可算出你的本命卦，给出个性化方位建议；也可以先聊聊八宅风水的基本原理。`,
+    'welcome.namePrefix': n => `，${n}`,
+    'chips.suiwen':     ['最近为什么诸事不顺', '感情上该怎么取舍', '周易怎么帮人做决策', '什么是三才合一', '今年我的运势如何', '贵人运什么时候来'],
+    'chips.tianming':   ['紫微斗数怎么看性格', '三方四正是什么意思', '命宫空宫代表什么', '什么是四化', '大限运势怎么看', '天机和太阴的区别'],
+    'chips.renjiandao': ['这件事该不该做', '近期感情走势如何', '这个决策对不对', '合作能不能成', '何时会有转机', '当前处境是什么象'],
+    'chips.diyun':      ['吉方是什么意思', '卧室方位怎么选', '书房朝向有讲究吗', '财位在哪个方向', '客厅沙发背靠哪方好', '厨房灶台朝向'],
+    'err.network': m => `网络错误：${m}`,
+  },
+  en: {
+    'sb.empty':'No conversations yet','sb.today':'Today','sb.week':'Past 7 days','sb.earlier':'Earlier',
+    'prof.setup':'Set birth info','prof.set':'Birth info set',
+    'mode.suiwen':'Ask anything','mode.tianming':'Tian Ming','mode.renjiandao':'Ren Jian Dao','mode.diyun':'Di Yun',
+    'mode.ph.suiwen':'Ask anything…','mode.ph.tianming':'Anything about your chart…','mode.ph.renjiandao':'What do you want to divine…','mode.ph.diyun':'Questions about your home\'s layout…',
+    'modal.title':'Edit birth info','modal.hint':'Stored locally in this browser only',
+    'modal.dob':'Date & time of birth *','modal.gender':'Gender *','modal.male':'Male','modal.female':'Female',
+    'modal.name':'Name','modal.name.ph':'Optional','modal.city':'Birth city','modal.city.ph':'Optional, improves accuracy',
+    'modal.cancel':'Cancel','modal.save':'Save',
+    'welcome.suiwen.on':  name => `By the Yi into insight, sincerity finds its answer${name}.<br>Your chart is ready — whatever you're unsure about, just ask.`,
+    'welcome.suiwen.off': () => `By the Yi into insight, sincerity finds its answer.<br>Whatever you're wrestling with, say it — no birth info needed to chat.`,
+    'welcome.tianming.on':  name => `Purple stars fill the sky, destiny hides in the Life Palace${name}.<br>Your chart is cast — three-and-four alignments, decade cycles — where should we start?`,
+    'welcome.tianming.off': () => `Purple stars fill the sky, destiny hides in the Life Palace.<br>We can start with Zi Wei Dou Shu basics, or tap "Set birth info" up top to get your chart read.`,
+    'welcome.renjiandao': () => `Ask with sincerity, the hexagram will answer.<br>Tell me what you most want to divine right now, and I'll read the six-line hexagram to help you see your situation and timing.`,
+    'welcome.diyun.on':  name => `Mountains and rivers carry qi, direction holds reason${name}.<br>Your natal trigram is ready — ask anytime about your home's layout.`,
+    'welcome.diyun.off': () => `Mountains and rivers carry qi, direction holds reason.<br>Share your birth info and I can work out your natal trigram for personalized directions; or we can start with Eight Mansions basics.`,
+    'welcome.namePrefix': n => `, ${n}`,
+    'chips.suiwen':     ['Why does nothing seem to go right lately', 'How should I weigh this relationship decision', 'How does the I Ching help with decisions', 'What does "three powers as one" mean', 'How is my fortune this year', 'When will my luck with helpful people turn'],
+    'chips.tianming':   ['How does Zi Wei Dou Shu read personality', 'What are the three-and-four alignments', 'What does an empty Life Palace mean', 'What are the Four Transformations', 'How do I read a decade cycle', 'Difference between Tianji and Taiyin'],
+    'chips.renjiandao': ['Should I go through with this', 'How is my relationship trending', 'Is this decision right', 'Will this partnership work out', 'When will things turn around', 'What does my current situation look like'],
+    'chips.diyun':      ['What does an auspicious direction mean', 'How do I pick a bedroom direction', 'Does study orientation matter', 'Which direction is the wealth corner', 'Which way should the sofa back face', 'Which way should the stove face'],
+    'err.network': m => `Network error: ${m}`,
+  },
+};
+let LANG = localStorage.getItem('lang') || 'zh';
+const t = k => (I18N[LANG] && I18N[LANG][k]) ?? (I18N.zh[k] ?? k);
+
+// ═══════════════════════════════════════════════════
+//  状态
+// ═══════════════════════════════════════════════════
+let profile   = ls.get('xy_profile');        // {datetime,gender,name?,location?}
+let sessions  = ls.get('xy_sessions') || []; // [{id,title,mode,msgs,extras,ts}]
+let curSid    = null;
+let curMode   = 'suiwen';
+let streaming = false;
+
+// ═══════════════════════════════════════════════════
+//  初始化
+// ═══════════════════════════════════════════════════
+// (修复既有 TDZ 崩溃:MODE_ICON/modeLbl 原声明于 init() 调用之后,
+//  localStorage 有会话时 renderSidebar 会抛 ReferenceError 白屏;仅上移声明,逻辑不变)
+const MODE_ICON = { suiwen:'◎', tianming:'✦', renjiandao:'☰', diyun:'⌂' };
+const modeLbl = mode => t(`mode.${mode}`) || t('mode.suiwen');
+init();
+
+function init() {
+  applyI18n();
+  updateProfBtn();
+  renderSidebar();
+  bindEvents();
+  renderWelcome();  // 直接进聊天，无需档案
+}
+
+function applyI18n() {
+  document.documentElement.lang = LANG === 'en' ? 'en' : 'zh-CN';
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-ph')); });
+  $('langtog').textContent = LANG === 'en' ? '中' : 'EN';
+  updateProfBtn();
+  $('cTxt').placeholder = t(`mode.ph.${curMode}`);
+  renderSidebar();
+}
+
+function bindEvents() {
+  // 侧栏
+  $('newBtn').onclick = newSession;
+  $('hbg').onclick    = () => $('sb').classList.toggle('open');
+  document.addEventListener('click', e => {
+    if ($('sb').classList.contains('open') && !$('sb').contains(e.target) && e.target !== $('hbg'))
+      $('sb').classList.remove('open');
+  });
+
+  // 语言切换
+  $('langtog').onclick = () => {
+    LANG = LANG === 'en' ? 'zh' : 'en';
+    localStorage.setItem('lang', LANG);
+    applyI18n();
+    if (!curSid) { $('msgs').innerHTML = ''; renderWelcome(); }  // 尚未开始对话时，重绘欢迎屏应用新语言
+  };
+
+  // 模式切换
+  $('modeRow').addEventListener('click', e => {
+    const b = e.target.closest('.mt');
+    if (b) switchMode(b.dataset.mode);
+  });
+
+  // 档案按钮
+  $('profBtn').onclick = openProfileModal;
+  $('ovCancel').onclick = () => $('ov').style.display = 'none';
+  $('ovOk').onclick = saveProfileFromModal;
+  $('ov').addEventListener('click', e => { if (e.target === $('ov')) $('ov').style.display = 'none'; });
+
+  // (旧 setupScreen 按钮已移除)
+
+  // 输入
+  $('sendBtn').onclick = () => send($('cTxt').value.trim());
+  $('cTxt').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send($('cTxt').value.trim()); }
+  });
+  $('cTxt').addEventListener('input', () => {
+    $('cTxt').style.height = 'auto';
+    $('cTxt').style.height = Math.min($('cTxt').scrollHeight, 160) + 'px';
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  模式 & 视图
+// ═══════════════════════════════════════════════════
+function switchMode(mode) {
+  curMode = mode;
+  document.querySelectorAll('#modeRow .mt').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+  $('cTxt').placeholder = t(`mode.ph.${mode}`);
+}
+
+function showChat() {
+  // 聊天视图始终可见，此函数保留供历史会话切换调用
+}
+
+// ═══════════════════════════════════════════════════
+//  档案
+// ═══════════════════════════════════════════════════
+function updateProfBtn() {
+  if (profile?.datetime) {
+    $('profDot').className = 'prof-dot';
+    $('profLabel').textContent = profile.name ? profile.name : t('prof.set');
+  } else {
+    $('profDot').className = 'prof-dot empty';
+    $('profLabel').textContent = t('prof.setup');
+  }
+}
+
+function startFromSetup() {
+  const dt = $('sDt').value;
+  if (!dt) { $('sDt').focus(); return; }
+  profile = {
+    datetime: dt,
+    gender:   document.querySelector('input[name=sGender]:checked').value,
+    name:     $('sName').value.trim(),
+    location: $('sCity').value.trim(),
+  };
+  ls.set('xy_profile', profile);
+  updateProfBtn();
+  showChat();
+  renderWelcome();
+}
+
+function openProfileModal() {
+  if (profile) {
+    $('oDt').value  = profile.datetime || '';
+    $('oName').value = profile.name    || '';
+    $('oCity').value = profile.location || '';
+    const gv = profile.gender || 'male';
+    document.querySelector(`input[name=oGender][value="${gv}"]`).checked = true;
+  }
+  $('ov').style.display = 'grid';
+  setTimeout(() => $('oDt').focus(), 60);
+}
+
+function saveProfileFromModal() {
+  const dt = $('oDt').value;
+  if (!dt) { $('oDt').focus(); return; }
+  profile = {
+    datetime: dt,
+    gender:   document.querySelector('input[name=oGender]:checked').value,
+    name:     $('oName').value.trim(),
+    location: $('oCity').value.trim(),
+  };
+  ls.set('xy_profile', profile);
+  updateProfBtn();
+  $('ov').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════
+//  侧栏
+// ═══════════════════════════════════════════════════
+// (MODE_ICON/modeLbl 声明已上移至 init() 之前)
+
+function renderSidebar() {
+  if (!sessions.length) { $('sbEmpty').style.display = ''; $('histList').innerHTML = ''; return; }
+  $('sbEmpty').style.display = 'none';
+  const now = Date.now();
+  const G = { [t('sb.today')]: [], [t('sb.week')]: [], [t('sb.earlier')]: [] };
+  sessions.forEach(s => {
+    const d = now - s.ts;
+    if (d < 86400000) G[t('sb.today')].push(s);
+    else if (d < 7*86400000) G[t('sb.week')].push(s);
+    else G[t('sb.earlier')].push(s);
+  });
+  let h = '';
+  for (const [label, list] of Object.entries(G)) {
+    if (!list.length) continue;
+    h += `<div class="sb-mt">${label}</div>`;
+    list.forEach(s => {
+      const ico = MODE_ICON[s.mode] || '◎';
+      const lbl = modeLbl(s.mode);
+      h += `<div class="hi${s.id === curSid ? ' on' : ''}" data-sid="${s.id}">
+        <span class="hi-t">${esc(s.title)}</span>
+        <span class="hi-m">${ico} ${lbl}</span>
+      </div>`;
+    });
+  }
+  $('histList').innerHTML = h;
+  $('histList').querySelectorAll('.hi').forEach(el => {
+    el.onclick = () => loadSession(el.dataset.sid);
+  });
+}
+
+function loadSession(sid) {
+  const sess = sessions.find(s => s.id === sid);
+  if (!sess) return;
+  curSid  = sid;
+  curMode = sess.mode || 'suiwen';
+  switchMode(curMode);
+  showChat();
+  // 重绘消息
+  $('msgs').innerHTML = '';
+  sess.msgs.forEach(m => {
+    if (m.role === 'user') addUserBub(m.content);
+    else if (m.role === 'ai') addAIBub(m.content, m.hexagram, true);
+  });
+  renderSidebar();
+  $('sb').classList.remove('open');
+  scrollBottom();
+}
+
+// ═══════════════════════════════════════════════════
+//  对话
+// ═══════════════════════════════════════════════════
+function newSession() {
+  curSid = null;
+  switchMode('suiwen');
+  $('msgs').innerHTML = '';
+  renderWelcome();
+  renderSidebar();
+}
+
+function renderWelcome() {
+  const hasProf = !!(profile?.datetime);
+  const name    = profile?.name ? t('welcome.namePrefix')(profile.name) : '';
+
+  // 欢迎语：有命盘 / 无命盘 两套
+  const introMap = {
+    suiwen:     t(hasProf ? 'welcome.suiwen.on'   : 'welcome.suiwen.off')(name),
+    tianming:   t(hasProf ? 'welcome.tianming.on' : 'welcome.tianming.off')(name),
+    renjiandao: t('welcome.renjiandao')(),
+    diyun:      t(hasProf ? 'welcome.diyun.on'    : 'welcome.diyun.off')(name),
+  };
+  const intro = introMap[curMode] || introMap.suiwen;
+
+  const chips = t(`chips.${curMode}`) || t('chips.suiwen');
+
+  const div = document.createElement('div');
+  div.className = 'welcome-msg';
+  div.innerHTML = `<p>${intro}</p>
+<div class="chips">${chips.map(c => `<button class="ck">${esc(c)}</button>`).join('')}</div>`;
+  div.querySelectorAll('.ck').forEach(b => b.onclick = () => send(b.textContent));
+  $('msgs').appendChild(div);
+  scrollBottom();
+}
+
+async function send(q) {
+  if (!q || streaming) return;
+
+  streaming = true;
+  $('sendBtn').disabled = true;
+  $('cTxt').value = '';
+  $('cTxt').style.height = 'auto';
+
+  // 初始化 session
+  if (!curSid) {
+    curSid = 'sid_' + Date.now();
+    sessions.unshift({ id: curSid, title: q.slice(0, 22), mode: curMode, msgs: [], extras: {}, ts: Date.now() });
+    ls.set('xy_sessions', sessions);
+  }
+
+  const sess = sessions.find(s => s.id === curSid);
+
+  addUserBub(q);
+  sess.msgs.push({ role: 'user', content: q });
+
+  // 打字加载
+  const typingEl = addTyping();
+
+  try {
+    const res = await fetch('/api/chat', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: sess.msgs.filter(m => m.role !== 'typing'),
+        profile,
+        mode: curMode,
+        lang: LANG,
+        extras: sess.extras || {},
+      }),
+    });
+
+    typingEl.remove();
+
+    const aiBub  = addAIBub('', null, false);
+    const txtEl  = aiBub.querySelector('.ai-txt');
+    const cursor = aiBub.querySelector('.cursor');
+
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let   buf     = '';
+    let   fullTxt = '';
+    let   hexagram = null;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+        try {
+          const ev = JSON.parse(raw);
+          if (ev.type === 'hexagram') {
+            hexagram = ev.data;
+            if (sess) sess.extras = { ...sess.extras, hexagram };
+            // 显示卦象标签
+            const tag = aiBub.querySelector('.hex-tag-slot');
+            if (tag && hexagram?.本卦) {
+              const bian = hexagram.变卦?.name ? ` → ${hexagram.变卦.name}` : '';
+              tag.innerHTML = `<span class="hex-tag">☰ 本卦 <b>${esc(hexagram.本卦.name)}</b>${esc(bian)}</span>`;
+            }
+          } else if (ev.type === 'delta' && ev.text) {
+            fullTxt += ev.text;
+            if (txtEl) txtEl.innerHTML = md(fullTxt) + '<span class="cursor"></span>';
+            scrollBottom();
+          } else if (ev.type === 'error') {
+            fullTxt += `\n⚠ ${ev.text}`;
+            if (txtEl) txtEl.innerHTML = md(fullTxt);
+          } else if (ev.type === 'done') {
+            if (cursor) cursor.remove();
+            if (txtEl) txtEl.innerHTML = md(fullTxt);
+          }
+        } catch (_) { /* partial JSON */ }
+      }
+    }
+
+    // 存入 session
+    sess.msgs.push({ role: 'ai', content: fullTxt, hexagram });
+    sess.ts = Date.now();
+    ls.set('xy_sessions', sessions);
+    renderSidebar();
+
+  } catch (e) {
+    typingEl?.remove();
+    addAIBub(t('err.network')(e.message), null, true, true);
+  }
+
+  streaming = false;
+  $('sendBtn').disabled = false;
+  $('cTxt').focus();
+}
+
+// ═══════════════════════════════════════════════════
+//  渲染 helper
+// ═══════════════════════════════════════════════════
+function addUserBub(text) {
+  const d = document.createElement('div');
+  d.className = 'msg usr';
+  d.innerHTML = `<div class="bub">${esc(text)}</div><div class="ts">${hhmm()}</div>`;
+  $('msgs').appendChild(d);
+  scrollBottom();
+}
+
+function addTyping() {
+  const d = document.createElement('div');
+  d.className = 'msg ai';
+  d.innerHTML = `<div class="mt-tag">${MODE_ICON[curMode] || '◎'} ${modeLbl(curMode)}</div>
+<div class="typing"><i/><i/><i/></div>`;
+  $('msgs').appendChild(d);
+  scrollBottom();
+  return d;
+}
+
+function addAIBub(text, hexagram, done, isErr) {
+  const d = document.createElement('div');
+  d.className = 'msg ai';
+  const modeTag = `<span class="mt-tag">${MODE_ICON[curMode] || '◎'} ${modeLbl(curMode)}</span>`;
+  let hexHtml = '';
+  if (curMode === 'renjiandao') {
+    if (hexagram?.本卦) {
+      const bian = hexagram.变卦?.name ? ` → ${hexagram.变卦.name}` : '';
+      hexHtml = `<div class="hex-tag-slot"><span class="hex-tag">☰ 本卦 <b>${esc(hexagram.本卦.name)}</b>${esc(bian)}</span></div>`;
+    } else {
+      hexHtml = `<div class="hex-tag-slot"></div>`;
+    }
+  }
+  const bubCls = isErr ? 'bub err-bub' : 'bub';
+  const cursor = done ? '' : '<span class="cursor"></span>';
+  d.innerHTML = `${modeTag}<div class="${bubCls}">${hexHtml}<div class="ai-txt">${md(text)}${cursor}</div></div><div class="ts">${hhmm()}</div>`;
+  $('msgs').appendChild(d);
+  scrollBottom();
+  return d;
+}
+
+// 极简 Markdown
+function md(t) {
+  if (!t) return '';
+  return t
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/^#{1,4}\s+(.+)$/gm,'<strong>$1</strong><br>')
+    .replace(/【([^】]+)】/g,'<strong>【$1】</strong>')
+    .split(/\n{2,}/)
+    .map(p => p.trim()).filter(Boolean)
+    .map(p => `<p>${p.replace(/\n/g,'<br>')}</p>`)
+    .join('');
+}
+function esc(s='') { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function hhmm()   { const d=new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+function scrollBottom() { const cv=$('chatView'); if(cv) setTimeout(()=>{ cv.scrollTop=cv.scrollHeight; },30); }
+</script>
+</body>
+</html>
