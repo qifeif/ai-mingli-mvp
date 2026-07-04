@@ -44,6 +44,48 @@
   .lead .dao-ring:hover { color:var(--cinnabar); }
   .lead .dao-ring.in, .lead .dao-ring:not(.reveal) { opacity:.9; }
 
+  /* ===== 命例库(表单上方一排卡片) ===== */
+  .mingli { margin-bottom:24px; }
+  .ml-cap { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px; }
+  .ml-tt { display:flex; align-items:baseline; gap:10px; }
+  .ml-tt h3 { font-family:"Songti SC",serif; font-size:17px; font-weight:700; color:var(--ink-strong); letter-spacing:1px; }
+  .ml-count { font-size:12px; color:var(--faint); letter-spacing:.5px; }
+  .ml-add { font:inherit; font-size:13px; color:var(--cinnabar); background:none; border:none; cursor:pointer;
+    padding:4px 2px; transition:opacity var(--dur-1) var(--ease); width:auto; }
+  .ml-add:hover { opacity:.7; }
+  .ml-rail { display:flex; gap:14px; overflow-x:auto; padding:2px 2px 10px; scroll-snap-type:x proximity; }
+  .ml-rail::-webkit-scrollbar { height:6px; }
+  .ml-rail::-webkit-scrollbar-thumb { background:var(--line); border-radius:99px; }
+  /* 命例卡 */
+  .ml-card { position:relative; flex:0 0 auto; width:236px; scroll-snap-align:start; cursor:pointer;
+    padding:15px 16px 13px; border:1px solid var(--line); border-radius:16px; background:var(--card);
+    box-shadow:var(--shadow-soft); transition:transform var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease); }
+  .ml-card:hover { transform:translateY(-3px); border-color:rgba(168,131,76,.44); box-shadow:var(--shadow); }
+  .ml-card:focus-visible { outline:2px solid var(--cinnabar); outline-offset:2px; }
+  .ml-card.active { border-color:var(--cinnabar); box-shadow:inset 0 0 0 1px var(--cinnabar), var(--shadow-soft); }
+  .ml-head { display:flex; align-items:center; gap:7px; margin-bottom:12px; }
+  .ml-gender { width:15px; height:15px; flex:none; }
+  .ml-gender.m { color:var(--dai); } .ml-gender.f { color:var(--cinnabar); }
+  .ml-name { font-weight:600; font-size:14px; color:var(--ink-strong); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ml-chip { margin-left:auto; flex:none; font-size:10.5px; padding:2px 7px; border-radius:99px;
+    color:var(--cinnabar); background:var(--cinnabar-soft); border:1px solid rgba(166,64,47,.28); }
+  /* 四柱:天干上 / 地支下,五行染色 */
+  .ml-pillars { display:flex; gap:14px; justify-content:center; font-family:"Songti SC",serif; margin:4px 0 12px; }
+  .ml-pillar { display:flex; flex-direction:column; align-items:center; line-height:1.28; font-size:18px; font-weight:600; }
+  .wx-mu { color:var(--good); } .wx-huo { color:var(--cinnabar); } .wx-tu { color:var(--bronze); }
+  .wx-jin { color:var(--dai); } .wx-shui { color:var(--ink); }
+  .ml-date { font-size:11.5px; color:var(--faint); border-top:1px solid var(--line-soft); padding-top:9px; }
+  /* 卡片删除键(hover 出现) */
+  .ml-del { position:absolute; top:9px; right:9px; width:22px; height:22px; border-radius:50%; border:none;
+    background:var(--bg-2); color:var(--faint); cursor:pointer; opacity:0; font-size:13px; line-height:1;
+    display:flex; align-items:center; justify-content:center; transition:opacity var(--dur-1) var(--ease), color var(--dur-1) var(--ease); width:22px; }
+  .ml-card:hover .ml-del, .ml-del:focus-visible { opacity:1; }
+  .ml-del:hover { color:var(--bad); background:var(--bad-bg); }
+  /* 空态 */
+  .ml-empty { flex:0 0 auto; display:flex; align-items:center; padding:0 4px; font-size:13px; color:var(--faint); }
+  @media (max-width:640px) { .ml-card { width:210px; } }
+  @media (prefers-reduced-motion: reduce) { .ml-card, .ml-add, .ml-del { transition:none; } }
+
   /* 工作台双栏 */
   .studio { display:grid; grid-template-columns:minmax(0,1.42fr) minmax(0,1fr); gap:26px; align-items:start; }
 
@@ -420,6 +462,15 @@
     <p class="lede"><b data-i18n="hero.motto">由易入理,三才合一。</b><span data-i18n="hero.sub">把纠结说给它听,它陪你把选择想清楚——四柱见性格倾向与能量节奏,是依据,不是判决。</span></p>
   </header>
 
+  <!-- 命例库:表单上方一排卡片(localStorage 持久化,点卡片还原当时解读) -->
+  <section class="mingli reveal-group" id="mingli" aria-label="命例库">
+    <div class="ml-cap">
+      <div class="ml-tt"><h3 data-i18n="ml.title">我的命例</h3><span class="ml-count" id="ml-count"></span></div>
+      <button type="button" class="ml-add" id="ml-add" data-i18n="ml.add">+ 新增命例</button>
+    </div>
+    <div class="ml-rail" id="ml-rail"></div>
+  </section>
+
   <div class="studio">
     <form id="f" class="glass">
       <div class="form-cap"><h2 data-i18n="form.cap">命盘信息</h2><span data-i18n="form.capsub">出生四要素 + 此刻所问</span></div>
@@ -546,6 +597,9 @@ const I18N = {
     'hero.badge':'天命 · 紫薇八字 · 真太阳时','hero.kickcn':'观象入元','hero.title':'天 命',
     'hero.motto':'由易入理,三才合一。','hero.sub':'把纠结说给它听,它陪你把选择想清楚——命盘见性格倾向与能量节奏,是依据,不是判决。',
     'form.cap':'命盘信息','form.capsub':'出生四要素 + 此刻所问',
+    'ml.title':'我的命例','ml.add':'+ 新增命例','ml.empty':'还没有命例 · 排一次盘即可存入',
+    'ml.main':'主命','ml.del_confirm':'删除这条命例?','ml.restore_note':'已还原上次解读',
+    'ml.cap_hit':'免费版最多存 3 个命例。升级会员可存 10 个。','ml.cap_hit_member':'已达上限(10 个),请先删除部分命例。',
     'f.gender':'性别','f.female':'女','f.male':'男','f.place':'出生地','f.place_ph':'如 杭州',
     'f.date':'出生日期','f.time':'出生时间','f.q':'此刻的纠结','f.q_ph':'把你正在纠结的事说出来,越具体越好…',
     'f.solar':'阳历','f.lunar':'阴历','f.solar_fallback':'公历直填','f.marital':'婚姻状况','f.single':'未婚','f.married':'已婚',
@@ -565,6 +619,9 @@ const I18N = {
     'hero.badge':'Tian Ming · Zi Wei · True Solar Time','hero.kickcn':'Read the signs','hero.title':'T I A N   M I N G',
     'hero.motto':'By the Yi into insight · Three Powers as one.','hero.sub':'Tell it what you\'re wrestling with — it helps you think the choice through. The chart shows tendencies and rhythm: a basis, not a verdict.',
     'form.cap':'Birth details','form.capsub':'Four birth inputs + your question',
+    'ml.title':'My charts','ml.add':'+ New chart','ml.empty':'No saved charts yet · run a reading to save one',
+    'ml.main':'Main','ml.del_confirm':'Delete this saved chart?','ml.restore_note':'Restored last reading',
+    'ml.cap_hit':'Free plan stores up to 3 charts. Upgrade for 10.','ml.cap_hit_member':'Limit reached (10). Delete a chart first.',
     'f.gender':'Gender','f.female':'Female','f.male':'Male','f.place':'Birthplace','f.place_ph':'e.g. Hangzhou',
     'f.date':'Birth date','f.time':'Birth time','f.q':'What\'s on your mind','f.q_ph':'Describe what you\'re wrestling with, the more specific the better…',
     'f.solar':'Solar','f.lunar':'Lunar','f.solar_fallback':'Solar direct','f.marital':'Marital status','f.single':'Single','f.married':'Married',
@@ -888,6 +945,10 @@ f.addEventListener('submit', async (e) => {
     result.innerHTML = html;
     result.classList.remove('reveal', 'in'); window.inkReveal?.(result); // 结果区整块显现(fx.js 钩子,reduced-motion 下 no-op)
     if (flyLinesOn) drawFlyLines(data.chart);
+    // 自动存入命例库(达上限则提示升级,不打断解读展示)
+    const saved = Mingli.save(payload, data);
+    if (!saved.ok && saved.reason) { setTimeout(() => alert(t('ml.' + saved.reason)), 300); }
+    else if (saved.ok) { Mingli.activeId = saved.id; Mingli.render(); }
   } catch (err) {
     lastZiweiData = null;
     result.innerHTML = `<div class="reading"><span class="err">${esc(t('err'))}${esc(err.message)}</span></div>`;
@@ -895,6 +956,149 @@ f.addEventListener('submit', async (e) => {
     btn.disabled = false; btn.textContent = t('f.submit'); btn.classList.remove('loading');
   }
 });
+
+// ===== 命例库(localStorage 持久化;存全文,点开即还原) =====
+const Mingli = (() => {
+  const KEY = 'xinyi_mingli';
+  const FREE_CAP = 3, MEMBER_CAP = 10;
+  // 会员开关位(预留接口):真实会员判定接账号体系后改这里
+  const isMember = () => localStorage.getItem('xinyi_member') === '1';
+  const cap = () => isMember() ? MEMBER_CAP : FREE_CAP;
+
+  // 天干/地支 → 五行 class(四柱染色)
+  const GAN_WX = { 甲:'mu',乙:'mu',丙:'huo',丁:'huo',戊:'tu',己:'tu',庚:'jin',辛:'jin',壬:'shui',癸:'shui' };
+  const ZHI_WX = { 寅:'mu',卯:'mu',巳:'huo',午:'huo',辰:'tu',丑:'tu',戌:'tu',未:'tu',申:'jin',酉:'jin',子:'shui',亥:'shui' };
+
+  function load() { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } }
+  function persist(list) { try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) { console.warn('命例库存储失败(可能超额)', e); } }
+
+  // 从一次成功排盘结果构造命例条目;去重键=性别+公历生日+时间
+  function entryFrom(payload, data) {
+    const c = data.chart || {};
+    const name = (payload.name || payload.question?.slice(0, 6) || c.生肖 || '命例').trim();
+    return {
+      id: String(Date.now()) + Math.random().toString(36).slice(2, 6),
+      label: name,
+      gender: payload.gender,
+      四柱: c.四柱 || '',
+      birth: (payload.datetime || '').split(' ')[0] || '',
+      payload,                    // 出生信息(可回填表单)
+      data,                       // 完整解读结果(chart/sanfang/三方四正解读表/text)
+      question: payload.question || '',
+      savedAt: Date.now(),
+    };
+  }
+  function dedupeKey(e) { return `${e.gender}|${e.payload?.datetime}`; }
+
+  // 保存(达上限则不存并返回提示 key);已存在同盘则更新置顶
+  function save(payload, data) {
+    if (data?.type === 'crisis' || !data?.chart) return { ok: false };
+    let list = load();
+    const entry = entryFrom(payload, data);
+    const k = dedupeKey(entry);
+    const existed = list.find(e => dedupeKey(e) === k);
+    list = list.filter(e => dedupeKey(e) !== k);
+    if (!existed && list.length >= cap()) {
+      return { ok: false, reason: isMember() ? 'cap_hit_member' : 'cap_hit' };
+    }
+    list.unshift(entry);
+    persist(list);
+    render();
+    return { ok: true, id: entry.id };
+  }
+
+  function remove(id) {
+    persist(load().filter(e => e.id !== id));
+    render();
+  }
+
+  // 点开:还原当时的完整解读 + 回填表单参考字段
+  let activeId = null;
+  function restore(id) {
+    const e = load().find(x => x.id === id);
+    if (!e) return;
+    activeId = id;
+    lastZiweiData = e.data;
+    lastQuestion = e.question;
+    lastPayload = { ...e.payload, question: '' };
+    // 回填表单(供用户查看/微调后重排;拨轮无公开 setter,写隐藏契约字段 + 直填框)
+    try {
+      f.querySelector(`input[name="gender"][value="${e.gender}"]`)?.click();
+      if (e.payload.place != null) f.querySelector('#f-place').value = e.payload.place;
+      const [d0, t0] = (e.payload.datetime || '').split(' ');
+      if (d0) { f.querySelector('#f-date').value = d0; const fb = f.querySelector('#f-date-fallback'); if (fb) { fb.value = d0; fb.dispatchEvent(new Event('change', { bubbles: true })); } }
+      if (t0) f.querySelector('#f-time').value = t0;
+      if (e.question) f.querySelector('#f-question').value = e.question;
+    } catch (_) {}
+    // 重渲染当时的结果(容错:老版本/异常数据不至于把结果区弄白)
+    try {
+      let html = renderZiwei(e.data.chart) + renderSanFang(e.data.sanfang, e.question);
+      if (e.data.text) html += `<div class="reading"><div class="meta">${esc(t('airead'))}</div><div class="reading-body">${esc(e.data.text)}</div></div>`;
+      result.innerHTML = html;
+      result.classList.remove('reveal', 'in'); window.inkReveal?.(result);
+      if (flyLinesOn) drawFlyLines(e.data.chart);
+    } catch (err) {
+      // 命盘渲染失败(数据不完整)→ 至少还原 AI 解读全文,不留白屏
+      result.innerHTML = e.data.text
+        ? `<div class="reading"><div class="meta">${esc(t('airead'))}</div><div class="reading-body">${esc(e.data.text)}</div></div>`
+        : `<div class="reading"><span class="err">${esc(t('err'))}${esc(err.message)}</span></div>`;
+    }
+    render();
+    result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function card(e) {
+    const genderCls = e.gender === '男' ? 'm' : 'f';
+    const genderSvg = e.gender === '男'
+      ? '<svg class="ml-gender m" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="14" r="6"/><path d="M15 9l5-5m0 0h-4m4 0v4"/></svg>'
+      : '<svg class="ml-gender f" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="9" r="6"/><path d="M12 15v7m-3-3h6"/></svg>';
+    const pillars = (e.四柱 || '').split(/\s+/).filter(Boolean).map(gz => {
+      const gan = gz[0] || '', zhi = gz[1] || '';
+      return `<span class="ml-pillar"><span class="ml-gan wx-${GAN_WX[gan]||'shui'}">${esc(gan)}</span><span class="ml-zhi wx-${ZHI_WX[zhi]||'shui'}">${esc(zhi)}</span></span>`;
+    }).join('');
+    const main = load()[0]?.id === e.id ? `<span class="ml-chip">${esc(t('ml.main'))}</span>` : '';
+    const active = e.id === activeId ? ' active' : '';
+    return `<div class="ml-card${active}" data-id="${e.id}" tabindex="0" role="button" aria-label="${esc(e.label)}">
+      <button type="button" class="ml-del" data-del="${e.id}" aria-label="${esc(t('ml.del_confirm'))}">✕</button>
+      <div class="ml-head">${genderSvg}<span class="ml-name">${esc(e.label)}</span>${main}</div>
+      <div class="ml-pillars">${pillars || '<span class="ml-name" style="color:var(--faint)">—</span>'}</div>
+      <div class="ml-date">${esc(e.birth)}</div>
+    </div>`;
+  }
+
+  function render() {
+    const list = load();
+    const rail = document.getElementById('ml-rail');
+    const count = document.getElementById('ml-count');
+    if (!rail) return;
+    count.textContent = `${list.length}/${cap()}`;
+    rail.innerHTML = list.length
+      ? list.map(card).join('')
+      : `<div class="ml-empty">${esc(t('ml.empty'))}</div>`;
+  }
+
+  return { save, remove, restore, render, cap, load, get activeId() { return activeId; }, set activeId(v) { activeId = v; } };
+})();
+
+// 事件:点卡片还原 / 点✕删除 / 点新增
+document.getElementById('ml-rail').addEventListener('click', (e) => {
+  const del = e.target.closest('.ml-del');
+  if (del) { e.stopPropagation(); if (confirm(t('ml.del_confirm'))) Mingli.remove(del.getAttribute('data-del')); return; }
+  const card = e.target.closest('.ml-card');
+  if (card) Mingli.restore(card.getAttribute('data-id'));
+});
+document.getElementById('ml-rail').addEventListener('keydown', (e) => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('ml-card')) { e.preventDefault(); Mingli.restore(e.target.getAttribute('data-id')); }
+});
+document.getElementById('ml-add').addEventListener('click', () => {
+  if (Mingli.load().length >= Mingli.cap()) {
+    alert(t(localStorage.getItem('xinyi_member') === '1' ? 'ml.cap_hit_member' : 'ml.cap_hit'));
+    return;
+  }
+  document.getElementById('f-question').focus();
+  document.querySelector('.studio').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+Mingli.render();
 
 // 格局标签点选:展开/收起该格局的白话释义(纯前端,事件委托)
 result.addEventListener('click', (e) => {

@@ -4,6 +4,35 @@
 
 ---
 
+## 2026-07-03(五)— 天命页命例库(MetaSight 风格卡片 + localStorage,含存储/回显/会员上限)
+
+### 做了什么
+参考 MetaSight(metasight.cloud/zh/bazi)的八字命盘卡片格式,在天命页(public/index.html)表单上方加「我的命例」一排横向卡片:
+- **卡片视觉**:性别图标(♂墨绿/♀朱砂)+ 名称 + 主命 chip(首张,朱砂)+ **四柱天干上/地支下 + 五行染色**(火朱砂/木墨绿/金靛/土古铜/水墨)+ 出生日期。墨韵主题内实现(复用 --cinnabar/--good/--card/--line 等 token,glass 卡样式)。
+- **存储**:localStorage(`xinyi_mingli`),**存全文**——出生 payload + 完整解读结果(chart/sanfang/三方四正解读表/text)。排盘成功后自动存入(去重键=性别+公历生日时间;同盘更新置顶)。
+- **回显**:点卡片→还原当时完整解读(命盘+三方四正+格局+AI 全文,不重新耗 Key)+ 回填表单参考字段。渲染包 try/catch,老数据/异常不至白屏(至少还原 AI 全文)。
+- **会员上限**:前端开关位 `localStorage.xinyi_member`(预留接口),免费 3 / 会员 10;达上限点「+新增」弹升级提示。删除有 confirm。
+- i18n:zh/en 双语(ml.* 键)。
+
+### 关键决策
+- 用户拍板:localStorage 存储 / 存全文直接还原 / 前端会员开关位。**不做后端账号体系**(与现有无后端架构一致)。
+- 保留现有内嵌拨轮表单(已含 MetaSight 的阳历/阴历/城市/性别要素),只加命例库卡片层 + 存储,不整体改版成弹窗。
+- 仅天命页,地运页命例库(房屋库)稍后。
+
+### 验证(Playwright 程序化)
+- 空态/自动存(1→2 卡,count 0/3→2/3)/四柱染色(庚→wx-jin)/主命 chip/active 高亮 ✓
+- 点卡还原(回填 gender/date/place/question + 命盘 .zw-panel + 格局 .zw-geju 重渲染,真数据零 console 错)✓
+- 达上限弹「免费版最多存 3 个…升级会员可存 10 个」/ 删除 confirm(3→2)✓
+- reload 持久化 ✓ / EN 切换(My charts / 主命→…)✓ / npm test 43/43 ✓
+- 截图确认卡片布局贴合 MetaSight 参考且融入墨韵主题。
+- 改动未提交,等用户拍板。
+
+### 下一步
+1. 地运页(fengshui.html)房屋库(同模式,存户型图需注意 localStorage 体积)。
+2. 会员真实判定接账号体系时,替换 isMember() 开关位。
+
+---
+
 ## 2026-07-03(四)— 紫微解读模式整体替换为「赛博倪海夏」(移植 ziwei-2.0 interpret 模块)
 
 ### 做了什么
