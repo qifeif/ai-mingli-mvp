@@ -340,7 +340,6 @@
   .geju-desc { margin-top:11px; padding:12px 14px; border-radius:11px; font-size:13px;
     line-height:1.85; color:var(--ink); background:var(--bg-2);
     border-left:3px solid var(--cinnabar); animation:gjFade .2s var(--ease); }
-  .geju-desc b { font-family:"Songti SC",serif; color:var(--ink-strong); margin-right:8px; }
   @keyframes gjFade { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:none; } }
   @media (prefers-reduced-motion: reduce) { .geju-tag, .geju-desc { transition:none; animation:none; } }
   @media (max-width:640px) { .zw-geju .gj-sub { flex-basis:100%; } }
@@ -1202,7 +1201,7 @@ function renderGeju(c) {
     </button>`;
   }).join('');
   const descs = list.map((g, i) =>
-    `<div class="geju-desc" data-geju-desc="${i}" hidden><b>${esc(g.name)}</b>${esc(g.description)}</div>`
+    `<div class="geju-desc" data-geju-desc="${i}" hidden>${esc(g.description)}</div>`
   ).join('');
   return `<div class="zw-geju">
     <div class="gj-cap"><span class="gj-t">${title}</span><span class="gj-sub">${sub}</span></div>
