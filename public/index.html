@@ -224,9 +224,25 @@
   #result { margin-top:30px; }
   .reading { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:34px;
     font-size:16px; box-shadow:var(--shadow); }
-  /* AI 正文:保留换行,给出阅读级行高/字距/段落感(不再让容器整体 pre-wrap) */
-  .reading .reading-body { white-space:pre-wrap; font-size:16px; line-height:2; color:var(--ink);
-    letter-spacing:.2px; max-width:64ch; }
+  /* AI 正文:markdown 渲染后的阅读级排版(墨韵) */
+  .reading .reading-body { font-size:16px; line-height:2; color:var(--ink); letter-spacing:.2px; max-width:64ch; }
+  .reading-body p { margin:0 0 14px; }
+  .reading-body p:last-child { margin-bottom:0; }
+  .reading-body strong { font-weight:700; color:var(--ink-strong); }
+  .reading-body em { font-style:normal; color:var(--cinnabar); }
+  .reading-body h2, .reading-body h3, .reading-body h4 {
+    font-family:"Songti SC","Noto Serif SC",serif; color:var(--ink-strong); font-weight:700;
+    letter-spacing:1px; line-height:1.5; margin:22px 0 10px; }
+  .reading-body h2 { font-size:19px; padding-left:12px; border-left:3px solid var(--cinnabar); }
+  .reading-body h3 { font-size:17px; }
+  .reading-body h3::before { content:"❖ "; color:var(--cinnabar); font-size:13px; }
+  .reading-body h4 { font-size:15px; color:var(--accent-2); }
+  .reading-body h2:first-child, .reading-body h3:first-child, .reading-body h4:first-child { margin-top:0; }
+  .reading-body ul { margin:6px 0 16px; padding:0; list-style:none; }
+  .reading-body ul li { position:relative; padding-left:20px; margin:0 0 9px; line-height:1.85; }
+  .reading-body ul li::before { content:""; position:absolute; left:5px; top:14px; width:5px; height:5px;
+    border-radius:50%; background:var(--cinnabar); opacity:.7; }
+  .reading-body hr { border:none; border-top:1px solid var(--line); margin:20px 0; }
   .reading.crisis { white-space:pre-wrap; line-height:2; }
   /* 解读标题条:朱砂点 + 标签,与正文之间发丝线分隔、留呼吸 */
   .meta { display:flex; align-items:center; gap:9px; font-family:"Songti SC","Noto Serif SC",serif;
@@ -980,7 +996,7 @@ f.addEventListener('submit', async (e) => {
     lastQuestion = payload.question;
     let html = renderZiwei(data.chart) + renderSanFang(data.sanfang, payload.question);
     if (data.text) {
-      html += `<div class="reading"><div class="meta">${esc(t('airead'))}</div><div class="reading-body">${esc(data.text)}</div></div>`;
+      html += `<div class="reading"><div class="meta">${esc(t('airead'))}</div><div class="reading-body">${mdRender(data.text)}</div></div>`;
     } else {
       html += `<div class="reading"><div class="offline-note">${esc(t('offline_note'))}</div></div>`;
     }
@@ -1080,14 +1096,14 @@ const Mingli = (() => {
     // 重渲染当时的结果(容错:老版本/异常数据不至于把结果区弄白)
     try {
       let html = renderZiwei(e.data.chart) + renderSanFang(e.data.sanfang, e.question);
-      if (e.data.text) html += `<div class="reading"><div class="meta">${esc(t('airead'))}</div><div class="reading-body">${esc(e.data.text)}</div></div>`;
+      if (e.data.text) html += `<div class="reading"><div class="meta">${esc(t('airead'))}</div><div class="reading-body">${mdRender(e.data.text)}</div></div>`;
       result.innerHTML = html;
       result.classList.remove('reveal', 'in'); window.inkReveal?.(result);
       if (flyLinesOn) drawFlyLines(e.data.chart);
     } catch (err) {
       // 命盘渲染失败(数据不完整)→ 至少还原 AI 解读全文,不留白屏
       result.innerHTML = e.data.text
-        ? `<div class="reading"><div class="meta">${esc(t('airead'))}</div><div class="reading-body">${esc(e.data.text)}</div></div>`
+        ? `<div class="reading"><div class="meta">${esc(t('airead'))}</div><div class="reading-body">${mdRender(e.data.text)}</div></div>`
         : `<div class="reading"><span class="err">${esc(t('err'))}${esc(err.message)}</span></div>`;
     }
     render();
@@ -1559,6 +1575,31 @@ function renderSanFang(s, question) {
 }
 
 function esc(s) { return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+
+// 轻量 markdown 渲染(AI 解读用):先 esc 防注入,再把 **粗体** / ### 标题 / - 列表 / 段落 渲染成墨韵排版。
+// 只支持解读会用到的子集:标题(#/##/###)、无序列表(-/*/•/①..)、粗体(**)、斜体(*)、分隔线(---)、段落。
+function mdRender(src) {
+  const lines = String(src || '').replace(/\r\n/g, '\n').split('\n');
+  const inline = (t) => esc(t)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*(?!\s)([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
+  const out = [];
+  let listBuf = [];
+  const flushList = () => { if (listBuf.length) { out.push('<ul>' + listBuf.map((li) => `<li>${inline(li)}</li>`).join('') + '</ul>'); listBuf = []; } };
+  for (let raw of lines) {
+    const line = raw.trim();
+    if (!line) { flushList(); continue; }
+    if (/^---+$/.test(line) || /^===+$/.test(line)) { flushList(); out.push('<hr>'); continue; }
+    const h = line.match(/^(#{1,4})\s+(.*)$/);
+    if (h) { flushList(); const lv = Math.min(h[1].length + 1, 4); out.push(`<h${lv}>${inline(h[2])}</h${lv}>`); continue; }
+    const li = line.match(/^\s*(?:[-*•]|[0-9]+[.、)]|[①②③④⑤⑥⑦⑧⑨⑩])\s+(.*)$/);
+    if (li) { listBuf.push(li[1]); continue; }
+    flushList();
+    out.push(`<p>${inline(line)}</p>`);
+  }
+  flushList();
+  return out.join('');
+}
 </script>
 <script src="/fx.js" defer></script>
 <script src="/ink.js" defer></script>
