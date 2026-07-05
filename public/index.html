@@ -180,43 +180,50 @@
     transition:transform var(--dur-1) var(--ease), opacity var(--dur-1) var(--ease); }
   .seg input:checked + span::after { transform:translateX(-50%) scaleX(1); opacity:1; }
 
-  /* ===== 出生日期:阳历/阴历 + 拨转轮(wheel picker,纯手写墨韵) ===== */
+  /* ===== 出生日期时间:阳历/阴历 + 五列一体拨转轮(年·月·日·时·分,MetaSight 风) ===== */
   .datefield { display:flex; flex-direction:column; gap:10px; }
   .datefield .seg { margin:0; }
-  /* 拨轮外框:宣纸列 + 发丝描边 */
-  .wheels { position:relative; display:grid; grid-template-columns:1.05fr 1fr 1fr; gap:0;
-    border:1px solid var(--line); border-radius:12px; background:var(--bg-2); overflow:hidden; }
-  .wheel { position:relative; height:132px; overflow:hidden; text-align:center; touch-action:none;
+  /* 一体宣纸卡:五列滚轮嵌于一张圆角浅色容器 */
+  .wheels { position:relative; display:grid; grid-template-columns:1.28fr 1fr 1fr .82fr .82fr; gap:0;
+    border:1px solid var(--line); border-radius:14px; background:var(--bg-2); overflow:hidden;
+    box-shadow:var(--shadow-soft); }
+  /* 每列:数字区 + 底部单位标签 */
+  .wheel { position:relative; height:176px; overflow:hidden; text-align:center; touch-action:pan-y;
     -webkit-user-select:none; user-select:none; }
   .wheel + .wheel { border-left:1px solid var(--line-soft); }
-  /* 直接输入:每列顶部一个细输入,回车/失焦即定位滚轮 */
-  .wheel-in { width:100%; border:none; border-bottom:1px solid var(--line-soft); border-radius:0;
-    background:transparent; text-align:center; font-size:12.5px; padding:7px 4px; color:var(--muted);
-    letter-spacing:.5px; }
-  .wheel-in:focus { outline:none; background:var(--cinnabar-soft); box-shadow:none; color:var(--ink); }
-  .wheel-in::placeholder { color:var(--faint); }
-  .wheel-scroll { position:absolute; left:0; right:0; top:34px; bottom:0; overflow-y:auto;
+  /* 单位标签(年/月/日/时/分)在列底部小字 */
+  .wheel-unit { position:absolute; left:0; right:0; bottom:0; height:22px; line-height:22px;
+    font-size:11px; color:var(--faint); letter-spacing:1px; pointer-events:none; z-index:3;
+    background:linear-gradient(to top, var(--bg-2) 55%, rgba(225,232,231,0)); }
+  .wheel-scroll { position:absolute; left:0; right:0; top:0; bottom:22px; overflow-y:auto;
     scroll-snap-type:y mandatory; scrollbar-width:none; -ms-overflow-style:none;
-    -webkit-overflow-scrolling:touch; scroll-behavior:smooth; }
+    -webkit-overflow-scrolling:touch; scroll-behavior:smooth; outline:none; }
   .wheel-scroll::-webkit-scrollbar { display:none; }
-  .wheel-scroll .pad { height:33px; } /* 上下留白,使首/末项也能滚到中心选中行 */
+  .wheel-scroll .pad { height:66px; } /* 2 行留白(选中行居中,上下各显 2 档) */
   .wheel-item { height:33px; line-height:33px; scroll-snap-align:center; font-size:15px;
     color:var(--faint); font-variant-numeric:tabular-nums; cursor:pointer;
     transition:color var(--dur-1) var(--ease); }
-  .wheel-item.on { color:var(--ink); font-family:"Songti SC","Noto Serif SC",serif; }
-  /* 中心选中行:上下两条朱砂细线(小面积点睛) */
+  .wheel-item.on { color:var(--ink-strong); font-family:"Songti SC","Noto Serif SC",serif; font-size:16px; }
+  .wheel-scroll:focus-visible .wheel-item.on { color:var(--cinnabar); }
+  /* 中心选中行:浅灰高亮背景 + 上下朱砂发丝线
+     scrollTop=idx*33 时,选中项 top 停在 viewport 66px 处(pad 高 66) */
+  .wheels .wheel-sel { position:absolute; left:0; right:0; top:66px; height:33px;
+    pointer-events:none; z-index:1; background:rgba(110,103,91,.10); }
   .wheels::before, .wheels::after { content:""; position:absolute; left:0; right:0; height:1px;
-    background:var(--cinnabar); opacity:.55; pointer-events:none; z-index:2; }
-  .wheels::before { top:calc(34px + 49px); }   /* 34 头 + 33 pad + 16.5(半行) */
-  .wheels::after  { top:calc(34px + 82px); }
-  /* 上下渐隐遮罩(宣纸雾) */
-  .wheel-mask { position:absolute; left:0; right:0; top:34px; bottom:0; pointer-events:none; z-index:1;
-    background:linear-gradient(to bottom, var(--bg-2) 0%, rgba(225,232,231,0) 34%, rgba(225,232,231,0) 66%, var(--bg-2) 100%); }
-  .datefield .fallback { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--faint); }
-  .datefield .fallback input[type="date"] { padding:7px 9px; font-size:12.5px; flex:1; min-width:0; }
+    background:var(--cinnabar); opacity:.5; pointer-events:none; z-index:2; }
+  .wheels::before { top:66px; }
+  .wheels::after  { top:99px; }             /* 66 + 33 = 99 */
+  /* 上下渐隐遮罩(宣纸雾,顶底透明→实,约露 2 档) */
+  .wheel-mask { position:absolute; left:0; right:0; top:0; bottom:22px; pointer-events:none; z-index:2;
+    background:linear-gradient(to bottom, var(--bg-2) 0%, rgba(225,232,231,0) 40%, rgba(225,232,231,0) 60%, var(--bg-2) 100%); }
   @media (prefers-reduced-motion: reduce) {
     .wheel-scroll { scroll-behavior:auto; } /* 关滚动惯性动画,拨轮仍可用 */
     .wheel-item { transition:none; }
+  }
+  @media (max-width:560px) {
+    .wheels { grid-template-columns:1.24fr 1fr 1fr .84fr .84fr; }
+    .wheel { height:168px; }
+    .wheel-item { font-size:14px; } .wheel-item.on { font-size:15px; }
   }
 
 
@@ -546,47 +553,51 @@
           </div>
         </div>
       </div>
-      <div class="row" style="margin-bottom:18px">
-        <div>
-          <label data-i18n="f.date">出生日期</label>
-          <div class="datefield" id="datefield">
-            <div class="seg" role="radiogroup" aria-label="阳历 / 阴历 · Solar / Lunar">
-              <label><input type="radio" name="caltype" value="solar" checked /><span data-i18n="f.solar">阳历</span></label>
-              <label><input type="radio" name="caltype" value="lunar" /><span data-i18n="f.lunar">阴历</span></label>
-            </div>
-            <div class="wheels" id="wheels">
-              <div class="wheel" data-col="year">
-                <input class="wheel-in" data-col="year" inputmode="numeric" aria-label="年 · Year" />
-                <div class="wheel-scroll" data-col="year" tabindex="0" role="listbox" aria-label="年 · Year"></div>
-                <div class="wheel-mask" aria-hidden="true"></div>
-              </div>
-              <div class="wheel" data-col="month">
-                <input class="wheel-in" data-col="month" inputmode="numeric" aria-label="月 · Month" />
-                <div class="wheel-scroll" data-col="month" tabindex="0" role="listbox" aria-label="月 · Month"></div>
-                <div class="wheel-mask" aria-hidden="true"></div>
-              </div>
-              <div class="wheel" data-col="day">
-                <input class="wheel-in" data-col="day" inputmode="numeric" aria-label="日 · Day" />
-                <div class="wheel-scroll" data-col="day" tabindex="0" role="listbox" aria-label="日 · Day"></div>
-                <div class="wheel-mask" aria-hidden="true"></div>
-              </div>
-            </div>
-            <div class="fallback">
-              <span data-i18n="f.solar_fallback">公历直填</span>
-              <input id="f-date-fallback" type="date" value="1996-08-12" aria-label="公历日期直接输入 · Solar date direct input" />
-            </div>
-            <!-- 提交契约不变:最终公历 YYYY-MM-DD 写入此隐藏字段供 FormData 读取 -->
-            <input type="hidden" name="date" id="f-date" value="1996-08-12" />
+      <div style="margin-bottom:18px">
+        <label data-i18n="f.datetime">出生日期时间</label>
+        <div class="datefield" id="datefield">
+          <div class="seg" role="radiogroup" aria-label="阳历 / 阴历 · Solar / Lunar">
+            <label><input type="radio" name="caltype" value="solar" checked /><span data-i18n="f.solar">阳历</span></label>
+            <label><input type="radio" name="caltype" value="lunar" /><span data-i18n="f.lunar">阴历</span></label>
           </div>
+          <div class="wheels" id="wheels">
+            <div class="wheel" data-col="year">
+              <div class="wheel-scroll" data-col="year" tabindex="0" role="listbox" aria-label="年 · Year"></div>
+              <div class="wheel-mask" aria-hidden="true"></div>
+              <div class="wheel-unit" data-i18n="f.unit_y" aria-hidden="true">年</div>
+            </div>
+            <div class="wheel" data-col="month">
+              <div class="wheel-scroll" data-col="month" tabindex="0" role="listbox" aria-label="月 · Month"></div>
+              <div class="wheel-mask" aria-hidden="true"></div>
+              <div class="wheel-unit" data-i18n="f.unit_mo" aria-hidden="true">月</div>
+            </div>
+            <div class="wheel" data-col="day">
+              <div class="wheel-scroll" data-col="day" tabindex="0" role="listbox" aria-label="日 · Day"></div>
+              <div class="wheel-mask" aria-hidden="true"></div>
+              <div class="wheel-unit" data-i18n="f.unit_d" aria-hidden="true">日</div>
+            </div>
+            <div class="wheel" data-col="hour">
+              <div class="wheel-scroll" data-col="hour" tabindex="0" role="listbox" aria-label="时 · Hour"></div>
+              <div class="wheel-mask" aria-hidden="true"></div>
+              <div class="wheel-unit" data-i18n="f.unit_h" aria-hidden="true">时</div>
+            </div>
+            <div class="wheel" data-col="minute">
+              <div class="wheel-scroll" data-col="minute" tabindex="0" role="listbox" aria-label="分 · Minute"></div>
+              <div class="wheel-mask" aria-hidden="true"></div>
+              <div class="wheel-unit" data-i18n="f.unit_mi" aria-hidden="true">分</div>
+            </div>
+            <div class="wheel-sel" aria-hidden="true"></div>
+          </div>
+          <!-- 提交契约不变:最终公历 YYYY-MM-DD 写入 name=date、HH:mm 写入 name=time(阴历模式已由拨轮换算) -->
+          <input type="hidden" name="date" id="f-date" value="1996-08-12" />
+          <input type="hidden" name="time" id="f-time" value="14:30" />
         </div>
-        <div>
-          <label for="f-time" data-i18n="f.time">出生时间</label>
-          <input id="f-time" class="inkline" type="time" name="time" value="14:30" />
-          <label style="margin-top:16px" data-i18n="f.marital">婚姻状况</label>
-          <div class="seg">
-            <label><input type="radio" name="marital" value="single" checked /><span data-i18n="f.single">未婚</span></label>
-            <label><input type="radio" name="marital" value="married" /><span data-i18n="f.married">已婚</span></label>
-          </div>
+      </div>
+      <div style="margin-bottom:18px">
+        <label data-i18n="f.marital">婚姻状况</label>
+        <div class="seg">
+          <label><input type="radio" name="marital" value="single" checked /><span data-i18n="f.single">未婚</span></label>
+          <label><input type="radio" name="marital" value="married" /><span data-i18n="f.married">已婚</span></label>
         </div>
       </div>
       <div style="margin-bottom:18px">
@@ -655,7 +666,8 @@ const I18N = {
     'ml.name':'名称','ml.name_ph':'如:父亲、母亲、好友','ml.city':'出生城市','ml.city_ph':'输入城市…',
     'ml.map_soon':'点击地图选择(即将上线)','ml.tz':'时区','ml.tags':'标签','ml.tag_add':'+ 添加自定义','ml.no_result':'没有匹配的命例',
     'f.gender':'性别','f.female':'女','f.male':'男','f.place':'出生地','f.place_ph':'如 杭州',
-    'f.date':'出生日期','f.time':'出生时间','f.q':'此刻的纠结','f.q_ph':'把你正在纠结的事说出来,越具体越好…',
+    'f.date':'出生日期','f.time':'出生时间','f.datetime':'出生日期时间','f.q':'此刻的纠结','f.q_ph':'把你正在纠结的事说出来,越具体越好…',
+    'f.unit_y':'年','f.unit_mo':'月','f.unit_d':'日','f.unit_h':'时','f.unit_mi':'分',
     'f.solar':'阳历','f.lunar':'阴历','f.solar_fallback':'公历直填','f.marital':'婚姻状况','f.single':'未婚','f.married':'已婚',
     'f.style':'解读风格','f.friend':'朋友版','f.pro':'专业版','f.submit':'观 象 入 元',
     'f.disclaimer':'AI 输出仅供参考与自我思考,不构成任何预测或建议 · 决定权永远在你',
@@ -677,7 +689,8 @@ const I18N = {
     'ml.name':'Name','ml.name_ph':'e.g. Father, Mother, Friend','ml.city':'Birth city','ml.city_ph':'Enter a city…',
     'ml.map_soon':'Pick on map (coming soon)','ml.tz':'Time zone','ml.tags':'Tags','ml.tag_add':'+ Add custom','ml.no_result':'No matching charts',
     'f.gender':'Gender','f.female':'Female','f.male':'Male','f.place':'Birthplace','f.place_ph':'e.g. Hangzhou',
-    'f.date':'Birth date','f.time':'Birth time','f.q':'What\'s on your mind','f.q_ph':'Describe what you\'re wrestling with, the more specific the better…',
+    'f.date':'Birth date','f.time':'Birth time','f.datetime':'Birth date & time','f.q':'What\'s on your mind','f.q_ph':'Describe what you\'re wrestling with, the more specific the better…',
+    'f.unit_y':'Yr','f.unit_mo':'Mo','f.unit_d':'Day','f.unit_h':'Hr','f.unit_mi':'Min',
     'f.solar':'Solar','f.lunar':'Lunar','f.solar_fallback':'Solar direct','f.marital':'Marital status','f.single':'Single','f.married':'Married',
     'f.style':'Tone','f.friend':'Friend','f.pro':'Pro','f.submit':'R E A D',
     'f.disclaimer':'AI output is for reflection only — not a prediction or directive · the decision is always yours',
@@ -704,21 +717,22 @@ const btn = document.getElementById('btn');
 const result = document.getElementById('result');
 
 /* =========================================================================
-   出生日期拨转轮(阳历/阴历 · 纯手写 wheel picker)
+   出生日期时间 五列一体拨转轮(阳历/阴历 · 纯手写 wheel picker · MetaSight 风)
+   - 五列:年 · 月 · 日 · 时 · 分
    - 全局 window.Solar / window.Lunar / window.LunarYear 来自 /lunar.js(UMD)
    - 阴历闰月:lunar.js 约定「负月份」表示闰月(Lunar.fromYmd(y,-4,1) = 闰四月初一)
-   - 数据流:任何变化 → 解析出公历 YYYY-MM-DD 写入隐藏 #f-date(FormData 契约不变)
+   - 数据流:任何变化 → 公历 YYYY-MM-DD 写入隐藏 #f-date、HH:mm 写入隐藏 #f-time(FormData 契约不变)
    ========================================================================= */
 const DateWheel = (() => {
   const SOLAR = window.Solar, LUNAR = window.Lunar, LUNARYEAR = window.LunarYear;
-  const hidden = document.getElementById('f-date');
-  const fallback = document.getElementById('f-date-fallback');
+  const hiddenDate = document.getElementById('f-date');
+  const hiddenTime = document.getElementById('f-time');
   const wheelsEl = document.getElementById('wheels');
-  const cols = {
-    year:  { scroll: wheelsEl.querySelector('.wheel-scroll[data-col="year"]'),  input: wheelsEl.querySelector('.wheel-in[data-col="year"]') },
-    month: { scroll: wheelsEl.querySelector('.wheel-scroll[data-col="month"]'), input: wheelsEl.querySelector('.wheel-in[data-col="month"]') },
-    day:   { scroll: wheelsEl.querySelector('.wheel-scroll[data-col="day"]'),   input: wheelsEl.querySelector('.wheel-in[data-col="day"]') },
-  };
+  const COLS = ['year', 'month', 'day', 'hour', 'minute'];
+  const cols = {};
+  COLS.forEach((name) => {
+    cols[name] = { scroll: wheelsEl.querySelector(`.wheel-scroll[data-col="${name}"]`) };
+  });
   const ITEM_H = 33;
   const LUNAR_MONTH_CN = ['','正','二','三','四','五','六','七','八','九','十','冬','腊'];
   const LUNAR_DAY_CN = ['','初一','初二','初三','初四','初五','初六','初七','初八','初九','初十',
@@ -728,14 +742,16 @@ const DateWheel = (() => {
 
   let ready = !!(SOLAR && LUNAR && LUNARYEAR);
   let mode = 'solar';            // 'solar' | 'lunar'
-  let sel = { year: 1996, month: 8, day: 12 }; // 当前模式日历下的选中值(month<0 表示阴历闰月)
+  // year/month/day 走当前历(month<0 表示阴历闰月);hour/minute 恒为公历钟点(不随历法变)
+  let sel = { year: 1996, month: 8, day: 12, hour: 14, minute: 30 };
 
   const en = () => LANG === 'en';
+  const pad2 = (n) => String(n).padStart(2, '0');
 
   // ---- 各列可选项(返回 [{v, label}]) ----
   function yearOpts() {
     const out = [];
-    for (let y = Y_MIN; y <= Y_MAX; y++) out.push({ v: y, label: en() ? String(y) : y + '年' });
+    for (let y = Y_MIN; y <= Y_MAX; y++) out.push({ v: y, label: en() ? String(y) : String(y) });
     return out;
   }
   function monthOpts(year) {
@@ -748,26 +764,31 @@ const DateWheel = (() => {
     const leap = LUNARYEAR ? LUNARYEAR.fromYear(year).getLeapMonth() : 0;
     const out = [];
     for (let m = 1; m <= 12; m++) {
-      out.push({ v: m, label: en() ? monthNumLabel(m) : LUNAR_MONTH_CN[m] + '月' });
-      if (leap && m === leap) out.push({ v: -m, label: en() ? 'Leap ' + monthNumLabel(m) : '闰' + LUNAR_MONTH_CN[m] + '月' });
+      out.push({ v: m, label: en() ? String(m) : LUNAR_MONTH_CN[m] + '月' });
+      if (leap && m === leap) out.push({ v: -m, label: en() ? 'L' + m : '闰' + LUNAR_MONTH_CN[m] + '月' });
     }
     return out;
   }
-  function monthNumLabel(m) { return String(m); }
   function dayCountOf(year, month) {
-    if (mode === 'solar') return SOLAR ? require_days_solar(year, month) : 31;
+    if (mode === 'solar') return new Date(year, month, 0).getDate();
     if (!LUNARYEAR) return 30;
     const lm = LUNARYEAR.fromYear(year).getMonth(month);
     return lm ? lm.getDayCount() : 30;
-  }
-  function require_days_solar(year, month) {
-    // 公历某月天数:用 lunar.js 的 Solar 取下月一号前一天,或直接 Date
-    return new Date(year, month, 0).getDate();
   }
   function dayOpts(year, month) {
     const n = dayCountOf(year, month);
     const out = [];
     for (let d = 1; d <= n; d++) out.push({ v: d, label: mode === 'lunar' && !en() ? LUNAR_DAY_CN[d] : String(d) });
+    return out;
+  }
+  function hourOpts() {
+    const out = [];
+    for (let h = 0; h <= 23; h++) out.push({ v: h, label: pad2(h) });
+    return out;
+  }
+  function minuteOpts() {
+    const out = [];
+    for (let mi = 0; mi <= 59; mi++) out.push({ v: mi, label: pad2(mi) });
     return out;
   }
 
@@ -786,7 +807,7 @@ const DateWheel = (() => {
     return 0;
   }
   function setColValue(name, value, smooth) {
-    const { scroll, input } = cols[name];
+    const { scroll } = cols[name];
     const idx = indexOfValue(name, value);
     const items = itemsOf(name);
     items.forEach((el, i) => el.classList.toggle('on', i === idx));
@@ -794,11 +815,6 @@ const DateWheel = (() => {
     if (!smooth) scroll.style.scrollBehavior = 'auto';
     scroll.scrollTop = idx * ITEM_H;
     if (!smooth) scroll.style.scrollBehavior = prev || '';
-    // 同步顶部直填输入框显示(数字型,阴历闰月加「闰」)
-    if (input && document.activeElement !== input) {
-      const raw = Number(items[idx]?.dataset.v ?? value);
-      input.value = name === 'month' && raw < 0 ? (en() ? 'L' + Math.abs(raw) : '闰' + Math.abs(raw)) : String(Math.abs(raw));
-    }
   }
   function valueAtScroll(name) {
     const { scroll } = cols[name];
@@ -809,8 +825,8 @@ const DateWheel = (() => {
     return { idx, v: Number(items[idx].dataset.v) };
   }
 
-  // ---- 全量重渲三列(年变→月列可能变;月变→日列可能变) ----
-  function renderAll(smooth) {
+  // ---- 全量重渲五列(年变→月列可能变;月变→日列可能变;时/分恒定) ----
+  function renderAll() {
     renderCol('year', yearOpts(), sel.year);
     const mOpts = monthOpts(sel.year);
     if (!mOpts.some(o => o.v === sel.month)) sel.month = mOpts[0].v;
@@ -818,40 +834,47 @@ const DateWheel = (() => {
     const dMax = dayCountOf(sel.year, sel.month);
     if (sel.day > dMax) sel.day = dMax;
     renderCol('day', dayOpts(sel.year, sel.month), sel.day);
+    renderCol('hour', hourOpts(), sel.hour);
+    renderCol('minute', minuteOpts(), sel.minute);
     commit();
   }
 
-  // ---- 选中值 → 公历 YYYY-MM-DD,写入隐藏字段 & fallback ----
+  // ---- 选中值 → 公历 YYYY-MM-DD + HH:mm,写入隐藏字段 ----
   function toSolarYmd() {
-    if (!ready) return hidden.value || '1996-08-12';
+    if (!ready) return hiddenDate.value || '1996-08-12';
     try {
       if (mode === 'solar') return SOLAR.fromYmd(sel.year, sel.month, sel.day).toYmd();
       return LUNAR.fromYmd(sel.year, sel.month, sel.day).getSolar().toYmd();
     } catch (err) {
-      return hidden.value || '1996-08-12';
+      return hiddenDate.value || '1996-08-12';
     }
   }
   function commit() {
-    const ymd = toSolarYmd();
-    hidden.value = ymd;
-    if (fallback && document.activeElement !== fallback) fallback.value = ymd;
+    hiddenDate.value = toSolarYmd();
+    hiddenTime.value = pad2(sel.hour) + ':' + pad2(sel.minute);
   }
 
-  // ---- 从一个公历 YYYY-MM-DD 反填当前模式(用于 fallback / 初始化) ----
-  function loadFromSolar(ymd) {
-    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd || '');
-    if (!m) return;
-    const y = +m[1], mo = +m[2], d = +m[3];
-    if (mode === 'solar') { sel = { year: y, month: mo, day: d }; }
-    else if (ready) {
-      const lu = SOLAR.fromYmd(y, mo, d).getLunar();
-      sel = { year: lu.getYear(), month: lu.getMonth(), day: lu.getDay() }; // getMonth() 已是负数表闰月
+  // ---- 从公历 YYYY-MM-DD (+可选 HH:mm) 反填当前模式(用于初始化 / 命例还原) ----
+  function loadFrom(ymd, hm) {
+    const m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec((ymd || '').trim());
+    if (m) {
+      const y = +m[1], mo = +m[2], d = +m[3];
+      if (mode === 'solar') { sel.year = y; sel.month = mo; sel.day = d; }
+      else if (ready) {
+        const lu = SOLAR.fromYmd(y, mo, d).getLunar();
+        sel.year = lu.getYear(); sel.month = lu.getMonth(); sel.day = lu.getDay(); // getMonth() 负数表闰月
+      }
     }
-    renderAll(false);
+    const tm = /^(\d{1,2}):(\d{1,2})/.exec((hm || '').trim());
+    if (tm) {
+      sel.hour = Math.max(0, Math.min(23, +tm[1]));
+      sel.minute = Math.max(0, Math.min(59, +tm[2]));
+    }
+    renderAll();
   }
 
   // ---- 交互:滚动结束吸附 → 更新 sel + 级联重渲 ----
-  let scrollTimers = {};
+  const scrollTimers = {};
   function onScroll(name) {
     clearTimeout(scrollTimers[name]);
     // 实时高亮中心项
@@ -860,11 +883,7 @@ const DateWheel = (() => {
     scrollTimers[name] = setTimeout(() => {
       const r = valueAtScroll(name);
       if (!r) return;
-      if (name === 'year') { sel.year = r.v; renderAll(false); }
-      else if (name === 'month') { sel.month = r.v; // 日列随月变
-        const dMax = dayCountOf(sel.year, sel.month); if (sel.day > dMax) sel.day = dMax;
-        renderCol('day', dayOpts(sel.year, sel.month), sel.day); commit();
-      } else { sel.day = r.v; commit(); }
+      applySel(name, r.v, false);
       setColValue(name, r.v, true); // 吸附到整行
     }, 110);
   }
@@ -873,81 +892,89 @@ const DateWheel = (() => {
   function onItemClick(name, e) {
     const item = e.target.closest('.wheel-item');
     if (!item) return;
-    const v = Number(item.dataset.v);
-    if (name === 'year') { sel.year = v; renderAll(true); }
-    else if (name === 'month') { sel.month = v;
-      const dMax = dayCountOf(sel.year, sel.month); if (sel.day > dMax) sel.day = dMax;
-      renderCol('day', dayOpts(sel.year, sel.month), sel.day); commit(); setColValue('month', v, true);
-    } else { sel.day = v; commit(); setColValue('day', v, true); }
+    applySel(name, Number(item.dataset.v), true);
+    setColValue(name, Number(item.dataset.v), true);
   }
 
-  // ---- 顶部直填输入:回车/失焦即定位 ----
-  function onInput(name, el) {
-    let raw = (el.value || '').trim();
-    let neg = false;
-    if (name === 'month') { neg = /^(闰|L|l|leap)/i.test(raw); raw = raw.replace(/[^\d]/g, ''); }
-    let n = parseInt(raw, 10);
-    if (isNaN(n)) { setColValue(name, sel[name], true); return; }
-    if (name === 'year') { n = Math.max(Y_MIN, Math.min(Y_MAX, n)); sel.year = n; renderAll(true); }
+  // ---- 键盘:上下箭头切换档位(可访问性) ----
+  function onKey(name, e) {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    const items = itemsOf(name);
+    let idx = indexOfValue(name, sel[name === 'month' ? 'month' : name]);
+    idx += e.key === 'ArrowDown' ? 1 : -1;
+    idx = Math.max(0, Math.min(items.length - 1, idx));
+    const v = Number(items[idx].dataset.v);
+    applySel(name, v, true);
+    setColValue(name, v, true);
+  }
+
+  // ---- 统一落值 + 级联(年→月→日;时/分独立) ----
+  function applySel(name, v, cascadeSmooth) {
+    if (name === 'year') { sel.year = v; renderAll(); }
     else if (name === 'month') {
-      let target = neg ? -Math.abs(n) : Math.abs(n);
-      const opts = monthOpts(sel.year);
-      if (!opts.some(o => o.v === target)) target = opts.find(o => Math.abs(o.v) === Math.abs(n))?.v ?? opts[0].v;
-      sel.month = target;
+      sel.month = v;
       const dMax = dayCountOf(sel.year, sel.month); if (sel.day > dMax) sel.day = dMax;
-      renderCol('day', dayOpts(sel.year, sel.month), sel.day); commit(); setColValue('month', target, true);
-    } else {
-      const dMax = dayCountOf(sel.year, sel.month); n = Math.max(1, Math.min(dMax, n));
-      sel.day = n; commit(); setColValue('day', n, true);
+      renderCol('day', dayOpts(sel.year, sel.month), sel.day); commit();
     }
+    else if (name === 'day') { sel.day = v; commit(); }
+    else if (name === 'hour') { sel.hour = v; commit(); }
+    else if (name === 'minute') { sel.minute = v; commit(); }
   }
 
-  // ---- 模式切换 阳历/阴历:保持所指向的同一天(公历不变),换算到另一历显示 ----
+  // ---- 模式切换 阳历/阴历:保持公历不变(含时分),换算到另一历显示 ----
   function switchMode(next) {
     if (next === mode) return;
-    const curSolar = toSolarYmd(); // 切换前的公历基准
+    const curSolar = toSolarYmd();
+    const curTime = hiddenTime.value;
     mode = next;
-    loadFromSolar(curSolar);       // 用同一公历在新历下反填
+    loadFrom(curSolar, curTime);
   }
 
   // ---- 事件绑定 ----
   function bind() {
-    ['year', 'month', 'day'].forEach((name) => {
-      cols[name].scroll.addEventListener('scroll', () => onScroll(name), { passive: true });
-      cols[name].scroll.addEventListener('click', (e) => onItemClick(name, e));
-      const inp = cols[name].input;
-      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); onInput(name, inp); inp.blur(); } });
-      inp.addEventListener('blur', () => onInput(name, inp));
+    COLS.forEach((name) => {
+      const sc = cols[name].scroll;
+      sc.addEventListener('scroll', () => onScroll(name), { passive: true });
+      sc.addEventListener('click', (e) => onItemClick(name, e));
+      sc.addEventListener('keydown', (e) => onKey(name, e));
     });
-    // 阳历/阴历分段
     f.querySelectorAll('input[name="caltype"]').forEach((r) => {
       r.addEventListener('change', () => { if (r.checked) switchMode(r.value); });
-    });
-    // 公历直填兜底
-    if (fallback) fallback.addEventListener('change', () => {
-      const ymd = fallback.value;
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return;
-      hidden.value = ymd;
-      loadFromSolar(ymd); // 反填当前模式(阴历模式下会换算)
     });
   }
 
   function init() {
-    if (!ready) { // lunar.js 未就绪:退化为纯 fallback 公历输入,隐藏字段跟随
-      if (fallback) fallback.addEventListener('change', () => { if (/^\d{4}-\d{2}-\d{2}$/.test(fallback.value)) hidden.value = fallback.value; });
+    if (!ready) {
+      // lunar.js 未就绪:优雅降级为原生 datetime-local,契约仍走隐藏 date/time
       wheelsEl.style.display = 'none';
-      // 阴历切换禁用
       f.querySelectorAll('input[name="caltype"]').forEach((r) => { if (r.value === 'lunar') r.disabled = true; });
+      const fb = document.createElement('input');
+      fb.type = 'datetime-local';
+      fb.value = (hiddenDate.value || '1996-08-12') + 'T' + (hiddenTime.value || '14:30');
+      fb.setAttribute('aria-label', '出生日期时间 · Birth date & time');
+      fb.style.marginTop = '8px';
+      fb.addEventListener('change', () => {
+        const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/.exec(fb.value);
+        if (m) { hiddenDate.value = m[1]; hiddenTime.value = m[2]; }
+      });
+      document.getElementById('datefield').appendChild(fb);
       return;
     }
-    loadFromSolar(hidden.value || '1996-08-12'); // 默认 1996-08-12(阳历)
+    loadFrom(hiddenDate.value || '1996-08-12', hiddenTime.value || '14:30');
     bind();
   }
 
-  return { init, relabel: () => renderAll(false) };
+  return {
+    init,
+    relabel: () => { if (ready) renderAll(); },
+    // 供命例还原:写公历日期 + HH:mm 并反填拨轮(阴历模式会换算)
+    setDateTime: (ymd, hm) => { if (ready) loadFrom(ymd, hm); else { if (ymd) hiddenDate.value = ymd; if (hm) hiddenTime.value = hm; } },
+  };
 })();
 DateWheel.init();
 window.DateWheelRelabel = DateWheel.relabel;
+window.DateWheelSetDateTime = DateWheel.setDateTime;
 
 // 最近一次排盘结果(供点选宫位联动三方四正用,纯前端读取,不再发请求)
 let lastZiweiData = null;
@@ -1089,8 +1116,10 @@ const Mingli = (() => {
       const tzSel = f.querySelector('#f-timezone'); if (tzSel && e.payload.timezone) tzSel.value = e.payload.timezone;
       setTags(Array.isArray(e.payload.tags) ? e.payload.tags : []);
       const [d0, t0] = (e.payload.datetime || '').split(' ');
-      if (d0) { f.querySelector('#f-date').value = d0; const fb = f.querySelector('#f-date-fallback'); if (fb) { fb.value = d0; fb.dispatchEvent(new Event('change', { bubbles: true })); } }
-      if (t0) f.querySelector('#f-time').value = t0;
+      // payload.datetime 恒为公历;还原时把拨轮切回阳历再按公历日期时间反填
+      const solarRadio = f.querySelector('input[name="caltype"][value="solar"]');
+      if (solarRadio && !solarRadio.checked) { solarRadio.checked = true; solarRadio.dispatchEvent(new Event('change', { bubbles: true })); }
+      window.DateWheelSetDateTime?.(d0 || '1996-08-12', t0 || '14:30');
       if (e.question) f.querySelector('#f-question').value = e.question;
     } catch (_) {}
     // 重渲染当时的结果(容错:老版本/异常数据不至于把结果区弄白)

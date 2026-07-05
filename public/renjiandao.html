@@ -121,6 +121,97 @@
   @keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
   .hint-foot { text-align:center; color:var(--faint); font-size:12px; margin-top:28px; letter-spacing:.5px; }
 
+  /* ============ 摇卦仪式动画舞台(龟壳摇卦 → 六钱飞落) ============ */
+  .cast-stage { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:26px; padding:52px 24px 44px; border-radius:20px; margin-bottom:20px; cursor:pointer; overflow:hidden;
+    min-height:340px; text-align:center; }
+  .cast-stage .stage-hint { position:absolute; bottom:14px; left:0; right:0; text-align:center;
+    font-size:11.5px; letter-spacing:2px; color:var(--faint); opacity:.72; pointer-events:none; }
+  .cast-stage .stage-cap { font-family:var(--serif); font-size:15px; letter-spacing:4px; color:var(--ink);
+    opacity:.9; animation:pulse 1.8s ease-in-out infinite; }
+
+  /* 龟壳 */
+  .turtle-wrap { position:relative; width:150px; height:132px; display:grid; place-items:center; }
+  .turtle-svg { width:150px; height:132px; display:block; transform-origin:50% 62%;
+    animation:turtleShake 1.5s ease-in-out; }
+  .turtle-svg .sh-shadow { fill:var(--glow); }
+  .turtle-shadow { position:absolute; bottom:-6px; left:50%; width:104px; height:15px; transform:translateX(-50%);
+    background:radial-gradient(ellipse at center, var(--glow), transparent 72%);
+    border-radius:50%; animation:turtleShadow 1.5s ease-in-out; }
+  @keyframes turtleShake {
+    0%   { transform:rotate(0deg) translateY(0) scale(1); }
+    12%  { transform:rotate(-8deg) translateY(-5px) scale(1.02); }
+    28%  { transform:rotate(7deg)  translateY(-1px) scale(.99); }
+    44%  { transform:rotate(-7deg) translateY(-5px) scale(1.02); }
+    60%  { transform:rotate(6deg)  translateY(-1px) scale(.99); }
+    76%  { transform:rotate(-4deg) translateY(-3px) scale(1.01); }
+    90%  { transform:rotate(2deg)  translateY(0) scale(1); }
+    100% { transform:rotate(0deg) translateY(0) scale(1); }
+  }
+  @keyframes turtleShadow {
+    0%,100% { transform:translateX(-50%) scaleX(1); opacity:.5; }
+    12%,44% { transform:translateX(calc(-50% - 5px)) scaleX(.86); opacity:.34; }
+    28%,60% { transform:translateX(calc(-50% + 5px)) scaleX(.86); opacity:.34; }
+  }
+  /* 龟壳"开口吐钱"轻震 */
+  .turtle-wrap.spilling .turtle-svg { animation:turtleTip .5s ease-in-out; }
+  @keyframes turtleTip {
+    0%,100% { transform:rotate(0) translateY(0); }
+    30% { transform:rotate(-5deg) translateY(-3px); }
+    65% { transform:rotate(3deg) translateY(-1px); }
+  }
+
+  /* 铜钱区 */
+  .coin-row { display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:nowrap;
+    min-height:56px; }
+  .coin { position:relative; width:46px; height:46px; opacity:0; transform:translateY(-70px) rotate(-160deg) scale(.5); }
+  .coin.fly { animation:coinFly .62s cubic-bezier(.34,1.4,.5,1) forwards; }
+  .coin.landed .coin-svg { animation:coinBounce .34s ease-out; }
+  .coin-svg { width:46px; height:46px; display:block; }
+  /* 落定墨晕 */
+  .coin .halo { position:absolute; inset:-8px; border-radius:50%; border:1px solid var(--glow);
+    opacity:0; pointer-events:none; }
+  .coin.landed .halo { animation:coinHalo .6s ease-out; }
+  /* 阳面(满/字)与阴面(背/孔)配色:阳金满,阴淡背 */
+  .coin-svg .rim { fill:none; stroke:var(--gilt); stroke-width:2; }
+  .coin-svg .body { fill:var(--bg-2); }
+  .coin[data-face="yang"] .coin-svg .body { fill:#EFE3CB; }
+  .coin[data-face="yang"] .coin-svg .rim { stroke:var(--gilt); stroke-width:2.4; }
+  .coin[data-face="yin"]  .coin-svg .body { fill:var(--bg); }
+  .coin[data-face="yin"]  .coin-svg .rim { stroke:var(--bronze); }
+  .coin-svg .glyph { fill:var(--ink); font-family:"Songti SC","Noto Serif SC",serif; font-size:15px;
+    font-weight:700; text-anchor:middle; }
+  .coin[data-face="yin"] .coin-svg .glyph { opacity:0; }
+  .coin-svg .sqhole { fill:none; stroke:var(--ink); stroke-width:1.4; opacity:.55; }
+  .coin[data-face="yin"] .coin-svg .sqhole { opacity:.85; }
+  /* 动爻铜钱:朱砂高亮呼应 */
+  .coin.moving .coin-svg .rim { stroke:var(--cinnabar); stroke-width:2.6; }
+  .coin.moving .coin-svg .glyph { fill:var(--cinnabar); }
+  .coin.moving .halo { border-color:rgba(166,64,47,.4); }
+  .coin .coin-face-lbl { position:absolute; bottom:-17px; left:0; right:0; text-align:center;
+    font-size:10px; letter-spacing:1px; color:var(--faint); opacity:0; }
+  .coin.landed .coin-face-lbl { opacity:1; transition:opacity .3s .2s; }
+  .coin.moving .coin-face-lbl { color:var(--cinnabar); }
+  @keyframes coinFly {
+    0%   { opacity:0; transform:translateY(-72px) translateX(var(--fx,0)) rotate(-200deg) scale(.5); }
+    35%  { opacity:1; }
+    72%  { transform:translateY(8px) translateX(0) rotate(12deg) scale(1.06); }
+    100% { opacity:1; transform:translateY(0) translateX(0) rotate(0) scale(1); }
+  }
+  @keyframes coinBounce { 0%{transform:scale(1.15);} 55%{transform:scale(.96);} 100%{transform:scale(1);} }
+  @keyframes coinHalo { 0%{opacity:.7; transform:scale(.6);} 100%{opacity:0; transform:scale(1.5);} }
+  /* 舞台淡出过渡 */
+  .cast-stage.fading { animation:stageFade .4s ease forwards; }
+  @keyframes stageFade { to { opacity:0; transform:translateY(-6px); } }
+
+  @media (max-width:560px){
+    .cast-stage { padding:40px 12px 40px; min-height:300px; }
+    .turtle-wrap, .turtle-svg { width:122px; height:108px; }
+    .turtle-shadow { width:86px; }
+    .coin-row { gap:7px; }
+    .coin, .coin-svg { width:38px; height:38px; }
+  }
+
   @media (max-width:900px){
     .studio { grid-template-columns:1fr; }
     .aside { position:static; }
@@ -135,6 +226,10 @@
     button.btn-ink.go:disabled::before { animation:none; }
     .lead .dao-motif, .xlink { transition:none; }
     .xlink:hover { transform:none; }
+    .turtle-svg, .turtle-shadow, .turtle-wrap.spilling .turtle-svg,
+    .coin, .coin.fly, .coin.landed .coin-svg, .coin.landed .halo,
+    .cast-stage .stage-cap, .cast-stage.fading { animation:none; }
+    .coin { opacity:1; transform:none; }
   }
 </style>
 </head>
@@ -226,6 +321,7 @@ const I18N = {
     'form.ritual':'起卦讲究心诚则灵：请先把问题在心里想清楚、默念一遍，再摇卦。一事一卦，不重复摇同一件事。',
     'form.cast':'摇 卦','foot':'六爻所示为处境之象与时机参考，给的是视角不是定数，决定权始终在你手里。',
     'casting':'铜钱落定中…','bengua':'本卦','biangua':'变卦','nobian':'六爻不动·无变卦',
+    'shake':'心诚摇卦…','coinsettle':'铜钱落定','skip':'点击跳过','yangface':'阳','yinface':'阴',
     'moving':'动爻','none':'无','interpret':'请它为你解读','reading_load':'正在观象悟辞…',
     'recast':'重新摇一卦','need_q':'先写下你要问的事',
     'aside.about.t':'人间道这一道','aside.about.p':'周易六爻摇出一卦,以卦图之象映照你此刻所问的处境——本卦看当下,动爻与变卦看走向。它给的是看待时机的视角,不是写死的结局。',
@@ -242,6 +338,7 @@ const I18N = {
     'form.ritual':'Sincerity matters: settle your question in mind and recite it once before casting. One matter, one cast — don\'t re-cast the same question.',
     'form.cast':'C A S T','foot':'The six lines show the image of your situation and its timing — a perspective, not a verdict. The decision stays with you.',
     'casting':'The coins are settling…','bengua':'Primary','biangua':'Changing','nobian':'No moving lines · no changing hexagram',
+    'shake':'Casting with a sincere heart…','coinsettle':'The coins settle','skip':'Tap to skip','yangface':'Yang','yinface':'Yin',
     'moving':'Moving lines','none':'none','interpret':'Ask for a reading','reading_load':'Reading the image…',
     'recast':'Cast again','need_q':'Write your question first',
     'aside.about.t':'About Ren Jian Dao','aside.about.p':'Cast a hexagram by the I Ching\'s six lines to mirror the situation you\'re asking about — the primary hexagram shows the now, moving lines and the changing hexagram show where it tends. A way to read timing, not a fixed ending.',
@@ -267,17 +364,28 @@ const btn = document.getElementById('btn');
 const result = document.getElementById('result');
 let lastCast = null, lastQuestion = '';
 
+const prefersReduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 f.addEventListener('submit', async (e) => {
   e.preventDefault();
   const q = new FormData(f).get('question').trim();
   if (!q) { result.innerHTML = `<div class="panel"><span class="err">${esc(t('need_q'))}</span></div>`; return; }
   lastQuestion = q;
   btn.disabled = true; btn.textContent = t('casting');
-  result.innerHTML = `<div class="loading glass"><span class="ink-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="load-txt">${esc(t('casting'))}</span></div>`;
+
+  // fetch 与仪式动画并行;错误路径不卡在动画
+  const fetchPromise = fetch('/api/liuyao', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
+    .then(async res => { const data = await res.json(); if (!res.ok) throw new Error(data.error || 'cast failed'); return data; });
+
   try {
-    const res = await fetch('/api/liuyao', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'cast failed');
+    let data;
+    if (prefersReduced()) {
+      // 降载:极简 loading,不播龟壳铜钱动画
+      result.innerHTML = `<div class="loading glass"><span class="ink-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="load-txt">${esc(t('casting'))}</span></div>`;
+      data = await fetchPromise;
+    } else {
+      data = await runCastRitual(fetchPromise);
+    }
     lastCast = data.cast;
     result.innerHTML = renderCast(data.cast);
     window.inkReveal?.(result);
@@ -288,6 +396,122 @@ f.addEventListener('submit', async (e) => {
     btn.disabled = false; btn.textContent = t('form.cast');
   }
 });
+
+const TURTLE_SVG = `<svg class="turtle-svg" viewBox="0 0 150 132" fill="none" aria-hidden="true">
+  <ellipse class="sh-shadow" cx="75" cy="118" rx="46" ry="7"/>
+  <!-- 龟头 -->
+  <path d="M75 24 q-9 -12 0 -18 q9 6 0 18" fill="var(--bg-2)" stroke="var(--muted)" stroke-width="2"/>
+  <circle cx="71" cy="10" r="1.4" fill="var(--ink)"/><circle cx="79" cy="10" r="1.4" fill="var(--ink)"/>
+  <!-- 四足 -->
+  <path d="M30 62 q-14 -4 -18 8 M120 62 q14 -4 18 8 M40 98 q-10 8 -6 18 M110 98 q10 8 6 18"
+    stroke="var(--muted)" stroke-width="2.4" stroke-linecap="round"/>
+  <!-- 龟壳椭圆轮廓 -->
+  <ellipse cx="75" cy="66" rx="52" ry="42" fill="var(--bg-2)" stroke="var(--ink)" stroke-width="2.6"/>
+  <ellipse cx="75" cy="66" rx="40" ry="31" fill="none" stroke="var(--muted)" stroke-width="1.4" opacity=".7"/>
+  <!-- 龟背中脊六格纹路 -->
+  <path d="M75 27 V105 M55 38 L55 94 M95 38 L95 94" stroke="var(--muted)" stroke-width="1.4" opacity=".7"/>
+  <path d="M55 48 H95 M55 66 H95 M55 84 H95 M35 60 Q45 66 35 72 M115 60 Q105 66 115 72"
+    stroke="var(--muted)" stroke-width="1.3" opacity=".6"/>
+  <!-- 朱砂点缀 -->
+  <circle cx="75" cy="66" r="3.4" fill="var(--cinnabar)" opacity=".85"/>
+</svg>`;
+
+function coinSVG(){
+  return `<svg class="coin-svg" viewBox="0 0 46 46" aria-hidden="true">
+    <circle class="rim" cx="23" cy="23" r="21"/>
+    <circle class="body" cx="23" cy="23" r="19"/>
+    <circle class="rim" cx="23" cy="23" r="19" style="stroke-width:1"/>
+    <rect class="sqhole" x="18" y="18" width="10" height="10" rx="1"/>
+    <text class="glyph" x="14" y="16">易</text>
+  </svg>`;
+}
+
+// 龟壳仪式:先摇龟壳(不依赖数据)→ 数据到后六钱按真实 bits 落定 → 过渡到卦象
+function runCastRitual(fetchPromise){
+  return new Promise((resolve, reject) => {
+    let dataOrError = null, dataReady = false, spilled = false, settled = false;
+    const coinTimers = [];
+
+    // 舞台
+    const stage = document.createElement('div');
+    stage.className = 'cast-stage glass';
+    stage.setAttribute('role','status');
+    stage.setAttribute('aria-live','polite');
+    stage.setAttribute('tabindex','0');
+    stage.innerHTML =
+      `<div class="turtle-wrap">${TURTLE_SVG}<div class="turtle-shadow" aria-hidden="true"></div></div>
+       <div class="coin-row" aria-hidden="true"></div>
+       <div class="stage-cap">${esc(t('shake'))}</div>
+       <div class="stage-hint">${esc(t('skip'))}</div>`;
+    result.innerHTML = '';
+    result.appendChild(stage);
+
+    const coinRow = stage.querySelector('.coin-row');
+    const capEl = stage.querySelector('.stage-cap');
+
+    // 数据协调
+    fetchPromise.then(d => { dataOrError = d; dataReady = true; }, err => { dataOrError = err; dataReady = 'error'; });
+
+    function cleanup(){ coinTimers.forEach(clearTimeout); stage.removeEventListener('click', onSkip); stage.removeEventListener('keydown', onKey); }
+    function finishOK(){ if (settled) return; settled = true; cleanup(); resolve(dataOrError); }
+    function finishErr(e){ if (settled) return; settled = true; cleanup(); reject(e); }
+
+    // 跳过:立即出结果(数据到了直接 resolve;未到则等 fetch)
+    function onSkip(){
+      if (settled) return;
+      if (dataReady === true) { finishOK(); }
+      else if (dataReady === 'error') { finishErr(dataOrError); }
+      else { settled = true; cleanup(); fetchPromise.then(resolve, reject); }
+    }
+    function onKey(ev){ if (ev.key==='Enter' || ev.key===' ') { ev.preventDefault(); onSkip(); } }
+    stage.addEventListener('click', onSkip);
+    stage.addEventListener('keydown', onKey);
+
+    // 龟壳摇动 ~1.5s;摇完后铜钱按真实 bits 飞落
+    const turtleWrap = stage.querySelector('.turtle-wrap');
+    coinTimers.push(setTimeout(() => spillCoins(), 1500));
+
+    function spillCoins(){
+      if (settled || spilled) return;
+      if (dataReady === 'error') { finishErr(dataOrError); return; }
+      if (dataReady !== true) {
+        // 数据未到:极短停顿等数据("铜钱落定中")
+        capEl.textContent = t('casting');
+        coinTimers.push(setTimeout(spillCoins, 120));
+        return;
+      }
+      spilled = true;
+      turtleWrap.classList.add('spilling');
+      capEl.textContent = t('coinsettle');
+      const bits = dataOrError.cast.本卦.bits;            // [初..上] 1=阳0=阴
+      const movingSet = new Set(dataOrError.cast.动爻 || []);
+      // 六钱横排,初爻在左
+      const coins = bits.map((b,i) => {
+        const el = document.createElement('div');
+        el.className = 'coin';
+        el.dataset.face = b ? 'yang' : 'yin';
+        if (movingSet.has(i+1)) el.classList.add('moving');
+        el.style.setProperty('--fx', ((i-2.5)*10)+'px'); // 抛物弧起点横偏
+        el.innerHTML = `${coinSVG()}<span class="halo" aria-hidden="true"></span><span class="coin-face-lbl">${esc(b? t('yangface') : t('yinface'))}</span>`;
+        coinRow.appendChild(el);
+        return el;
+      });
+      // stagger 依次飞出落定
+      coins.forEach((el,i) => {
+        coinTimers.push(setTimeout(() => {
+          el.classList.add('fly');
+          el.addEventListener('animationend', function once(){ el.classList.add('landed'); }, { once:true });
+        }, 60 + i*115));
+      });
+      // 末钱落定后过渡到卦象
+      const lastLand = 60 + (coins.length-1)*115 + 620 + 260;
+      coinTimers.push(setTimeout(() => {
+        stage.classList.add('fading');
+        coinTimers.push(setTimeout(finishOK, 380));
+      }, lastLand));
+    }
+  });
+}
 
 function hexColumn(hex, movingSet, label){
   // hex.bits: [初..上] 1=阳0=阴;column-reverse 让初爻在底
