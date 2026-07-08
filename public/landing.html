@@ -127,10 +127,15 @@
   }
   .langtog:hover { color: var(--walnut); border-color: rgba(38, 52, 59, .3); }
 
-  /* 山水 HERO */
+  /* 山水 HERO —— Approach C · OVERLAP STACK
+     .hero 为单格 grid,八卦背景与文案同占 1/1 单元格,由 place-items:center
+     浏览器逐帧居中,无论 svh 高低都上下/左右居中(告别 margin-top 定高 hack)。
+     顶 padding 略大于底,抵消固定 nav(margin-bottom:-88px)对顶部的覆盖,
+     使视觉光心落在视口正中;整摞(八卦+文字)一并上移、共居中。 */
   .hero {
-    position: relative; min-height: 100svh; text-align: center; padding: 142px 0 76px; overflow: hidden;
-    display: flex; align-items: stretch;
+    position: relative; min-height: 100svh; text-align: center; overflow: hidden;
+    padding: clamp(104px, 13vh, 140px) 0 clamp(72px, 9vh, 104px);
+    display: grid; grid-template-areas: "stack"; place-items: center;
   }
   .hero::before { content: ""; position: absolute; inset: 0; pointer-events: none;
     background:
@@ -138,7 +143,8 @@
       radial-gradient(64% 44% at 50% 18%, rgba(247,249,246,.62) 0%, rgba(247,249,246,.24) 52%, transparent 78%),
       radial-gradient(72% 38% at 50% 74%, rgba(237,241,239,.5) 0%, rgba(237,241,239,.14) 64%, transparent 100%);
   }
-  .hero .container { position: relative; z-index: 2; width: 100%; display: flex; flex-direction: column; align-items: center; }
+  /* 文案层:与八卦背景同占 grid 单元格(stack),压在其上(z-index 2) */
+  .hero .container { grid-area: stack; position: relative; z-index: 2; width: 100%; display: flex; flex-direction: column; align-items: center; }
   .titlewrap { display: inline-block; position: relative; margin: 6px 0 0; }
   .hero h1 {
     font-family: var(--serif); font-weight: 900; font-size: clamp(56px, 6vw, 78px);
@@ -156,7 +162,8 @@
                 0 12px 26px -14px rgba(122, 32, 18, .6);
     transform: rotate(4deg);
   }
-  .hero-copy { margin-top: clamp(330px, 42vh, 430px); max-width: 760px; }
+  /* margin-top 定高 hack 移除:文案由 grid 单元格居中,与八卦背景共居中上移 */
+  .hero-copy { margin-top: 0; max-width: 760px; }
   .hero .kicker {
     display: inline-flex; align-items: center; gap: 16px; font-family: var(--mono); font-size: 13px;
     letter-spacing: 4px; color: #526872; text-transform: uppercase; font-weight: 700;
@@ -338,14 +345,17 @@
     background: var(--card); color: var(--muted); font-size: 13px; white-space: nowrap; }
 
 
+  /* 八卦太极动态背景:与文案同占 grid 单元格(stack),居中垫在文字之后。
+     去掉 absolute/top/translateX 定位,交由 .hero 的 place-items:center 居中,
+     故随文案一同上移、始终共居中(文字覆盖其上,太极为中心承托)。 */
   .xinyi-bagua {
-    position: absolute;
-    left: 50%;
-    top: clamp(140px, 17vh, 196px);
+    grid-area: stack;
+    position: relative;
     z-index: 1;
+    justify-self: center;
+    align-self: center;
     width: clamp(400px, 35vw, 560px);
     aspect-ratio: 1;
-    transform: translateX(-50%);
     pointer-events: none;
     opacity: .26;
     mix-blend-mode: multiply;
@@ -412,9 +422,11 @@
     .nav-links { display: none; }
     .nav-login { display: none; }
     .nav-cta.btn-ink { height: 44px; min-height: 44px; min-width: 0; padding: 0 14px; font-size: 13px; }
-    .hero { min-height: 100svh; padding: 106px 0 70px; }
-    .xinyi-bagua { top: clamp(96px, 14vh, 140px); width: min(78vw, 320px); opacity: .24; }
-    .hero-copy { margin-top: clamp(250px, 36vh, 330px); max-width: 340px; }
+    /* Approach C 一致降级:仍是单格 grid 居中,只调 padding / 八卦尺寸,
+       去掉 top / margin-top 定高 hack。 */
+    .hero { min-height: 100svh; padding: clamp(84px, 12vh, 112px) 0 clamp(56px, 8vh, 84px); }
+    .xinyi-bagua { width: min(78vw, 320px); opacity: .24; }
+    .hero-copy { margin-top: 0; max-width: 340px; }
     .hero .kicker { font-size: 11px; letter-spacing: 3px; gap: 10px; }
     .hero .kicker::before, .hero .kicker::after { width: 38px; }
     .hero .lead { font-size: 18px; line-height: 1.9; }

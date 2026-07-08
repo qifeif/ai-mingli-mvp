@@ -44,7 +44,12 @@
   .lead .dao-motif:hover { color:var(--cinnabar); }
 
   /* 工作台双栏 */
-  .studio { display:grid; grid-template-columns:minmax(0,1.42fr) minmax(0,1fr); gap:26px; align-items:start; }
+  /* 表单单列居中(说明卡已移至页面最下方横排) */
+  .studio { max-width:760px; margin:0 auto; }
+  /* 三道说明卡:横排三列,置于页面最下方 */
+  .dao-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:40px; align-items:stretch; }
+  .dao-cards .cardx { display:flex; flex-direction:column; }
+  @media (max-width:900px){ .dao-cards { grid-template-columns:1fr; } }
 
   /* 表单卡(玻璃化:视觉底/边/影交给 .glass,本规则只留骨架) */
   form { border-radius:20px; padding:30px; }
@@ -132,6 +137,8 @@
   .loading .ink-dots i { width:8px; height:8px; background:var(--cinnabar); }
   .loading .load-txt { font-family:var(--serif); font-size:16px; letter-spacing:4px; color:var(--ink);
     animation:pulse 1.6s ease-in-out infinite; }
+  .loading .load-hint { font-size:12.5px; letter-spacing:.5px; color:var(--faint); margin-top:-4px; }
+  .loading .load-hint #load-sec { font-variant-numeric:tabular-nums; color:var(--muted); }
   @keyframes pulse { 0%,100% { opacity:.5; } 50% { opacity:1; } }
 
   /* 结果分节标题 */
@@ -279,13 +286,13 @@
   </header>
 
   <div class="studio">
-    <form id="f" class="glass">
+    <form id="f" class="glass" novalidate>
       <div class="form-cap"><h2 data-i18n="form.cap">两盘信息</h2><span data-i18n="form.capsub">两人出生信息 + 此刻所问</span></div>
       <div class="row">
         <div>
           <label data-i18n="f.rel">合参类型</label>
           <div class="seg">
-            <label><input type="radio" name="relation" value="love" checked /><span data-i18n="f.rel_love">婚恋合参</span></label>
+            <label><input type="radio" name="relation" value="love" /><span data-i18n="f.rel_love">婚恋合参</span></label>
             <label><input type="radio" name="relation" value="partner" /><span data-i18n="f.rel_partner">合伙合参</span></label>
           </div>
         </div>
@@ -303,17 +310,17 @@
           </div>
           <div>
             <label for="fa-place" data-i18n="f.place">出生地</label>
-            <input id="fa-place" name="placeA" value="北京" class="inkline" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
+            <input id="fa-place" name="placeA" class="inkline" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
           </div>
         </div>
         <div class="row">
           <div>
             <label for="fa-date" data-i18n="f.date">出生日期</label>
-            <input id="fa-date" type="date" name="dateA" value="1990-06-15" class="inkline" />
+            <input id="fa-date" type="date" name="dateA" required class="inkline" />
           </div>
           <div>
             <label for="fa-time" data-i18n="f.time">出生时间</label>
-            <input id="fa-time" type="time" name="timeA" value="08:30" class="inkline" />
+            <input id="fa-time" type="time" name="timeA" required class="inkline" />
           </div>
         </div>
       </div>
@@ -330,74 +337,76 @@
           </div>
           <div>
             <label for="fb-place" data-i18n="f.place">出生地</label>
-            <input id="fb-place" name="placeB" value="上海" class="inkline" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
+            <input id="fb-place" name="placeB" class="inkline" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
           </div>
         </div>
         <div class="row">
           <div>
             <label for="fb-date" data-i18n="f.date">出生日期</label>
-            <input id="fb-date" type="date" name="dateB" value="1992-12-01" class="inkline" />
+            <input id="fb-date" type="date" name="dateB" required class="inkline" />
           </div>
           <div>
             <label for="fb-time" data-i18n="f.time">出生时间</label>
-            <input id="fb-time" type="time" name="timeB" value="22:10" class="inkline" />
+            <input id="fb-time" type="time" name="timeB" required class="inkline" />
           </div>
         </div>
       </div>
 
       <div style="margin-bottom:18px">
         <label for="f-question" data-i18n="f.q">想一起看清的事(可选)</label>
-        <textarea id="f-question" name="question" class="inkline" data-i18n-ph="f.q_ph" placeholder="比如:我们最近总在小事上吵架,该怎么磨合?越具体越好…"></textarea>
+        <textarea id="f-question" name="question" class="inkline" data-i18n-ph="f.q_ph" placeholder="比如:合伙做生意会不会挣钱?越具体越好…"></textarea>
       </div>
       <button type="submit" id="btn" class="btn-ink" data-i18n="f.submit">两 盘 合 参</button>
     </form>
 
-    <aside class="aside reveal-group">
-      <div class="cardx glass">
-        <div class="xh">
-          <span class="ico"><svg viewBox="0 0 24 24"><circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/></svg></span>
-          <h4 data-i18n="aside.about.t">合参是什么</h4>
-        </div>
-        <p data-i18n="aside.about.p">合参把两张八字盘放在一起对照:日主看气质生克,十神看彼此角色,地支看合冲刑害,五行看互补长短。它照见的是互动模式,不是姻缘或成败的判决——给你们一面看清彼此的镜子。</p>
-      </div>
-      <div class="cardx glass">
-        <div class="xh">
-          <span class="ico"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9" stroke-linecap="round"/></svg></span>
-          <h4 data-i18n="aside.steps.t">怎么用</h4>
-        </div>
-        <ol class="steps">
-          <li><span class="n">1</span><span data-i18n="aside.s1">选类型:<b>婚恋</b>看相处沟通,<b>合伙</b>看分工机制。</span></li>
-          <li><span class="n">2</span><span data-i18n="aside.s2">填两个人的出生信息,<b>出生地</b>用于真太阳时校正。</span></li>
-          <li><span class="n">3</span><span data-i18n="aside.s3">读四维对照与摘要,把它当<b>参考</b>,关系由你们自己定。</span></li>
-        </ol>
-      </div>
-      <div class="cardx glass">
-        <div class="xh">
-          <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 .7 1-5.5-4-3.9 5.5-.8z" stroke-linejoin="round"/></svg></span>
-          <h4 data-i18n="aside.cross.t">三道互参</h4>
-        </div>
-        <div class="cross">
-          <a class="xlink" href="/app">
-            <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke-linecap="round"/></svg></span>
-            <span class="xt"><b data-i18n="cross.tianming">天命 · 看自己</b><span data-i18n="cross.tianming.d">紫微命盘,先照见自己的底色</span></span>
-            <span class="arr">→</span>
-          </a>
-          <a class="xlink" href="/diyun">
-            <span class="ico"><svg viewBox="0 0 24 24"><polygon points="12,3 17,5.5 19.5,12 17,18.5 12,21 7,18.5 4.5,12 7,5.5"/><circle cx="12" cy="12" r="2.5"/></svg></span>
-            <span class="xt"><b data-i18n="cross.diyun">地运 · 调你的场</b><span data-i18n="cross.diyun.d">八宅方位,把居所调到帮你的那一面</span></span>
-            <span class="arr">→</span>
-          </a>
-          <a class="xlink" href="/renjiandao">
-            <span class="ico"><svg viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round"><path d="M6 7h12M6 12h5M15 12h3M6 17h12"/></svg></span>
-            <span class="xt"><b data-i18n="cross.renjiandao">人间道 · 问时机</b><span data-i18n="cross.renjiandao.d">摇一卦,看眼下处境宜动宜静</span></span>
-            <span class="arr">→</span>
-          </a>
-        </div>
-      </div>
-    </aside>
   </div>
 
   <div id="result"></div>
+
+  <!-- 三道说明卡:横排,置于页面最下方(#result 之后自然下移) -->
+  <section class="dao-cards reveal-group" aria-label="说明">
+    <div class="cardx glass">
+      <div class="xh">
+        <span class="ico"><svg viewBox="0 0 24 24"><circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/></svg></span>
+        <h4 data-i18n="aside.about.t">合参是什么</h4>
+      </div>
+      <p data-i18n="aside.about.p">合参把两张八字盘放在一起对照:日主看气质生克,十神看彼此角色,地支看合冲刑害,五行看互补长短。它照见的是互动模式,不是姻缘或成败的判决——给你们一面看清彼此的镜子。</p>
+    </div>
+    <div class="cardx glass">
+      <div class="xh">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9" stroke-linecap="round"/></svg></span>
+        <h4 data-i18n="aside.steps.t">怎么用</h4>
+      </div>
+      <ol class="steps">
+        <li><span class="n">1</span><span data-i18n="aside.s1">选类型:<b>婚恋</b>看相处沟通,<b>合伙</b>看分工机制。</span></li>
+        <li><span class="n">2</span><span data-i18n="aside.s2">填两个人的出生信息,<b>出生地</b>用于真太阳时校正。</span></li>
+        <li><span class="n">3</span><span data-i18n="aside.s3">读四维对照与摘要,把它当<b>参考</b>,关系由你们自己定。</span></li>
+      </ol>
+    </div>
+    <div class="cardx glass">
+      <div class="xh">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 .7 1-5.5-4-3.9 5.5-.8z" stroke-linejoin="round"/></svg></span>
+        <h4 data-i18n="aside.cross.t">三道同参</h4>
+      </div>
+      <div class="cross">
+        <a class="xlink" href="/app">
+          <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke-linecap="round"/></svg></span>
+          <span class="xt"><b data-i18n="cross.tianming">天命 · 看自己</b><span data-i18n="cross.tianming.d">紫微命盘,先照见自己的底色</span></span>
+          <span class="arr">→</span>
+        </a>
+        <a class="xlink" href="/diyun">
+          <span class="ico"><svg viewBox="0 0 24 24"><polygon points="12,3 17,5.5 19.5,12 17,18.5 12,21 7,18.5 4.5,12 7,5.5"/><circle cx="12" cy="12" r="2.5"/></svg></span>
+          <span class="xt"><b data-i18n="cross.diyun">地运 · 调你的场</b><span data-i18n="cross.diyun.d">八宅方位,把居所调到帮你的那一面</span></span>
+          <span class="arr">→</span>
+        </a>
+        <a class="xlink" href="/renjiandao">
+          <span class="ico"><svg viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round"><path d="M6 7h12M6 12h5M15 12h3M6 17h12"/></svg></span>
+          <span class="xt"><b data-i18n="cross.renjiandao">人间道 · 问时机</b><span data-i18n="cross.renjiandao.d">摇一卦,看眼下处境宜动宜静</span></span>
+          <span class="arr">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
   <div class="hint" data-i18n="f.disclaimer">合参说的是互动倾向,仅供参考与自我思考,不构成任何预测或婚恋/合作建议 · 关系的决定权永远在你们手里</div>
 </div>
 
@@ -411,15 +420,15 @@ const I18N = {
     'f.rel':'合参类型','f.rel_love':'婚恋合参','f.rel_partner':'合伙合参',
     'f.pa':'甲 · 第一人','f.pb':'乙 · 第二人',
     'f.gender':'性别','f.female':'女','f.male':'男','f.place':'出生地','f.place_ph':'如 杭州',
-    'f.date':'出生日期','f.time':'出生时间','f.q':'想一起看清的事(可选)','f.q_ph':'比如:我们最近总在小事上吵架,该怎么磨合?越具体越好…',
+    'f.date':'出生日期','f.time':'出生时间','f.q':'想一起看清的事(可选)','f.q_ph':'比如:合伙做生意会不会挣钱?越具体越好…',
     'f.submit':'两 盘 合 参','f.loading_btn':'合 参 中…',
     'f.disclaimer':'合参说的是互动倾向,仅供参考与自我思考,不构成任何预测或婚恋/合作建议 · 关系的决定权永远在你们手里',
-    'loading':'正在对照两张命盘…','err':'出错了：',
+    'loading':'正在对照两张命盘…','loading.hint':'AI 深化通常需 20–60 秒,请稍候','err':'出错了：','err.retry':'服务开小差了,请稍后再试一次;若一直不行,检查一下网络。',
     'offline_note':'以上为离线规则版合参;配置 ANTHROPIC_API_KEY 后可获得 AI 深化解读。','airead':'AI 深度解读',
-    'v.miss':'请补全两个人的出生日期与时间','v.bad':'出生日期或时间格式不对,请检查后重试',
+    'v.needrel':'请先选合参类型:婚恋合参 或 合伙合参','v.miss':'请补全两个人的出生日期与时间','v.bad':'出生日期或时间格式不对,请检查后重试',
     'aside.about.t':'合参是什么','aside.about.p':'合参把两张八字盘放在一起对照:日主看气质生克,十神看彼此角色,地支看合冲刑害,五行看互补长短。它照见的是互动模式,不是姻缘或成败的判决——给你们一面看清彼此的镜子。',
     'aside.steps.t':'怎么用','aside.s1':'选类型:婚恋看相处沟通,合伙看分工机制。','aside.s2':'填两个人的出生信息,出生地用于真太阳时校正。','aside.s3':'读四维对照与摘要,把它当参考,关系由你们自己定。',
-    'aside.cross.t':'三道互参','cross.tianming':'天命 · 看自己','cross.tianming.d':'紫微命盘,先照见自己的底色',
+    'aside.cross.t':'三道同参','cross.tianming':'天命 · 看自己','cross.tianming.d':'紫微命盘,先照见自己的底色',
     'cross.diyun':'地运 · 调你的场','cross.diyun.d':'八宅方位,把居所调到帮你的那一面',
     'cross.renjiandao':'人间道 · 问时机','cross.renjiandao.d':'摇一卦,看眼下处境宜动宜静',
     'r.duo.t':'两 盘 并 观','r.cmp.t':'四 维 对 照','r.sum.t':'合 参 摘 要',
@@ -441,12 +450,12 @@ const I18N = {
     'f.rel':'Reading type','f.rel_love':'Love','f.rel_partner':'Business partnership',
     'f.pa':'Person A · first chart','f.pb':'Person B · second chart',
     'f.gender':'Gender','f.female':'Female','f.male':'Male','f.place':'Birthplace','f.place_ph':'e.g. Hangzhou',
-    'f.date':'Birth date','f.time':'Birth time','f.q':'What you two want to see clearly (optional)','f.q_ph':'e.g. We keep bickering over small things lately — how do we mesh? The more specific, the better…',
+    'f.date':'Birth date','f.time':'Birth time','f.q':'What you two want to see clearly (optional)','f.q_ph':'e.g. Will our business partnership make money? The more specific, the better…',
     'f.submit':'C O M P A R E','f.loading_btn':'Reading…',
     'f.disclaimer':'A dual-chart reading describes interaction tendencies, for reflection only — not a prediction or advice on love or business · the decision always stays with the two of you',
-    'loading':'Comparing the two charts…','err':'Error: ',
+    'loading':'Comparing the two charts…','loading.hint':'AI deepening usually takes 20–60s, hang tight','err':'Error: ','err.retry':'Something hiccupped on our end — please try again in a moment; if it keeps failing, check your connection.',
     'offline_note':'Above is the offline rule-based reading; set ANTHROPIC_API_KEY to get the AI reading.','airead':'AI reading',
-    'v.miss':'Please complete birth date and time for both people','v.bad':'Birth date or time looks invalid — please check and retry',
+    'v.needrel':'Pick a reading type first: Love or Partnership','v.miss':'Please complete birth date and time for both people','v.bad':'Birth date or time looks invalid — please check and retry',
     'aside.about.t':'What is a dual-chart reading','aside.about.p':'It places two BaZi charts side by side: day masters for temperament dynamics, Ten Gods for the roles you play to each other, earthly branches for harmony and clash, five elements for complementarity. It mirrors interaction patterns — never a verdict on the relationship or the venture.',
     'aside.steps.t':'How to use','aside.s1':'Pick a type: Love reads how you get along; Partnership reads roles and mechanisms.','aside.s2':'Enter both birth details; birthplace drives true-solar-time correction.','aside.s3':'Read the four-way comparison and summary as a reference — the relationship stays yours to shape.',
     'aside.cross.t':'Cross-reference','cross.tianming':'Tian Ming · see yourself','cross.tianming.d':'Zi Wei chart — see your own baseline first',
@@ -542,9 +551,18 @@ const result = document.getElementById('result');
 f.addEventListener('submit', async (e) => {
   e.preventDefault();
   const d = Object.fromEntries(new FormData(f));
-  // 前端基本校验:两人日期时间必填 + 日期可解析
+  // 合参类型不再默认预选 → 必须显式选一个(审计#2:别把用户没选的「婚恋」当成 TA 的选择)
+  if (!d.relation) {
+    result.innerHTML = `<div class="reading"><span class="err">${esc(t('v.needrel'))}</span></div>`;
+    result.scrollIntoView({ behavior: prefersReduced() ? 'auto' : 'smooth', block: 'start' });
+    document.querySelector('input[name="relation"]')?.focus();
+    return;
+  }
+  // 两人日期时间必填(不再预填陌生人生日 → 空提交当场拦下)+ 日期可解析
   if (!d.dateA || !d.timeA || !d.dateB || !d.timeB) {
     result.innerHTML = `<div class="reading"><span class="err">${esc(t('v.miss'))}</span></div>`;
+    result.scrollIntoView({ behavior: prefersReduced() ? 'auto' : 'smooth', block: 'start' });
+    (document.getElementById(!d.dateA ? 'fa-date' : !d.timeA ? 'fa-time' : !d.dateB ? 'fb-date' : 'fb-time'))?.focus();
     return;
   }
   const dtA = `${d.dateA} ${d.timeA}`;
@@ -561,7 +579,15 @@ f.addEventListener('submit', async (e) => {
     lang: LANG,
   };
   btn.disabled = true; btn.textContent = t('f.loading_btn');
-  result.innerHTML = `<div class="loading glass"><span class="ink-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="load-txt">${esc(t('loading'))}</span></div>`;
+  result.innerHTML = `<div class="loading glass"><span class="ink-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="load-txt">${esc(t('loading'))}</span>
+    <span class="load-hint">${esc(t('loading.hint'))} · <span id="load-sec">0s</span></span></div>`;
+  requestAnimationFrame(() => result.scrollIntoView({ behavior: prefersReduced() ? 'auto' : 'smooth', block: 'start' }));
+  const loadStart = performance.now();
+  const loadTimer = setInterval(() => {
+    const el = document.getElementById('load-sec');
+    if (el) el.textContent = Math.round((performance.now() - loadStart) / 1000) + 's';
+  }, 500);
   try {
     const res = await fetch('/api/hehun', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -585,9 +611,13 @@ f.addEventListener('submit', async (e) => {
     }
     result.innerHTML = html;
     window.inkReveal?.(result);
+    // 提交后滚到结果:表单在弹窗/上方,不滚用户会以为「点了没反应」(速赢·审计#速赢1)
+    requestAnimationFrame(() => result.scrollIntoView({ behavior: prefersReduced() ? 'auto' : 'smooth', block: 'start' }));
   } catch (err) {
-    result.innerHTML = `<div class="reading"><span class="err">${esc(t('err'))}${esc(err.message)}</span></div>`;
+    result.innerHTML = `<div class="reading"><span class="err">${esc(errMsg(err))}</span></div>`;
+    requestAnimationFrame(() => result.scrollIntoView({ behavior: prefersReduced() ? 'auto' : 'smooth', block: 'start' }));
   } finally {
+    clearInterval(loadTimer);
     btn.disabled = false; btn.textContent = t('f.submit');
   }
 });
@@ -755,6 +785,13 @@ function renderSummary(sum, relation) {
 }
 
 function esc(s) { return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+const prefersReduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// 报错换人话:后端异常/网络错的 err.message 常是技术串(datetime 格式、栈),对用户没意义。
+// 统一走「出错前缀 + 温和一句」,把原始 message 收进 console 供排查。(速赢·审计#速赢5)
+function errMsg(err) {
+  console.warn('[心易] 合参出错:', err);
+  return t('err') + t('err.retry');
+}
 </script>
 <script src="/ink.js" defer></script>
 </body>

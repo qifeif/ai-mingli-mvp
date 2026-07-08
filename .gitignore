@@ -4,3 +4,11 @@ node_modules
 _*.cjs
 _*.mjs
 .claude/
+
+# 别的会话的太极视频背景 / 液态玻璃预览实验(不属于 V2 主线,暂不入库)
+public/*.mp4
+public/preview-*.html
+public/preview-*.css
+public/preview.before-*.html
+server.before-*.js
+动态背景设计/

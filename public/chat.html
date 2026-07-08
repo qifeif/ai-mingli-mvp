@@ -422,6 +422,9 @@ const I18N = {
     'chips.renjiandao': ['这件事该不该做', '近期感情走势如何', '这个决策对不对', '合作能不能成', '何时会有转机', '当前处境是什么象'],
     'chips.diyun':      ['吉方是什么意思', '卧室方位怎么选', '书房朝向有讲究吗', '财位在哪个方向', '客厅沙发背靠哪方好', '厨房灶台朝向'],
     'err.network': m => `网络错误：${m}`,
+    'handoff.followup': q => `就着上面这份解读，我想再追问：${q}`,
+    'handoff.partner':  q => `刚摇的这一卦，我想从合伙/合作的角度再看看：${q}`,
+    'handoff.cont': '上面是刚才为你排的结果。想接着往下问什么？可以直接说，或点下面的话题：',
   },
   en: {
     'sb.empty':'No conversations yet','sb.today':'Today','sb.week':'Past 7 days','sb.earlier':'Earlier',
@@ -445,6 +448,9 @@ const I18N = {
     'chips.renjiandao': ['Should I go through with this', 'How is my relationship trending', 'Is this decision right', 'Will this partnership work out', 'When will things turn around', 'What does my current situation look like'],
     'chips.diyun':      ['What does an auspicious direction mean', 'How do I pick a bedroom direction', 'Does study orientation matter', 'Which direction is the wealth corner', 'Which way should the sofa back face', 'Which way should the stove face'],
     'err.network': m => `Network error: ${m}`,
+    'handoff.followup': q => `Following on from the reading above, I want to ask further: ${q}`,
+    'handoff.partner':  q => `About the hexagram I just cast — I'd like to look at it from a partnership angle: ${q}`,
+    'handoff.cont': 'Above is what I just worked out for you. What would you like to dig into next? Just ask, or tap a topic below:',
   },
 };
 let LANG = localStorage.getItem('lang') || 'zh';
@@ -474,6 +480,87 @@ function init() {
   renderSidebar();
   bindEvents();
   renderWelcome();  // 直接进聊天，无需档案
+  // 跨页接力:天命/地运/人间道 点「进对话追问 / 合参」带解读进来,
+  // 优先走 sessionStorage(带解读全文,续接续答);无则退回旧 URL 参数(只预填)。
+  if (!applyHandoff()) applyEntryParams();
+}
+
+// 跨页接力主路径:读 sessionStorage.xy_handoff = {from,mode,question,reading,profile,hexagram?,ts}
+// → 切 mode + seed 生辰 → 把上一页解读作为首条 AI 气泡「续接」→ 自动就此追问(在既有结论上续答不重排)。
+// 返回 true 表示已消费 handoff。
+function applyHandoff() {
+  let h;
+  try { h = JSON.parse(sessionStorage.getItem('xy_handoff') || 'null'); } catch { h = null; }
+  if (!h || !h.reading) return false;
+  try { sessionStorage.removeItem('xy_handoff'); } catch {}   // 一次性,刷新不重放
+
+  const mode = ['suiwen','tianming','renjiandao','diyun'].includes(h.mode) ? h.mode : 'suiwen';
+  switchMode(mode);
+
+  // seed 生辰(仅本机无档案时,不覆盖用户已有的)
+  if (h.profile && !profile && h.profile.datetime && h.profile.gender) {
+    profile = h.profile; ls.set('xy_profile', profile); updateProfBtn();
+  }
+
+  // 开一个新会话,把上一页解读写成首条 AI 气泡(命主看到解读没丢、对话是延续)
+  curSid = 'sid_' + Date.now();
+  const title = (h.question || t(`mode.${mode}`) || '').slice(0, 22);
+  const sess = {
+    id: curSid, title, mode, msgs: [], ts: Date.now(),
+    // priorReading 会随每轮 /api/chat 带回后端,让 AI 在既有结论上续答不重排整盘
+    extras: { priorReading: String(h.reading).slice(0, 4000), priorFrom: h.from || mode, priorQuestion: h.question || '' },
+  };
+  if (h.hexagram) sess.extras.hexagram = h.hexagram;
+  sessions.unshift(sess);
+  ls.set('xy_sessions', sessions);
+
+  $('msgs').innerHTML = '';                        // 清掉欢迎屏
+  addAIBub(h.reading, h.hexagram || null, true);   // 首条 = 上一页的解读原文
+  sess.msgs.push({ role: 'ai', content: h.reading, hexagram: h.hexagram || null });
+  ls.set('xy_sessions', sessions);
+  renderSidebar();
+
+  // 自动就此追问:有原问题就顺势再问一句续答,让「追问」真的发生而不是停在预填。
+  // 人间道→合参 走「合伙口径」措辞,其余走通用续问措辞。
+  if (h.question) {
+    const followup = t(h.partner ? 'handoff.partner' : 'handoff.followup')(h.question);
+    setTimeout(() => send(followup), 60);
+  } else {
+    // 无原问题(如地运→追问):不自动发,给一句续接提示 + 该 mode 的建议追问 chips,别让用户对着解读发懵。
+    const chips = t(`chips.${mode}`) || t('chips.suiwen');
+    const div = document.createElement('div');
+    div.className = 'welcome-msg handoff-cont';
+    div.innerHTML = `<p>${esc(t('handoff.cont'))}</p>
+<div class="chips">${chips.map(c => `<button class="ck">${esc(c)}</button>`).join('')}</div>`;
+    div.querySelectorAll('.ck').forEach(b => b.onclick = () => send(b.textContent));
+    $('msgs').appendChild(div);
+    scrollBottom();
+  }
+  return true;
+}
+
+// 旧路径(兼容):从 URL 参数 ?mode=&q=&profile= 进来,只预填不自动发送。
+function applyEntryParams() {
+  let p; try { p = new URLSearchParams(location.search); } catch { return; }
+  const mode = p.get('mode');
+  if (mode && ['suiwen','tianming','renjiandao','diyun'].includes(mode)) switchMode(mode);
+  // seed 生辰档案(仅在本机尚无档案时写入,不覆盖用户已有的)
+  const prof = p.get('profile');
+  if (prof && !profile) {
+    try {
+      const obj = JSON.parse(decodeURIComponent(escape(atob(prof))));
+      if (obj && obj.datetime && obj.gender) { profile = obj; ls.set('xy_profile', obj); updateProfBtn(); }
+    } catch {}
+  }
+  const q = p.get('q');
+  if (q) {
+    const el = $('cTxt');
+    el.value = q;
+    el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+    setTimeout(() => el.focus(), 40);
+  }
+  // 清掉 URL 参数,刷新/分享不再重复预填
+  if (mode || prof || q) { try { history.replaceState(null, '', location.pathname); } catch {} }
 }
 
 function applyI18n() {

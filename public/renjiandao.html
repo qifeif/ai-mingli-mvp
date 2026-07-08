@@ -62,6 +62,49 @@
 
   /* 侧栏 */
   .aside { display:flex; flex-direction:column; gap:16px; position:sticky; top:24px; }
+
+  /* ===== 弹窗入口按钮 + 弹窗骨架(三页共用交互)===== */
+  .dao-start { display:inline-flex; align-items:center; justify-content:center; margin:24px auto 0;
+    font:inherit; font-size:15px; font-weight:700; color:#F4F1EA; background:var(--ink-strong);
+    border:1px solid transparent; border-radius:999px; cursor:pointer; padding:12px 34px; letter-spacing:3px;
+    box-shadow:0 14px 30px -20px rgba(31,43,49,.9); transition:transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease); }
+  .dao-start:hover { transform:translateY(-1px); background:#2A3841; }
+  .dao-start:focus-visible { outline:2px solid var(--cinnabar); outline-offset:3px; }
+  /* hero 双按钮并列:摇一卦(主) + 合参(次) */
+  .hero-actions { display:flex; gap:14px; justify-content:center; align-items:center; flex-wrap:wrap; margin-top:24px; }
+  .hero-actions .dao-start { margin:0; }
+  /* 合参:次按钮(纸白描边,与主墨玉按钮区分) */
+  .dao-alt { color:var(--accent); background:rgba(250,251,249,.72); border:1px solid var(--line);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.7); text-decoration:none; }
+  .dao-alt:hover { background:rgba(255,255,255,.85); border-color:var(--accent-2); color:var(--ink); }
+  .dao-modal { position:fixed; inset:0; z-index:80; display:none; align-items:flex-start; justify-content:center; padding:40px 16px; overflow:auto; }
+  .dao-modal.open { display:flex; }
+  .dao-backdrop { position:fixed; inset:0; background:rgba(31,43,49,.42); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); animation:daoFade var(--dur-1) var(--ease); }
+  .dao-dialog { position:relative; z-index:1; width:100%; max-width:560px; max-height:90vh; overflow:auto; border-radius:20px; padding:0; animation:daoRise var(--dur-2) var(--ease); }
+  @keyframes daoFade { from { opacity:0; } }
+  @keyframes daoRise { from { opacity:0; transform:translateY(14px); } }
+  .dao-dhead { display:flex; align-items:flex-start; gap:12px; padding:24px 26px 14px; }
+  .dao-dhead .dt { flex:1; min-width:0; }
+  .dao-dhead h3 { font-family:"Songti SC","Noto Serif SC",serif; font-size:20px; letter-spacing:3px; color:var(--accent); margin:0; }
+  .dao-dhead .dsub { font-size:12.5px; color:var(--muted); margin-top:6px; letter-spacing:.3px; }
+  .dao-close { flex:none; width:32px; height:32px; border-radius:50%; border:1px solid var(--line); background:var(--bg-2);
+    color:var(--muted); cursor:pointer; font-size:16px; line-height:1; display:grid; place-items:center;
+    transition:color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease); }
+  .dao-close:hover { color:var(--cinnabar); border-color:rgba(166,64,47,.4); }
+  .dao-modal form#f { padding:0 26px 24px; }
+  .dao-modal form#f .form-cap { display:none; }
+  .dao-foot { display:flex; gap:12px; margin-top:6px; }
+  .dao-foot .btn-cancel { flex:none; min-width:96px; }
+  .dao-foot button#btn { flex:1; margin-top:0; }
+  .btn-cancel { font:inherit; font-size:15px; letter-spacing:2px; color:var(--muted); background:var(--bg-2);
+    border:1px solid var(--line); border-radius:12px; padding:0 18px; min-height:50px; cursor:pointer;
+    transition:color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease); }
+  .btn-cancel:hover { color:var(--ink); border-color:var(--accent-2); }
+
+  /* ===== 三道说明卡:横排三列,置于页面最下方(#result 之后自然下移)===== */
+  .dao-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:40px; align-items:stretch; }
+  .dao-cards .cardx { display:flex; flex-direction:column; }
+  @media (max-width:900px){ .dao-cards { grid-template-columns:1fr; } }
   /* 侧栏卡(玻璃化:视觉交给 .glass) */
   .cardx { border-radius:16px; padding:22px 22px 20px; }
   .cardx .xh { display:flex; align-items:center; gap:11px; margin-bottom:14px; }
@@ -254,58 +297,75 @@
     </svg>
     <h1 data-i18n="hero.title">人 间 道</h1>
     <p class="lede"><b data-i18n="hero.motto">人事尽其为。</b><span data-i18n="hero.sub">心中默念所问之事,摇一卦——观此刻处境之象、宜动宜静之时机,给的是视角不是定数。</span></p>
+    <div class="hero-actions">
+      <button type="button" class="dao-start" id="rj-open" data-i18n="rj.start">摇 一 卦</button>
+      <a href="/hehun" id="rj-hehun" class="dao-start dao-alt" data-i18n="rj.hehun">合 参</a>
+    </div>
   </header>
 
-  <div class="studio">
-    <form id="f" class="glass">
+  <!-- 摇卦弹窗:所问之事表单 #f 移入此处;点「摇一卦」打开,ESC/背景/取消关闭 -->
+  <div class="dao-modal" id="rj-modal" role="dialog" aria-modal="true" aria-labelledby="rj-modal-title" aria-hidden="true">
+    <div class="dao-backdrop" id="rj-backdrop"></div>
+    <div class="dao-dialog glass">
+      <div class="dao-dhead">
+        <div class="dt"><h3 id="rj-modal-title" data-i18n="form.cap">所问之事</h3><div class="dsub" data-i18n="form.capsub">一事一卦 · 心诚则灵</div></div>
+        <button type="button" class="dao-close" id="rj-close" aria-label="关闭 · Close">✕</button>
+      </div>
+    <form id="f">
       <div class="form-cap"><h2 data-i18n="form.cap">所问之事</h2><span data-i18n="form.capsub">一事一卦 · 心诚则灵</span></div>
       <label for="r-question" data-i18n="form.qlabel">你要问的事(一事一问，越具体越好)</label>
       <textarea id="r-question" name="question" class="inkline" data-i18n-ph="form.qph" placeholder="例：手上这个新机会，现在该接还是再等等？"></textarea>
       <div class="ritual-note" data-i18n="form.ritual">起卦讲究心诚则灵：请先把问题在心里想清楚、默念一遍，再摇卦。一事一卦，不重复摇同一件事。</div>
-      <button type="submit" class="btn-ink go" id="btn" data-i18n="form.cast">摇 卦</button>
+      <div class="dao-foot">
+        <button type="button" class="btn-cancel" id="rj-cancel" data-i18n="ml.cancel">取消</button>
+        <button type="submit" class="btn-ink go" id="btn" data-i18n="form.cast">摇 卦</button>
+      </div>
     </form>
-
-    <aside class="aside reveal-group">
-      <div class="cardx glass">
-        <div class="xh">
-          <span class="ico"><svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round"><path d="M5 7h14M5 12h6M13 12h6M5 17h14"/></svg></span>
-          <h4 data-i18n="aside.about.t">人间道这一道</h4>
-        </div>
-        <p data-i18n="aside.about.p">周易六爻摇出一卦,以<b>卦图之象</b>映照你此刻所问的处境——本卦看当下,动爻与变卦看走向。它给的是<b>看待时机的视角</b>,不是写死的结局。</p>
-      </div>
-      <div class="cardx glass">
-        <div class="xh">
-          <span class="ico"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9" stroke-linecap="round"/></svg></span>
-          <h4 data-i18n="aside.steps.t">怎么用</h4>
-        </div>
-        <ol class="steps">
-          <li><span class="n">1</span><span data-i18n="aside.s1">把要问的<b>一件事</b>在心里默念清楚,再写下来。</span></li>
-          <li><span class="n">2</span><span data-i18n="aside.s2">点「摇卦」,模拟三铜钱六摇,定出<b>本卦与动爻</b>。</span></li>
-          <li><span class="n">3</span><span data-i18n="aside.s3">让它<b>观象悟辞</b>,把卦象翻成此刻处境与时机的人话。</span></li>
-        </ol>
-      </div>
-      <div class="cardx glass">
-        <div class="xh">
-          <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 .7 1-5.5-4-3.9 5.5-.8z" stroke-linejoin="round"/></svg></span>
-          <h4 data-i18n="aside.cross.t">三道互参</h4>
-        </div>
-        <div class="cross">
-          <a class="xlink" href="/app">
-            <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke-linecap="round"/></svg></span>
-            <span class="xt"><b data-i18n="cross.tianming">天命 · 看你的势</b><span data-i18n="cross.tianming.d">八字四柱,读性格倾向与能量节奏</span></span>
-            <span class="arr">→</span>
-          </a>
-          <a class="xlink" href="/diyun">
-            <span class="ico"><svg viewBox="0 0 24 24"><polygon points="12,3 17,5.5 19.5,12 17,18.5 12,21 7,18.5 4.5,12 7,5.5"/><circle cx="12" cy="12" r="2.6"/></svg></span>
-            <span class="xt"><b data-i18n="cross.diyun">地运 · 调你的场</b><span data-i18n="cross.diyun.d">八宅方位,把居所调到帮你的那一面</span></span>
-            <span class="arr">→</span>
-          </a>
-        </div>
-      </div>
-    </aside>
-  </div>
+    </div><!-- /.dao-dialog -->
+  </div><!-- /.dao-modal -->
 
   <div id="result"></div>
+
+  <!-- 三道说明卡:横排,始终位于页面最下方(排在 #result 之后,结果出现后自动下移) -->
+  <section class="dao-cards reveal-group" aria-label="说明">
+    <div class="cardx glass">
+      <div class="xh">
+        <span class="ico"><svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round"><path d="M5 7h14M5 12h6M13 12h6M5 17h14"/></svg></span>
+        <h4 data-i18n="aside.about.t">人间道这一道</h4>
+      </div>
+      <p data-i18n="aside.about.p">周易六爻摇出一卦,以<b>卦图之象</b>映照你此刻所问的处境——本卦看当下,动爻与变卦看走向。它给的是<b>看待时机的视角</b>,不是写死的结局。</p>
+    </div>
+    <div class="cardx glass">
+      <div class="xh">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9" stroke-linecap="round"/></svg></span>
+        <h4 data-i18n="aside.steps.t">怎么用</h4>
+      </div>
+      <ol class="steps">
+        <li><span class="n">1</span><span data-i18n="aside.s1">把要问的<b>一件事</b>在心里默念清楚,再写下来。</span></li>
+        <li><span class="n">2</span><span data-i18n="aside.s2">点「摇卦」,模拟三铜钱六摇,定出<b>本卦与动爻</b>。</span></li>
+        <li><span class="n">3</span><span data-i18n="aside.s3">让它<b>观象悟辞</b>,把卦象翻成此刻处境与时机的人话。</span></li>
+      </ol>
+    </div>
+    <div class="cardx glass">
+      <div class="xh">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 .7 1-5.5-4-3.9 5.5-.8z" stroke-linejoin="round"/></svg></span>
+        <h4 data-i18n="aside.cross.t">三道同参</h4>
+      </div>
+      <div class="cross">
+        <a class="xlink" href="/app">
+          <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke-linecap="round"/></svg></span>
+          <span class="xt"><b data-i18n="cross.tianming">天命 · 看你的势</b><span data-i18n="cross.tianming.d">八字四柱,读性格倾向与能量节奏</span></span>
+          <span class="arr">→</span>
+        </a>
+        <a class="xlink" href="/diyun">
+          <span class="ico"><svg viewBox="0 0 24 24"><polygon points="12,3 17,5.5 19.5,12 17,18.5 12,21 7,18.5 4.5,12 7,5.5"/><circle cx="12" cy="12" r="2.6"/></svg></span>
+          <span class="xt"><b data-i18n="cross.diyun">地运 · 调你的场</b><span data-i18n="cross.diyun.d">八宅方位,把居所调到帮你的那一面</span></span>
+          <span class="arr">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <div class="hint-foot" data-i18n="foot">六爻所示为处境之象与时机参考，给的是视角不是定数，决定权始终在你手里。</div>
 </div>
 
@@ -319,14 +379,14 @@ const I18N = {
     'form.qlabel':'你要问的事(一事一问，越具体越好)',
     'form.qph':'例：手上这个新机会，现在该接还是再等等？',
     'form.ritual':'起卦讲究心诚则灵：请先把问题在心里想清楚、默念一遍，再摇卦。一事一卦，不重复摇同一件事。',
-    'form.cast':'摇 卦','foot':'六爻所示为处境之象与时机参考，给的是视角不是定数，决定权始终在你手里。',
+    'form.cast':'摇 卦','rj.start':'摇 一 卦','rj.hehun':'合 参','ml.cancel':'取消','foot':'六爻所示为处境之象与时机参考，给的是视角不是定数，决定权始终在你手里。',
     'casting':'铜钱落定中…','bengua':'本卦','biangua':'变卦','nobian':'六爻不动·无变卦',
     'shake':'心诚摇卦…','coinsettle':'铜钱落定','skip':'点击跳过','yangface':'阳','yinface':'阴',
     'moving':'动爻','none':'无','interpret':'请它为你解读','reading_load':'正在观象悟辞…',
     'recast':'重新摇一卦','need_q':'先写下你要问的事',
     'aside.about.t':'人间道这一道','aside.about.p':'周易六爻摇出一卦,以卦图之象映照你此刻所问的处境——本卦看当下,动爻与变卦看走向。它给的是看待时机的视角,不是写死的结局。',
     'aside.steps.t':'怎么用','aside.s1':'把要问的一件事在心里默念清楚,再写下来。','aside.s2':'点「摇卦」,模拟三铜钱六摇,定出本卦与动爻。','aside.s3':'让它观象悟辞,把卦象翻成此刻处境与时机的人话。',
-    'aside.cross.t':'三道互参','cross.tianming':'天命 · 看你的势','cross.tianming.d':'八字四柱,读性格倾向与能量节奏','cross.diyun':'地运 · 调你的场','cross.diyun.d':'八宅方位,把居所调到帮你的那一面',
+    'aside.cross.t':'三道同参','cross.tianming':'天命 · 看你的势','cross.tianming.d':'八字四柱,读性格倾向与能量节奏','cross.diyun':'地运 · 调你的场','cross.diyun.d':'八宅方位,把居所调到帮你的那一面',
   },
   en: {
     'nav.tianming':'Tian Ming','nav.diyun':'Di Yun','nav.renjiandao':'Ren Jian Dao','nav.pricing':'Pricing',
@@ -336,7 +396,7 @@ const I18N = {
     'form.qlabel':'What do you want to ask? (one question at a time, be specific)',
     'form.qph':'e.g. This new opportunity — take it now or wait?',
     'form.ritual':'Sincerity matters: settle your question in mind and recite it once before casting. One matter, one cast — don\'t re-cast the same question.',
-    'form.cast':'C A S T','foot':'The six lines show the image of your situation and its timing — a perspective, not a verdict. The decision stays with you.',
+    'form.cast':'C A S T','rj.start':'C A S T','rj.hehun':'P A I R','ml.cancel':'Cancel','foot':'The six lines show the image of your situation and its timing — a perspective, not a verdict. The decision stays with you.',
     'casting':'The coins are settling…','bengua':'Primary','biangua':'Changing','nobian':'No moving lines · no changing hexagram',
     'shake':'Casting with a sincere heart…','coinsettle':'The coins settle','skip':'Tap to skip','yangface':'Yang','yinface':'Yin',
     'moving':'Moving lines','none':'none','interpret':'Ask for a reading','reading_load':'Reading the image…',
@@ -362,14 +422,60 @@ applyI18n();
 const f = document.getElementById('f');
 const btn = document.getElementById('btn');
 const result = document.getElementById('result');
-let lastCast = null, lastQuestion = '';
+let lastCast = null, lastQuestion = '', lastReading = '';
 
 const prefersReduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ---- 摇一卦 弹窗:开/关 + 焦点管理(同天命/地运页交互)----
+const rjModal = document.getElementById('rj-modal');
+let rjLastFocus = null;
+function rjOpen() {
+  rjLastFocus = document.activeElement;
+  rjModal.classList.add('open'); rjModal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('r-question')?.focus(), 30);
+}
+function rjClose() {
+  rjModal.classList.remove('open'); rjModal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  if (rjLastFocus && rjLastFocus.focus) rjLastFocus.focus();
+}
+document.getElementById('rj-open').addEventListener('click', rjOpen);
+
+// 「合参」跨页接力:已摇过卦 → 带 卦象+问题+解读 进 /chat 的六爻语境,从合伙/合作角度续看(数据模型兼容,不丢上下文)。
+// 未摇卦 → 保持原行为,裸链接去 /hehun 双人合婚盘(冷启动合参)。
+document.getElementById('rj-hehun')?.addEventListener('click', (e) => {
+  if (!lastCast) return;                 // 未起卦:走默认 href=/hehun
+  e.preventDefault();
+  const c = lastCast;
+  // 卦象摘要(作首条 AI 气泡),优先已生成的解读,否则用本卦/变卦一句话
+  const bian = c.变卦?.name ? ` → 变卦「${c.变卦.name}」` : '·六爻不动';
+  let reading = lastReading;
+  if (!reading) reading = `${lastQuestion ? '所问：' + lastQuestion + '\n\n' : ''}本卦「${c.本卦?.name}」（上${c.本卦?.upper} 下${c.本卦?.lower}）${bian}。`;
+  const handoff = {
+    from: 'renjiandao',
+    mode: 'renjiandao',
+    question: lastQuestion || '',
+    reading,
+    hexagram: c,                         // 服务端 buildSystem 直接采信,不重摇
+    profile: null,
+    partner: true,                       // chat 侧用合伙口径措辞续问
+    ts: Date.now(),
+  };
+  try { sessionStorage.setItem('xy_handoff', JSON.stringify(handoff)); } catch {}
+  location.href = '/chat';
+});
+
+document.getElementById('rj-close').addEventListener('click', rjClose);
+document.getElementById('rj-cancel').addEventListener('click', rjClose);
+document.getElementById('rj-backdrop').addEventListener('click', rjClose);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && rjModal.classList.contains('open')) rjClose(); });
 
 f.addEventListener('submit', async (e) => {
   e.preventDefault();
   const q = new FormData(f).get('question').trim();
-  if (!q) { result.innerHTML = `<div class="panel"><span class="err">${esc(t('need_q'))}</span></div>`; return; }
+  if (!q) { document.getElementById('r-question')?.focus(); return; }
+  rjClose(); // 关弹窗,摇卦仪式 + 结果展示在下方
   lastQuestion = q;
   btn.disabled = true; btn.textContent = t('casting');
 
@@ -561,6 +667,7 @@ async function interpret(){
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'reading failed');
+    lastReading = data.text || '';   // 存下解读全文,供「合参」跨页接力带入 chat
     block.innerHTML = `<div class="panel"><div class="t">${esc(t('hero.title'))}</div><div class="reading">${esc(data.text||'')}</div></div>`;
     window.inkReveal?.(block);
   } catch (err) {

@@ -14,6 +14,7 @@ import { toTrueSolarTime } from './trueSolarTime.js';
 import { resolveLongitude } from './cities.js';
 import { detectCrisis } from './pipeline.js';
 import { detectPatterns } from './ziwei-patterns.js';
+import { streamLLM } from './stream.js';
 import {
   CRISIS_COMFORT, CRISIS_FALLBACK,
 } from './prompts.js';
@@ -212,6 +213,13 @@ const STAR_EN = {
 };
 function starName(zh, en) { return en ? (STAR_EN[zh] || zh) : zh; }
 
+// 宫名中英对照(EN 模式三方四正标题用),与前端 index.html 的 PALACE_EN 保持一致
+const PALACE_EN = {
+  命宫:'Life', 兄弟:'Siblings', 夫妻:'Spouse', 子女:'Children', 财帛:'Wealth', 疾厄:'Health',
+  迁移:'Travel', 仆役:'Friends', 奴仆:'Friends', 交友:'Friends', 官禄:'Career', 事业:'Career', 田宅:'Property', 福德:'Fortune', 父母:'Parents',
+};
+function palaceEnName(zh, en) { return en ? (PALACE_EN[zh] || zh) : zh; }
+
 function starsLabel(palace, lang) {
   const en = lang === 'en';
   const list = palace.主星.length ? palace.主星 : null;
@@ -234,7 +242,7 @@ export function summarizeSanFang(chart, lang = 'zh', palaceName = '命宫') {
   const mingMut = mingMajors.map((s) => s.化).filter(Boolean);
 
   const 标题 = en
-    ? `Triad & Opposition · read from ${palaceName === '命宫' ? 'the Life palace' : palaceName}${mingMajors[0] ? ` (${starName(mingMajors[0].名, true)})` : ''}`
+    ? `Triad & Opposition · read from ${palaceName === '命宫' ? 'the Life palace' : `the ${palaceEnName(palaceName, true)} palace`}${mingMajors[0] ? ` (${starName(mingMajors[0].名, true)})` : ''}`
     : `三方四正 · 以${palaceName}${mingMajors[0] ? mingMajors[0].名 : '空宫'}起读`;
 
   const chips = [
@@ -582,6 +590,11 @@ export const ZIWEI_SYSTEM = `你是一位精通正宗紫微斗数的命理大师
 - **中文回答**：使用简体中文，语言流畅自然
 - **长度适中**：每次回答300-500字为宜，重点突出，层次分明
 
+## 排版要求(重要)
+- **结论前置**：正文第一句先用一句大白话给出核心结论(不含术语),让不懂命理的人一眼看懂大意;之后再展开专业分析。例:"简单说,你这盘适合稳扎稳打、厚积薄发,别急着大动。"
+- **术语加注**：命理术语(如巨门陷地、绝命、寡宿、华盖)首次出现时,紧跟一个括号用大白话解释一下,别让黑话吓退人。例:"巨门陷地(巨门星力量偏弱,易多口舌是非)"。
+- 注意:"结论前置"的第一句白话之后,专业解读风格照旧(下定论、引古诀),不削弱权威感。
+
 当用户提问时：
 1. 先找到命盘中与问题最相关的宫位
 2. 分析该宫主星及四化
@@ -589,12 +602,21 @@ export const ZIWEI_SYSTEM = `你是一位精通正宗紫微斗数的命理大师
 4. 必要时参考对宫借星
 5. 给出综合判断与实用建议`;
 
-export async function interpretZiwei(client, { chart, question, lang = 'zh' }) {
+// 天命深化的 system+context 拼装(一次性版与流式版共用,口径一致)
+function buildInterpretSystem(chart, lang = 'zh') {
   const langRule = lang === 'en'
-    ? '\n\n# Output language\nWrite the entire reading in natural, warm English; translate every 紫微 term into plain English.'
+    ? `\n\n# Output language (STRICT)
+- Write the ENTIRE reading in natural, warm English. Do NOT put any Chinese character (CJK) in the output — not even inside parentheses.
+- For 紫微 star names, use their romanized form only, then a short English gloss in parentheses on first mention. Examples: Ziwei, Tianji, Taiyang, Wuqu, Tiantong, Lianzhen, Tianfu, Taiyin, Tanlang, Jumen, Tianxiang, Tianliang, Qisha, Pojun; minor stars e.g. Dijie, Qingyang, Huagai. Never mix scripts within a word (write "Dijie", never "地劫" or "Earth劫").
+- Palaces: Life, Siblings, Spouse, Children, Wealth, Health, Travel, Friends, Career, Property, Fortune, Parents.
+- Four Transformations: Lu (prosperity), Quan (power), Ke (fame), Ji (trouble).`
     : '';
   const chartContext = buildChartContext(chart);
-  const systemWithContext = `${ZIWEI_SYSTEM}${langRule}\n\n---\n\n以下是命主的完整命盘数据，请基于此进行解读：\n\n${chartContext}`;
+  return `${ZIWEI_SYSTEM}${langRule}\n\n---\n\n以下是命主的完整命盘数据，请基于此进行解读：\n\n${chartContext}`;
+}
+
+export async function interpretZiwei(client, { chart, question, lang = 'zh' }) {
+  const systemWithContext = buildInterpretSystem(chart, lang);
   const res = await client.messages.create({
     model: process.env.LLM_TEXT_MODEL || 'claude-sonnet-4-6',
     max_tokens: 8000,
@@ -606,11 +628,31 @@ export async function interpretZiwei(client, { chart, question, lang = 'zh' }) {
 }
 
 /**
+ * streamInterpretZiwei — 天命深化的流式版(逐字吐),供 /api/ziwei SSE 用。
+ * 与 interpretZiwei 同口径(共用 buildInterpretSystem),只是改成 streamLLM 逐段 yield。
+ * @returns async generator，每次 yield 一段文字
+ */
+export async function* streamInterpretZiwei(client, { chart, question, lang = 'zh' }) {
+  const system = buildInterpretSystem(chart, lang);
+  yield* streamLLM({
+    client,
+    system,
+    messages: [{ role: 'user', content: question }],
+    model: process.env.LLM_TEXT_MODEL || 'claude-sonnet-4-6',
+    maxTokens: 8000,
+  });
+}
+
+/**
  * 天命紫微 编排:危机前置 → 排盘(纯) → 规则版三方四正(12 宫全量) →(有 Key+问题)AI 深化
  * 无 Key 时也返回完整命盘 + 规则版解读,不报错。
  * @returns {Promise<{type:'crisis',text}|{type:'ziwei',chart,sanfang,三方四正解读表,text?}>}
  */
-export async function runZiwei(client, input) {
+/**
+ * buildZiweiSkeleton — 纯计算的命盘骨架(命盘 + 规则版三方四正 + 12 宫解读表),
+ * 无需 Key、<0.4s 即出。供流式端点「骨架秒出」用,也被 runZiwei 复用。
+ */
+export function buildZiweiSkeleton(input) {
   const chart = computeZiwei(input);
   chart.格局 = detectPatterns(chart); // 规则版格局标签(离线即出,供前端展示 + AI 深化参考)
   const sanfang = summarizeSanFang(chart, input.lang);
@@ -619,6 +661,11 @@ export async function runZiwei(client, input) {
   for (const 宫名 of Object.keys(chart.三方四正表)) {
     三方四正解读表[宫名] = summarizeSanFang(chart, input.lang, 宫名);
   }
+  return { chart, sanfang, 三方四正解读表 };
+}
+
+export async function runZiwei(client, input) {
+  const { chart, sanfang, 三方四正解读表 } = buildZiweiSkeleton(input);
 
   // 有问题 + 有 Key 才进 AI 流程(并先做危机前置);否则返回纯盘 + 规则版
   if (input.question && client) {
@@ -640,4 +687,51 @@ export async function runZiwei(client, input) {
   }
 
   return { type: 'ziwei', chart, sanfang, 三方四正解读表 };
+}
+
+/**
+ * streamZiwei — 天命排盘的「两段式」流式编排,供 /api/ziwei SSE 用。
+ * 逐个 yield 事件对象,server.js 直接转成 SSE 行:
+ *   {type:'chart', chart, sanfang, 三方四正解读表}  —— 命盘骨架,秒出(纯计算)
+ *   {type:'crisis', text}                          —— 命中危机,只给陪伴,不深化
+ *   {type:'delta', text}                           —— AI 深化逐字(仅有问题+有 Key)
+ *   {type:'done'} / {type:'error', message}
+ * 与 runZiwei 同口径(骨架/危机/深化三段),只是把「深化」从一次性 await 改成流式 yield。
+ */
+export async function* streamZiwei(client, input) {
+  // ① 命盘骨架:纯计算,先吐(前端立即渲染方盘,不再憋整页)
+  const { chart, sanfang, 三方四正解读表 } = buildZiweiSkeleton(input);
+  yield { type: 'chart', chart, sanfang, 三方四正解读表 };
+
+  // 无问题 / 无 Key:到此为止(纯盘 + 规则版,不进 AI)
+  if (!input.question || !client) { yield { type: 'done' }; return; }
+
+  // ② 危机前置:命中则只给温柔陪伴,不深化
+  try {
+    const crisis = await detectCrisis(client, input.question);
+    if (crisis.level === 'risk') {
+      let text = CRISIS_FALLBACK;
+      try {
+        const res = await client.messages.create({
+          model: process.env.LLM_TEXT_MODEL || 'claude-sonnet-4-6', max_tokens: 512,
+          system: CRISIS_COMFORT,
+          messages: [{ role: 'user', content: input.question }],
+        });
+        text = res.content.find((b) => b.type === 'text')?.text ?? CRISIS_FALLBACK;
+      } catch { /* 用固定兜底文案 */ }
+      yield { type: 'crisis', text };
+      yield { type: 'done' };
+      return;
+    }
+  } catch { /* 危机检测失败从宽,继续深化 */ }
+
+  // ③ AI 深化:逐字吐
+  try {
+    for await (const chunk of streamInterpretZiwei(client, { chart, question: input.question, lang: input.lang })) {
+      yield { type: 'delta', text: chunk };
+    }
+    yield { type: 'done' };
+  } catch (e) {
+    yield { type: 'error', message: e.message };
+  }
 }

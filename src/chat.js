@@ -13,6 +13,7 @@ import { recommendDirections }             from './bazhai.js';
 import { castHexagram }                    from './liuyao.js';
 import { detectCrisis }                    from './pipeline.js';
 import { CRISIS_COMFORT }                  from './prompts.js';
+import { streamLLM }                       from './stream.js';
 
 const CHAT_MODEL    = process.env.LLM_TEXT_MODEL     || 'claude-sonnet-4-6';
 const CLASSIFY_MODEL = process.env.LLM_CLASSIFY_MODEL || process.env.LLM_TEXT_MODEL || 'claude-haiku-4-5';
@@ -20,7 +21,7 @@ const CLASSIFY_MODEL = process.env.LLM_CLASSIFY_MODEL || process.env.LLM_TEXT_MO
 // ── 1. 构建 System Prompt ──────────────────────────────────────────────────
 
 function buildSystem(profile, mode, lang = 'zh', extras = {}) {
-  let chartCtx = '', hexCtx = '', fsCtx = '';
+  let chartCtx = '', hexCtx = '', fsCtx = '', priorCtx = '';
 
   // 紫微命盘：喂十二宫全量上下文(与 /api/ziwei 一致,供赛博倪海夏深解)
   if (profile?.datetime && profile?.gender) {
@@ -59,6 +60,20 @@ function buildSystem(profile, mode, lang = 'zh', extras = {}) {
     } catch (_) { /* ignore */ }
   }
 
+  // 跨页接力：上一页(天命/地运/人间道)已给出的解读结论，供本轮「续接」而非「重算」。
+  // 由前端 sessionStorage 带入 extras.priorReading。截断防止过长挤爆上下文。
+  if (extras.priorReading) {
+    const pr = String(extras.priorReading).slice(0, 1800);
+    const fromLbl = { tianming: '天命·紫微命盘', diyun: '地运·八宅风水', renjiandao: '人间道·六爻卦象' }[extras.priorFrom] || '上一步';
+    const askedLbl = extras.priorQuestion ? `\n（当时所问：${String(extras.priorQuestion).slice(0, 120)}）` : '';
+    priorCtx = `
+## 你已给出的结论（来自「${fromLbl}」，本轮请在此基础上续答）${askedLbl}
+${pr}
+
+（以上是你刚给命主的解读。命主现在带着这个结论来追问，请把它当作已成立的前提：紧扣既有断语顺着往下说、把用户新问的点讲深讲透，不要重复整段解读、不要另起炉灶重排盘。语气承接、像同一场对话的延续。）
+`;
+  }
+
   const hasProfile = !!(chartCtx || fsCtx);
 
   const modeTip = {
@@ -75,7 +90,7 @@ function buildSystem(profile, mode, lang = 'zh', extras = {}) {
   };
 
   const langRule = lang === 'en'
-    ? '\n\n# Output language\nRespond in natural English. Render Chinese terms with pinyin + meaning.'
+    ? '\n\n# Output language (STRICT)\nRespond entirely in natural English. Do NOT put any Chinese character (CJK) in the output. Render every 命理 term in romanized pinyin (no spaces within a name, e.g. Ziwei, Dijie, Jumen) followed by a short English gloss on first mention; never mix scripts within a word.'
     : '';
 
   // 紫微深解(tianming)模式:走「赛博倪海夏」人设,与 /api/ziwei 一次性解读口径一致。
@@ -86,12 +101,12 @@ function buildSystem(profile, mode, lang = 'zh', extras = {}) {
 ---
 
 以下是命主的完整命盘数据，请基于此进行对话式解读（多轮问答，紧扣命盘作答，不重复堆砌整盘信息）：
-${chartCtx}`;
+${chartCtx}${priorCtx}`;
   }
 
   // 其余模式(综合易理/六爻/八宅):保持「心易」克制对话顾问人设。
   return `你是「心易」AI 易理顾问，用自然流畅的对话，从易理（周易、紫微斗数、六爻、八宅风水等东方智慧）角度帮用户看清处境、想明白选择。
-${chartCtx}${hexCtx}${fsCtx}
+${chartCtx}${hexCtx}${fsCtx}${priorCtx}
 # 当前解读角度
 ${modeTip[mode] || modeTip.suiwen}
 
@@ -107,68 +122,8 @@ ${modeTip[mode] || modeTip.suiwen}
 不预测生死/重病；不给彩票/赌博/具体金额建议；不恐吓用户。${langRule}`;
 }
 
-// ── 2. 流式推理 ───────────────────────────────────────────────────────────
-
-async function* streamAnthropic(client, system, messages, model) {
-  const stream = client.messages.stream({
-    model,
-    max_tokens: 1024,
-    system,
-    messages,
-  });
-  for await (const event of stream) {
-    if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-      yield event.delta.text;
-    }
-  }
-}
-
-async function* streamOpenAI(system, messages, model) {
-  const baseURL = String(process.env.LLM_BASE_URL || 'https://api.deepseek.com').replace(/\/+$/, '');
-  const url     = baseURL.endsWith('/v1') ? `${baseURL}/chat/completions` : `${baseURL}/v1/chat/completions`;
-  const apiKey  = process.env.LLM_API_KEY || process.env.OPENAI_API_KEY;
-
-  const res = await fetch(url, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model,
-      messages: [{ role: 'system', content: system }, ...messages],
-      max_tokens:  1024,
-      temperature: Number(process.env.LLM_TEMPERATURE ?? 0.7),
-      stream:      true,
-    }),
-  });
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`LLM ${res.status}: ${body.slice(0, 400)}`);
-  }
-
-  const reader  = res.body.getReader();
-  const decoder = new TextDecoder();
-  let   buf     = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buf += decoder.decode(value, { stream: true });
-    const lines = buf.split('\n');
-    buf = lines.pop();
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue;
-      const chunk = line.slice(6).trim();
-      if (chunk === '[DONE]') return;
-      try {
-        const json = JSON.parse(chunk);
-        const text = json.choices?.[0]?.delta?.content;
-        if (text) yield text;
-      } catch (_) { /* partial JSON, skip */ }
-    }
-  }
-}
-
-// ── 3. 主入口 ─────────────────────────────────────────────────────────────
+// ── 2. 主入口 ─────────────────────────────────────────────────────────────
+// (流式推理已抽到 src/stream.js 的 streamLLM,与天命深化共用)
 
 /**
  * streamChat — async generator，每次 yield 一段文字（流式 token）
@@ -196,13 +151,8 @@ export async function* streamChat(client, { messages, profile, mode = 'suiwen', 
     content: m.content,
   }));
 
-  // ③ 按 provider 走流式
-  const provider = process.env.LLM_PROVIDER || (process.env.ANTHROPIC_API_KEY ? 'anthropic' : 'openai-compatible');
-  if (provider === 'anthropic') {
-    yield* streamAnthropic(client, system, llmMsgs, CHAT_MODEL);
-  } else {
-    yield* streamOpenAI(system, llmMsgs, CHAT_MODEL);
-  }
+  // ③ 流式吐(共享 streamLLM,按 provider 分支)
+  yield* streamLLM({ client, system, messages: llmMsgs, model: CHAT_MODEL, maxTokens: 1024 });
 }
 
 /** 人间道首问时起卦，供 server.js 在调用 streamChat 前调用 */

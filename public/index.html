@@ -28,8 +28,9 @@
   .top.nav-frost { position:sticky; top:10px; z-index:30; border-radius:14px; padding:10px 16px; }
 
   /* 编辑式 HERO */
-  .lead { text-align:center; max-width:760px; margin:30px auto 46px; }
-  .lead .kick { font-family:var(--mono); font-size:12px; letter-spacing:3px; color:var(--cinnabar);
+  .lead { text-align:center; max-width:760px; margin:12px auto 40px; }
+  /* kicker 去朱砂红,改中性墨色(与正文同调,不抢眼) */
+  .lead .kick { font-family:var(--mono); font-size:12px; letter-spacing:3px; color:var(--muted);
     text-transform:uppercase; display:inline-flex; align-items:center; gap:8px; }
   .lead .kick .dot { width:6px; height:6px; border-radius:50%; background:var(--accent-2); box-shadow:0 0 10px var(--glow); }
   .lead .kick .cn { font-family:var(--serif); letter-spacing:4px; color:var(--muted); }
@@ -50,18 +51,18 @@
   .ml-tt { display:flex; align-items:baseline; gap:10px; }
   .ml-tt h3 { font-family:"Songti SC",serif; font-size:17px; font-weight:700; color:var(--ink-strong); letter-spacing:1px; }
   .ml-count { font-size:12px; color:var(--faint); letter-spacing:.5px; }
-  .ml-add { font:inherit; font-size:13px; color:var(--cinnabar); background:none; border:1px solid rgba(166,64,47,.3);
-    border-radius:999px; cursor:pointer; padding:6px 14px; letter-spacing:.5px;
-    transition:background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease); width:auto; }
-  .ml-add:hover { background:var(--cinnabar-soft); border-color:rgba(166,64,47,.5); }
-  .ml-add:focus-visible { outline:2px solid var(--cinnabar); outline-offset:2px; }
-  /* 搜索框 */
-  .ml-search { width:100%; margin-bottom:14px; padding:11px 14px; border:1px solid var(--line); border-radius:12px;
-    background:var(--bg-2); color:var(--ink); font-family:inherit; font-size:14px; }
-  .ml-search::placeholder { color:var(--faint); }
+  /* 开始排盘:hero 主行动按钮(居中于文案下方) */
+  .lead .ml-add { display:inline-flex; align-items:center; justify-content:center; margin:24px auto 0;
+    font:inherit; font-size:14px; font-weight:600; color:#F4F1EA; background:var(--ink-strong);
+    border:1px solid transparent; border-radius:999px; cursor:pointer; padding:11px 30px; letter-spacing:2px;
+    box-shadow:0 14px 30px -20px rgba(31,43,49,.9);
+    transition:transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease); }
+  .lead .ml-add:hover { transform:translateY(-1px); background:#2A3841; }
+  .lead .ml-add:focus-visible { outline:2px solid var(--cinnabar); outline-offset:3px; }
   .ml-search:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(42,38,32,.16); }
   /* 卡片网格 */
-  .ml-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; }
+  /* 最近排盘:单张卡,限定宽度不全铺(auto-fill 会把唯一卡撑满,故显式收窄) */
+  .ml-grid { display:grid; grid-template-columns:minmax(230px,340px); justify-content:center; gap:14px; }
   /* 命例卡 */
   .ml-card { position:relative; cursor:pointer;
     padding:15px 16px 13px; border:1px solid var(--line); border-radius:16px; background:var(--card);
@@ -229,6 +230,109 @@
 
   /* 结果区(整宽) */
   #result { margin-top:30px; }
+
+  /* ===== 两栏工作台(命盘 : 三方四正 ≈ 1.4:1;右栏拉齐命盘高度);易学长文全宽置于其下 ===== */
+  .workbench { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:22px; align-items:stretch; }
+  .wb-col { min-width:0; }                 /* 防子元素撑破网格列 */
+  .wb-col.wb-mid { display:flex; flex-direction:column; }
+  .wb-col.wb-mid > .zw-panel { margin-bottom:0; flex:1 1 auto; }
+  /* 右栏拉齐命盘高度:总结/解读两卡纵向铺满(内容少则均分留白,不参差) */
+  .wb-col.wb-right { display:flex; flex-direction:column; gap:22px; }
+  .wb-col.wb-right > .sfsz { flex:1 1 auto; display:flex; flex-direction:column; gap:22px; }
+  .wb-col.wb-right .sf-summary { flex:0 0 auto; }
+  .wb-col.wb-right .sf-detail { flex:1 1 auto; }   /* 解读吃掉剩余高度,与命盘等高 */
+  /* 左栏:排盘条件回显卡 —— 高度固定,内容多则内部下滑 */
+  .wb-cond { position:sticky; top:88px; background:var(--card); border:1px solid var(--line);
+    border-radius:20px; box-shadow:var(--shadow); display:flex; flex-direction:column;
+    max-height:calc(100vh - 120px); overflow:hidden; }
+  .wb-cond .wc-head { padding:20px 22px 12px; border-bottom:1px solid var(--line-soft); }
+  .wb-cond .wc-head h3 { margin:0; font-family:"Songti SC","Noto Serif SC",serif; font-size:16px;
+    font-weight:700; color:var(--ink-strong); letter-spacing:1px; }
+  .wb-cond .wc-head .wc-sub { font-size:12px; color:var(--faint); margin-top:4px; letter-spacing:.5px; }
+  .wb-cond .wc-body { padding:8px 22px 4px; overflow-y:auto; flex:1 1 auto; scrollbar-width:thin; }
+  .wb-cond .wc-body::-webkit-scrollbar { width:6px; }
+  .wb-cond .wc-body::-webkit-scrollbar-thumb { background:var(--line); border-radius:3px; }
+  .wc-item { display:flex; flex-direction:column; gap:2px; padding:11px 0; border-bottom:1px solid var(--line-soft); }
+  .wc-item:last-child { border-bottom:none; }
+  .wc-item .wk { font-size:11px; color:var(--faint); letter-spacing:1px; }
+  .wc-item .wv { font-size:14.5px; color:var(--ink-strong); font-weight:600; line-height:1.6; word-break:break-word; }
+  .wc-item .wv.q { font-weight:500; color:var(--ink); font-size:14px; }
+  .wc-tags { display:flex; flex-wrap:wrap; gap:6px; }
+  .wc-tags .wt { font-size:11px; color:var(--muted); background:var(--bg-2); border:1px solid var(--line-soft);
+    border-radius:999px; padding:2px 9px; }
+  .wb-cond .wc-foot { padding:14px 22px 18px; border-top:1px solid var(--line-soft); }
+  .wb-cond .wc-redo { width:100%; font:inherit; font-size:14px; font-weight:600; cursor:pointer;
+    color:#F4F1EA; background:var(--ink-strong); border:1px solid transparent; border-radius:999px;
+    padding:11px 16px; letter-spacing:1px; transition:transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease); }
+  .wb-cond .wc-redo:hover { transform:translateY(-1px); background:#2A3841; }
+  /* 右栏块:三方四正 总结 / 解读 —— 共享卡样式 */
+  .wb-right .sfsz { margin-bottom:0; }
+  /* 右栏底部:进对话追问(带当前命盘上下文跳 /chat) */
+  .to-chat { margin-top:auto; align-self:stretch; display:flex; align-items:center; justify-content:center; gap:8px;
+    font-family:"Songti SC","Noto Serif SC",serif; font-size:15px; font-weight:700; letter-spacing:1px; text-decoration:none;
+    color:#F4F1EA; background:var(--cinnabar); border:1px solid transparent; border-radius:14px; padding:14px 18px;
+    box-shadow:0 14px 30px -20px rgba(166,64,47,.8); transition:transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease); }
+  .to-chat:hover { transform:translateY(-1px); background:#b8492f; }
+  .to-chat:focus-visible { outline:2px solid var(--cinnabar); outline-offset:3px; }
+  .wb-block-tag { display:inline-flex; align-items:center; gap:7px; font-family:ui-monospace,Menlo,monospace;
+    font-size:10.5px; letter-spacing:2px; text-transform:uppercase; font-weight:700; color:var(--cinnabar);
+    background:var(--cinnabar-soft); border:1px solid rgba(166,64,47,.24); border-radius:999px;
+    padding:3px 10px; margin-bottom:14px; }
+
+  /* ===== 易学解读:全宽长文区块(置于三栏之下,居中限宽阅读) ===== */
+  .yixue-full { margin-top:26px; background:var(--card); border:1px solid var(--line); border-radius:20px;
+    box-shadow:var(--shadow); padding:38px clamp(28px,5vw,64px); }
+  .yixue-full > .wb-block-tag { margin-bottom:16px; }
+  .yixue-full .reading-agency { max-width:72ch; margin:0 auto 22px; padding:12px 16px; font-size:13.5px; line-height:1.7;
+    color:var(--muted); background:var(--cinnabar-soft); border-left:3px solid var(--cinnabar); border-radius:0 10px 10px 0; }
+  /* 流式态:解读逐字流入时的进度条(命盘已在,只等解读)(审计#3) */
+  .yixue-full .reading-progress { max-width:72ch; margin:0 auto 16px; display:flex; align-items:center; gap:10px;
+    font-size:13px; color:var(--faint); letter-spacing:.3px; }
+  .yixue-full .reading-progress .rp-sec { font-variant-numeric:tabular-nums; color:var(--muted); }
+  .yixue-full.streaming .reading-body:empty { min-height:1.5em; }
+  .yixue-full.streaming .reading-body::after { content:"▍"; color:var(--cinnabar); animation:blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+  @media (prefers-reduced-motion: reduce) { .yixue-full.streaming .reading-body::after { animation:none; } }
+  .yixue-full .reading-body { max-width:72ch; margin:0 auto; font-size:16px; line-height:2; color:var(--ink); }
+  .yixue-full.offline { padding:22px 28px; }
+  /* 命盘头部「重新排盘」小按钮(左栏删除后的排盘入口) */
+  .zw-redo { font:inherit; font-size:12px; font-weight:600; letter-spacing:1px; cursor:pointer;
+    color:#F4F1EA; background:var(--ink-strong); border:1px solid transparent; border-radius:999px;
+    padding:6px 15px; align-self:center; white-space:nowrap;
+    transition:transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease); }
+  .zw-redo:hover { transform:translateY(-1px); background:#2A3841; }
+  .zw-redo:focus-visible { outline:2px solid var(--cinnabar); outline-offset:2px; }
+  @media (max-width:1024px) {
+    .workbench { grid-template-columns:1fr; }
+    .wb-col.wb-right { position:static; }
+    .yixue-full { padding:28px 22px; }
+  }
+
+  /* ===== 三道说明卡:横排三列,置于页面最下方(#result 之后自然下移) ===== */
+  .dao-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:40px; align-items:stretch; }
+  .dao-cards .cardx { border:1px solid var(--line); border-radius:16px; padding:22px 22px 20px;
+    background:var(--card); box-shadow:var(--shadow-soft); display:flex; flex-direction:column; }
+  .cardx .xh { display:flex; align-items:center; gap:11px; margin-bottom:14px; }
+  .cardx .xh .ico { width:36px; height:36px; border-radius:10px; display:grid; place-items:center; background:var(--bg-2); border:1px solid var(--line); flex:none; }
+  .cardx .xh .ico svg { width:21px; height:21px; stroke:var(--accent); fill:none; stroke-width:1.4; }
+  .cardx .xh h4 { font-family:"Songti SC","Noto Serif SC",serif; font-size:16px; letter-spacing:2px; color:var(--accent); margin:0; }
+  .cardx p { font-size:13.5px; color:var(--muted); line-height:1.95; margin:0; } .cardx p b { color:var(--ink); font-weight:600; }
+  .cardx .steps { list-style:none; margin:0; padding:0; display:grid; gap:13px; }
+  .cardx .steps li { display:flex; gap:12px; font-size:13.5px; color:var(--muted); line-height:1.7; }
+  .cardx .steps li .n { flex:none; width:24px; height:24px; border-radius:50%; background:var(--bg-2); border:1px solid var(--line);
+    color:var(--accent-2); font-family:var(--mono); font-size:12px; display:grid; place-items:center; margin-top:1px; }
+  .cardx .steps li b { color:var(--ink); font-weight:600; }
+  .cardx .cross { display:grid; gap:10px; }
+  .cardx .xlink { display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--line); border-radius:12px;
+    background:var(--bg-2); transition:border-color .2s, transform .2s; }
+  .cardx .xlink:hover { border-color:var(--gold); transform:translateX(2px); }
+  .cardx .xlink .ico { width:38px; height:38px; border-radius:50%; background:var(--card); border:1px solid var(--line); display:grid; place-items:center; flex:none; }
+  .cardx .xlink .ico svg { width:21px; height:21px; stroke:var(--accent); fill:none; stroke-width:1.4; }
+  .cardx .xlink .xt b { display:block; font-family:"Songti SC","Noto Serif SC",serif; color:var(--accent); letter-spacing:1px; font-size:14px; }
+  .cardx .xlink .xt span { color:var(--faint); font-size:12px; }
+  .cardx .xlink .arr { margin-left:auto; color:var(--faint); font-size:18px; }
+  @media (max-width:900px){ .dao-cards { grid-template-columns:1fr; } }
+
   .reading { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:34px;
     font-size:16px; box-shadow:var(--shadow); }
   /* AI 正文:markdown 渲染后的阅读级排版(墨韵) */
@@ -314,6 +418,11 @@
   .ln-box b, .dy-cur-box b { color:var(--accent-2); }
   .crisis { border-color:rgba(110,103,91,.5); box-shadow:0 0 0 1px rgba(110,103,91,.25), var(--shadow); }
   .err { color:var(--cinnabar); font-size:14px; }
+  .err-panel { display:flex; flex-direction:column; align-items:flex-start; gap:14px; }
+  .err-panel .err-redo { font:inherit; font-size:13.5px; color:#fff; background:var(--cinnabar); border:none;
+    border-radius:10px; padding:9px 18px; cursor:pointer; letter-spacing:1px; transition:background .15s, transform .15s; }
+  .err-panel .err-redo:hover { background:#b8492f; transform:translateY(-1px); }
+  .err-panel .err-redo:focus-visible { outline:2px solid var(--cinnabar); outline-offset:3px; }
 
   /* ===== 紫微斗数 命盘(示例 DEMO · 静态) ===== */
   .zw-panel { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:24px; box-shadow:var(--shadow); margin-bottom:22px; }
@@ -439,9 +548,12 @@
   @media (prefers-reduced-motion: reduce) { .geju-tag, .geju-desc { transition:none; animation:none; } }
   @media (max-width:640px) { .zw-geju .gj-sub { flex-basis:100%; } }
 
-  /* 三方四正 解读 */
-  .sfsz { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:30px; box-shadow:var(--shadow); margin-bottom:22px; }
-  .sfsz > .t { font-size:12px; color:var(--accent-2); letter-spacing:2px; margin-bottom:14px; }
+  /* 三方四正 解读 —— 右栏拆为「总结」+「解读」两张卡(.sfsz 仅作联动替换的容器,无自身外观) */
+  .sfsz { display:flex; flex-direction:column; gap:18px; margin-bottom:0; }
+  .sfsz .sf-summary, .sfsz .sf-detail { background:var(--card); border:1px solid var(--line);
+    border-radius:20px; padding:26px 28px; box-shadow:var(--shadow); }
+  .sfsz .t { font-size:15px; color:var(--ink-strong); font-family:"Songti SC","Noto Serif SC",serif;
+    font-weight:700; letter-spacing:1px; margin-bottom:14px; }
   .sf-chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
   .sf-chips .chip { font-size:12px; border:1px solid var(--bad-line); background:var(--bad-bg); color:var(--ink); border-radius:999px; padding:5px 12px; }
   .sf-chips .chip b { color:var(--cinnabar); }
@@ -449,10 +561,14 @@
   .sfsz p { font-size:15px; line-height:1.95; color:var(--ink); margin:0 0 16px; }
   .sfsz p:last-child { margin-bottom:0; }
   .hint { text-align:center; color:var(--faint); font-size:12px; margin-top:30px; letter-spacing:.5px; }
-  /* 结果区等待占位(限定 #result,避免与 .btn-ink.loading 撞名):文字 + 三墨点 */
-  #result .loading { display:flex; align-items:center; justify-content:center; gap:12px; text-align:center;
-    color:var(--muted); padding:48px; letter-spacing:3px; animation:pulse 1.6s ease-in-out infinite; }
+  /* 结果区等待占位(限定 #result,避免与 .btn-ink.loading 撞名):文字 + 三墨点 + 预期/已等提示 */
+  #result .loading { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; text-align:center;
+    color:var(--muted); padding:48px; letter-spacing:3px; }
+  #result .loading .load-main { display:flex; align-items:center; gap:12px; animation:pulse 1.6s ease-in-out infinite; }
+  #result .loading .load-hint { font-size:12.5px; letter-spacing:.5px; color:var(--faint); }
+  #result .loading .load-hint #load-sec { font-variant-numeric:tabular-nums; color:var(--muted); }
   @keyframes pulse { 0%,100% { opacity:.5; } 50% { opacity:1; } }
+  @media (prefers-reduced-motion: reduce) { #result .loading .load-main { animation:none; } }
 
   @media (max-width: 560px) {
     .lead h1 { letter-spacing:8px; }
@@ -493,30 +609,14 @@
   </div>
 
   <header class="lead reveal-group">
-    <svg class="dao-ring" viewBox="0 0 88 88" width="72" height="72" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-      <circle cx="44" cy="44" r="40" opacity=".55"/>
-      <circle cx="44" cy="44" r="27" opacity=".85"/>
-      <g fill="currentColor" stroke="none">
-        <circle cx="78" cy="44" r="1.5"/><circle cx="73.44" cy="61" r="1.5"/><circle cx="61" cy="73.44" r="1.5"/>
-        <circle cx="44" cy="78" r="1.5"/><circle cx="27" cy="73.44" r="1.5"/><circle cx="14.56" cy="61" r="1.5"/>
-        <circle cx="10" cy="44" r="1.5"/><circle cx="14.56" cy="27" r="1.5"/><circle cx="27" cy="14.56" r="1.5"/>
-        <circle cx="44" cy="10" r="1.5"/><circle cx="61" cy="14.56" r="1.5"/><circle cx="73.44" cy="27" r="1.5"/>
-      </g>
-      <path d="M33 52 L44 36 L56 49"/>
-      <g fill="currentColor" stroke="none"><circle cx="33" cy="52" r="2.2"/><circle cx="44" cy="36" r="2.2"/><circle cx="56" cy="49" r="2.2"/></g>
-    </svg>
     <div class="kick"><span class="dot"></span><span data-i18n="hero.badge">天命 · 紫薇八字 · 真太阳时</span>　<span class="cn" data-i18n="hero.kickcn">观象入元</span></div>
     <h1 data-i18n="hero.title">天 命</h1>
     <p class="lede"><b data-i18n="hero.motto">由易入理,三才合一。</b><span data-i18n="hero.sub">把纠结说给它听,它陪你把选择想清楚——四柱见性格倾向与能量节奏,是依据,不是判决。</span></p>
+    <button type="button" class="ml-add" id="ml-add" data-i18n="ml.add">开始排盘</button>
   </header>
 
-  <!-- 命例库:MetaSight 风格卡片列表(点「新增」弹排盘弹窗;点卡片还原当时解读) -->
-  <section class="mingli reveal-group" id="mingli" aria-label="命例库">
-    <div class="ml-cap">
-      <div class="ml-tt"><h3 data-i18n="ml.title">我的命例</h3><span class="ml-count" id="ml-count"></span></div>
-      <button type="button" class="ml-add" id="ml-add" data-i18n="ml.add">+ 新增命例</button>
-    </div>
-    <input id="ml-search" class="ml-search" type="search" data-i18n-ph="ml.search" placeholder="搜索命例…" aria-label="搜索命例" />
+  <!-- 最近一次排盘:排过盘才显示单张卡(点卡片还原当时解读);排盘入口在上方「开始排盘」 -->
+  <section class="mingli reveal-group" id="mingli" aria-label="最近排盘">
     <div class="ml-grid" id="ml-grid"></div>
   </section>
 
@@ -647,6 +747,47 @@
   </div>
 
   <div id="result"></div>
+
+  <!-- 三道说明卡:横排,置于页面最下方(#result 之后,排盘结果出现后自动下移) -->
+  <section class="dao-cards reveal-group" aria-label="说明">
+    <div class="cardx">
+      <div class="xh">
+        <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke-linecap="round"/></svg></span>
+        <h4 data-i18n="aside.about.t">天命这一道</h4>
+      </div>
+      <p data-i18n="aside.about.p">紫微斗数以你的出生四要素安一张<b>命盘</b>,十二宫见性格倾向、能量节奏与格局。看的是<b>你自身的势</b>——是依据,不是判决,决定权始终在你。</p>
+    </div>
+    <div class="cardx">
+      <div class="xh">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9" stroke-linecap="round"/></svg></span>
+        <h4 data-i18n="aside.steps.t">怎么用</h4>
+      </div>
+      <ol class="steps">
+        <li><span class="n">1</span><span data-i18n="aside.s1">点<b>开始排盘</b>,填出生四要素(可选真太阳时校正)。</span></li>
+        <li><span class="n">2</span><span data-i18n="aside.s2">看命盘方盘与<b>三方四正</b>,点宫位可逐宫细看。</span></li>
+        <li><span class="n">3</span><span data-i18n="aside.s3">读<b>易学解读</b>,把命盘翻成此刻处境与选择的人话。</span></li>
+      </ol>
+    </div>
+    <div class="cardx">
+      <div class="xh">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 21l-5 .7 1-5.5-4-3.9 5.5-.8z" stroke-linejoin="round"/></svg></span>
+        <h4 data-i18n="aside.cross.t">三道同参</h4>
+      </div>
+      <div class="cross">
+        <a class="xlink" href="/diyun">
+          <span class="ico"><svg viewBox="0 0 24 24"><polygon points="12,3 17,5.5 19.5,12 17,18.5 12,21 7,18.5 4.5,12 7,5.5"/><circle cx="12" cy="12" r="2.6"/></svg></span>
+          <span class="xt"><b data-i18n="cross.diyun">地运 · 调你的场</b><span data-i18n="cross.diyun.d">八宅方位,把居所调到帮你的那一面</span></span>
+          <span class="arr">→</span>
+        </a>
+        <a class="xlink" href="/renjiandao">
+          <span class="ico"><svg viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round"><path d="M6 7h12M6 12h5M15 12h3M6 17h12"/></svg></span>
+          <span class="xt"><b data-i18n="cross.renjiandao">人间道 · 问时机</b><span data-i18n="cross.renjiandao.d">摇一卦,看眼下处境宜动宜静</span></span>
+          <span class="arr">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <div class="hint" data-i18n="f.disclaimer">AI 输出仅供参考与自我思考,不构成任何预测或建议 · 决定权永远在你</div>
 </div>
 
@@ -659,7 +800,7 @@ const I18N = {
     'hero.badge':'天命 · 紫薇八字 · 真太阳时','hero.kickcn':'观象入元','hero.title':'天 命',
     'hero.motto':'由易入理,三才合一。','hero.sub':'把纠结说给它听,它陪你把选择想清楚——命盘见性格倾向与能量节奏,是依据,不是判决。',
     'form.cap':'命盘信息','form.capsub':'出生四要素 + 此刻所问',
-    'ml.title':'我的命例','ml.add':'+ 新增命例','ml.empty':'还没有命例 · 排一次盘即可存入','ml.search':'搜索命例…',
+    'ml.title':'我的命例','ml.add':'开始排盘','ml.empty':'还没有命例 · 排一次盘即可存入','ml.search':'搜索命例…',
     'ml.main':'主命','ml.del_confirm':'删除这条命例?','ml.restore_note':'已还原上次解读',
     'ml.cap_hit':'免费版最多存 3 个命例。升级会员可存 10 个。','ml.cap_hit_member':'已达上限(10 个),请先删除部分命例。',
     'ml.new_t':'新建八字','ml.new_sub':'为家人或朋友创建八字记录','ml.close':'关闭','ml.cancel':'取消','ml.confirm':'确认',
@@ -671,8 +812,16 @@ const I18N = {
     'f.solar':'阳历','f.lunar':'阴历','f.solar_fallback':'公历直填','f.marital':'婚姻状况','f.single':'未婚','f.married':'已婚',
     'f.style':'解读风格','f.friend':'朋友版','f.pro':'专业版','f.submit':'观 象 入 元',
     'f.disclaimer':'AI 输出仅供参考与自我思考,不构成任何预测或建议 · 决定权永远在你',
-    'f.loading_btn':'解 读 中…','loading':'正在为你点亮命运星图…','err':'出错了：','unavail':'解读暂不可用：',
-    'offline_note':'以上为离线排盘结果;配置 ANTHROPIC_API_KEY 后即可获得 AI 解读。','airead':'AI 深度解读','scene':'场景 · ',
+    'aside.about.t':'天命这一道','aside.about.p':'紫微斗数以你的出生四要素安一张命盘,十二宫见性格倾向、能量节奏与格局。看的是你自身的势——是依据,不是判决,决定权始终在你。',
+    'aside.steps.t':'怎么用','aside.s1':'点开始排盘,填出生四要素(可选真太阳时校正)。','aside.s2':'看命盘方盘与三方四正,点宫位可逐宫细看。','aside.s3':'读易学解读,把命盘翻成此刻处境与选择的人话。',
+    'aside.cross.t':'三道同参',
+    'cross.diyun':'地运 · 调你的场','cross.diyun.d':'八宅方位,把居所调到帮你的那一面',
+    'cross.renjiandao':'人间道 · 问时机','cross.renjiandao.d':'摇一卦,看眼下处境宜动宜静',
+    'chat.ask':'就此盘进对话追问 →',
+    'f.loading_btn':'解 读 中…','loading':'正在为你点亮命运星图…','loading.hint':'命盘秒出,易学解读通常需 10–20 秒(AI 深化 20–60 秒)','err':'出错了：','err.retry':'服务开小差了,请稍后再试一次;若一直不行,检查一下网络。','err.redo':'重新填写','unavail':'解读暂不可用：',
+    'reading.agency':'下面说的是你命盘里的势与倾向,是一面帮你看清自己的镜子——不是判决。怎么选,决定权始终在你。',
+    'stream.deepening':'正在结合三方四正为你落解读,边想边写…已 ','stream.timeout':'解读生成超时了。命盘已排好,可点上方「重新排盘」再试一次深化。',
+    'offline_note':'以上为离线排盘结果;配置 ANTHROPIC_API_KEY 后即可获得易学解读。','airead':'易学解读','scene':'场景 · ',
     'sc.decision':'抉择','sc.emotion':'情感','sc.timing':'时机','sc.self':'自我认知',
     'zw.year.now':'当前','zw.year.prev':'查看上一年','zw.year.next':'查看下一年',
     'zw.fly.toggle':'四化飞星连线','zw.fly.hint':'虚线示意,命宫 → 化禄/权/科/忌 落宫',
@@ -682,7 +831,7 @@ const I18N = {
     'hero.badge':'Tian Ming · Zi Wei · True Solar Time','hero.kickcn':'Read the signs','hero.title':'T I A N   M I N G',
     'hero.motto':'By the Yi into insight · Three Powers as one.','hero.sub':'Tell it what you\'re wrestling with — it helps you think the choice through. The chart shows tendencies and rhythm: a basis, not a verdict.',
     'form.cap':'Birth details','form.capsub':'Four birth inputs + your question',
-    'ml.title':'My charts','ml.add':'+ New chart','ml.empty':'No saved charts yet · run a reading to save one','ml.search':'Search charts…',
+    'ml.title':'My charts','ml.add':'Start reading','ml.empty':'No saved charts yet · run a reading to save one','ml.search':'Search charts…',
     'ml.main':'Main','ml.del_confirm':'Delete this saved chart?','ml.restore_note':'Restored last reading',
     'ml.cap_hit':'Free plan stores up to 3 charts. Upgrade for 10.','ml.cap_hit_member':'Limit reached (10). Delete a chart first.',
     'ml.new_t':'New chart','ml.new_sub':'Create a birth record for family or a friend','ml.close':'Close','ml.cancel':'Cancel','ml.confirm':'Confirm',
@@ -694,8 +843,16 @@ const I18N = {
     'f.solar':'Solar','f.lunar':'Lunar','f.solar_fallback':'Solar direct','f.marital':'Marital status','f.single':'Single','f.married':'Married',
     'f.style':'Tone','f.friend':'Friend','f.pro':'Pro','f.submit':'R E A D',
     'f.disclaimer':'AI output is for reflection only — not a prediction or directive · the decision is always yours',
-    'f.loading_btn':'Reading…','loading':'Lighting up your chart…','err':'Error: ','unavail':'Reading unavailable: ',
-    'offline_note':'Above is the offline chart; set ANTHROPIC_API_KEY to get the AI reading.','airead':'AI reading','scene':'Topic · ',
+    'aside.about.t':'What Tian Ming is','aside.about.p':'Zi Wei Dou Shu builds a chart from your four birth inputs; the twelve palaces show temperament, energy rhythm and structure. It reads your own momentum — a basis, not a verdict; the decision stays with you.',
+    'aside.steps.t':'How to use it','aside.s1':'Tap Start reading and fill the four birth inputs (true-solar optional).','aside.s2':'Read the chart plate and the triad; click a palace to go deeper.','aside.s3':'Read the Yi reading — the chart turned into plain words about your choice.',
+    'aside.cross.t':'Three ways together',
+    'cross.diyun':'Di Yun · tune your field','cross.diyun.d':'Eight-mansion directions — turn your home to your side',
+    'cross.renjiandao':'Ren Jian Dao · ask the timing','cross.renjiandao.d':'Cast a hexagram to read the moment',
+    'chat.ask':'Ask about this chart in chat →',
+    'f.loading_btn':'Reading…','loading':'Lighting up your chart…','loading.hint':'The chart appears instantly; the Yi reading usually takes 10–20s (AI deepening 20–60s)','err':'Error: ','err.retry':'Something hiccupped on our end — please try again in a moment; if it keeps failing, check your connection.','err.redo':'Fill in again','unavail':'Reading unavailable: ',
+    'reading.agency':'What follows is the pull and tendencies in your chart — a mirror to see yourself clearly, not a verdict. How you choose is always up to you.',
+    'stream.deepening':'Weaving your reading from the triad of palaces, writing as I think… ','stream.timeout':'The reading timed out. Your chart is ready — tap “New reading” above to try the deepening again.',
+    'offline_note':'Above is the offline chart; set ANTHROPIC_API_KEY to get the Yi reading.','airead':'Yi reading','scene':'Topic · ',
     'sc.decision':'Decision','sc.emotion':'Relationship','sc.timing':'Timing','sc.self':'Self',
     'zw.year.now':'Now','zw.year.prev':'View previous year','zw.year.next':'View next year',
     'zw.fly.toggle':'Mutagen flow lines','zw.fly.hint':'Dashed lines: Life palace → where Lu/Quan/Ke/Ji land',
@@ -999,47 +1156,164 @@ f.addEventListener('submit', async (e) => {
   };
   lastPayload = payload;
   btn.disabled = true; btn.textContent = t('f.loading_btn'); btn.classList.add('loading');
-  result.innerHTML = `<div class="loading"><span class="ink-dots" aria-hidden="true"><i></i><i></i><i></i></span>${esc(t('loading'))}</div>`;
+  // loading 加「预期秒数 + 已等秒数」,压住「以为卡死」的焦虑(速赢·审计#速赢3)
+  result.innerHTML = `<div class="loading">
+    <div class="load-main"><span class="ink-dots" aria-hidden="true"><i></i><i></i><i></i></span>${esc(t('loading'))}</div>
+    <div class="load-hint">${esc(t('loading.hint'))} · <span id="load-sec">0s</span></div></div>`;
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  requestAnimationFrame(() => result.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }));
+  const loadStart = performance.now();
+  const loadTimer = setInterval(() => {
+    const el = document.getElementById('load-sec');
+    if (el) el.textContent = Math.round((performance.now() - loadStart) / 1000) + 's';
+  }, 500);
+  // 两段式流式(审计#3):命盘骨架秒出 → 易学解读逐字流入。降级:流式失败退回一次性 /api/ziwei。
   try {
+    await streamZiweiSubmit(payload);
+  } catch (err) {
+    lastZiweiData = null;
+    // 报错换人话:原始 err.message 常是技术串(排盘失败/格式),对用户没意义,收进 console。
+    // 关掉排盘弹窗让用户看到错误面板(否则弹窗盖在结果上,报错在背后没人看见),
+    // 附「重新填写」按钮再开弹窗,别把用户堵在死胡同。(速赢·审计#速赢5)
+    console.warn('[心易] 天命排盘出错:', err);
+    if (Mingli.isOpen?.()) Mingli.closeModal();
+    result.innerHTML = `<div class="reading err-panel">
+      <span class="err">${esc(t('err'))}${esc(t('err.retry'))}</span>
+      <button type="button" class="err-redo" id="err-redo">${esc(t('err.redo'))}</button></div>`;
+  } finally {
+    clearInterval(loadTimer);
+    btn.disabled = false; btn.textContent = t('f.submit'); btn.classList.remove('loading');
+  }
+
+  // ── 流式提交:读 /api/ziwei/stream 的 SSE,骨架先出、解读逐字 ──
+  async function streamZiweiSubmit(payload) {
+    const ctrl = new AbortController();
+    // 超时兜底:60s 没 done 就中断(避免永久转圈);已出骨架时按「解读超时」处理
+    const TIMEOUT = 60000;
+    let timedOut = false;
+    const timer = setTimeout(() => { timedOut = true; ctrl.abort(); }, TIMEOUT);
+
+    let res;
+    try {
+      res = await fetch('/api/ziwei/stream', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload), signal: ctrl.signal,
+      });
+    } catch (e) {
+      clearTimeout(timer);
+      // 流式请求本身发不出(网络/不支持)→ 退回一次性接口
+      return oneShotFallback(payload);
+    }
+    if (!res.ok || !res.body) { clearTimeout(timer); return oneShotFallback(payload); }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    let chartShown = false;
+    let fullText = '';
+    let readingBody = null, progressEl = null, secTimer = null;
+    const readStart = performance.now();
+
+    const finalizeReading = () => {
+      if (secTimer) { clearInterval(secTimer); secTimer = null; }
+      if (progressEl) progressEl.remove();
+      const sec = document.getElementById('yixue-stream'); sec?.classList.remove('streaming');
+    };
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split('\n'); buf = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          let ev; try { ev = JSON.parse(line.slice(6)); } catch { continue; }
+
+          if (ev.type === 'chart') {
+            // 骨架秒出:关弹窗,渲染工作台(解读区挂流式占位)
+            clearInterval(loadTimer);
+            if (Mingli.isOpen?.()) Mingli.closeModal();
+            const data = { type: 'ziwei', chart: ev.chart, sanfang: ev.sanfang, 三方四正解读表: ev.三方四正解读表 };
+            lastZiweiData = data; lastQuestion = payload.question;
+            // 无问题(不深化)不进流式态,直接完整工作台;有问题才挂逐字占位
+            result.innerHTML = renderWorkbench(data, payload.question, payload, { streaming: !!payload.question });
+            result.classList.remove('reveal', 'in'); window.inkReveal?.(result);
+            if (flyLinesOn) drawFlyLines(data.chart);
+            chartShown = true;
+            readingBody = document.getElementById('reading-body');
+            progressEl = document.getElementById('reading-progress');
+            const secEl = document.getElementById('reading-sec');
+            if (secEl) secTimer = setInterval(() => { secEl.textContent = Math.round((performance.now() - readStart) / 1000) + 's'; }, 500);
+
+          } else if (ev.type === 'crisis') {
+            finalizeReading();
+            lastZiweiData = null;
+            if (Mingli.isOpen?.()) Mingli.closeModal();
+            result.innerHTML = `<div class="reading crisis">${esc(ev.text)}</div>`;
+            clearTimeout(timer); return;
+
+          } else if (ev.type === 'delta' && ev.text) {
+            fullText += ev.text;
+            if (readingBody) { readingBody.innerHTML = mdRender(fullText); readingBody.scrollIntoView?.({ block:'nearest' }); }
+
+          } else if (ev.type === 'error') {
+            finalizeReading();
+            if (!chartShown) { clearTimeout(timer); throw new Error(ev.message || '排盘失败'); }
+            // 骨架已出、深化失败:保留盘,解读区给一句人话 + 重读按钮(不整页报错)
+            if (readingBody) readingBody.innerHTML = `<p class="reading-body"><span class="err">${esc(t('err.retry'))}</span></p>`;
+          }
+        }
+      }
+      clearTimeout(timer);
+      finalizeReading();
+
+      // 完成:回填全文 + 存命例库(此刻才有完整 text)
+      if (chartShown && lastZiweiData) {
+        if (fullText) lastZiweiData.text = fullText;
+        const saved = Mingli.save(payload, lastZiweiData);
+        if (!saved.ok && saved.reason) { setTimeout(() => alert(t('ml.' + saved.reason)), 300); }
+        else if (saved.ok) { Mingli.activeId = saved.id; Mingli.render(); }
+      }
+    } catch (e) {
+      clearTimeout(timer);
+      finalizeReading();
+      if (timedOut && chartShown) {
+        // 超时但骨架在:保留盘,解读区提示超时可重试,不整页崩
+        const rb = document.getElementById('reading-body');
+        if (rb) rb.innerHTML = `<p class="reading-body"><span class="err">${esc(t('stream.timeout'))}</span></p>`;
+        // 骨架有效,仍存命例(无 text)
+        if (lastZiweiData) Mingli.save(payload, lastZiweiData);
+        return;
+      }
+      if (!chartShown) return oneShotFallback(payload); // 骨架都没出 → 退一次性接口再试
+      throw e;
+    }
+  }
+
+  // 降级:流式不可用时退回一次性 /api/ziwei(保持老行为,不让用户卡死)
+  async function oneShotFallback(payload) {
     const res = await fetch('/api/ziwei', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || '排盘失败');
-
-    // 排盘成功(含危机短路):关闭弹窗,结果展示在 #result
     if (Mingli.isOpen?.()) Mingli.closeModal();
-
-    // 危机短路:只给温柔陪伴,不展示命盘
-    if (data.type === 'crisis') {
-      lastZiweiData = null;
-      result.innerHTML = `<div class="reading crisis">${esc(data.text)}</div>`;
-      return;
-    }
-
-    // 真排盘 + 三方四正恒展示;AI 深化有则附下方,无 Key 则降级提示
-    lastZiweiData = data;
-    lastQuestion = payload.question;
-    let html = renderZiwei(data.chart) + renderSanFang(data.sanfang, payload.question);
-    if (data.text) {
-      html += `<div class="reading"><div class="meta">${esc(t('airead'))}</div><div class="reading-body">${mdRender(data.text)}</div></div>`;
-    } else {
-      html += `<div class="reading"><div class="offline-note">${esc(t('offline_note'))}</div></div>`;
-    }
-    result.innerHTML = html;
-    result.classList.remove('reveal', 'in'); window.inkReveal?.(result); // 结果区整块显现(fx.js 钩子,reduced-motion 下 no-op)
+    if (data.type === 'crisis') { lastZiweiData = null; result.innerHTML = `<div class="reading crisis">${esc(data.text)}</div>`; return; }
+    lastZiweiData = data; lastQuestion = payload.question;
+    result.innerHTML = renderWorkbench(data, payload.question, payload);
+    result.classList.remove('reveal', 'in'); window.inkReveal?.(result);
     if (flyLinesOn) drawFlyLines(data.chart);
-    // 自动存入命例库(达上限则提示升级,不打断解读展示)
     const saved = Mingli.save(payload, data);
     if (!saved.ok && saved.reason) { setTimeout(() => alert(t('ml.' + saved.reason)), 300); }
     else if (saved.ok) { Mingli.activeId = saved.id; Mingli.render(); }
-  } catch (err) {
-    lastZiweiData = null;
-    result.innerHTML = `<div class="reading"><span class="err">${esc(t('err'))}${esc(err.message)}</span></div>`;
-  } finally {
-    btn.disabled = false; btn.textContent = t('f.submit'); btn.classList.remove('loading');
   }
+});
+
+// 报错面板「重新填写」→ 重开排盘弹窗(条件已回填,微调即可重排)
+result.addEventListener('click', (e) => {
+  if (!e.target.closest('#err-redo')) return;
+  Mingli.openModal?.();
 });
 
 // ===== 命例库(localStorage 持久化;存全文,点开即还原) =====
@@ -1057,10 +1331,27 @@ const Mingli = (() => {
   function load() { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } }
   function persist(list) { try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) { console.warn('命例库存储失败(可能超额)', e); } }
 
+  // 命例卡标题:别再 slice(0,6) 硬切中文问句(必断半词如「工作三年了很」)。
+  // 优先级:称呼 → 首个标签 → 问句切到首个标点(过长补「…」)→ 生肖 → 命例。(速赢·审计#速赢2)
+  function titleFrom(payload, c) {
+    const nm = (payload.name || '').trim();
+    if (nm) return nm;
+    const tag = (Array.isArray(payload.tags) ? payload.tags.filter(Boolean)[0] : '') || '';
+    if (tag) return tag.trim();
+    const q = (payload.question || '').trim();
+    if (q) {
+      // 切到首个句读标点前的短语;没有标点则取前 12 字。均补省略号表未完。
+      const seg = q.split(/[，。！？、；,.!?;：:\s]/)[0] || q;
+      const base = seg.length > 12 ? seg.slice(0, 12) : seg;
+      return base + (base.length < q.length ? '…' : '');
+    }
+    return (c.生肖 || '命例');
+  }
+
   // 从一次成功排盘结果构造命例条目;去重键=性别+公历生日+时间
   function entryFrom(payload, data) {
     const c = data.chart || {};
-    const name = (payload.name || payload.question?.slice(0, 6) || c.生肖 || '命例').trim();
+    const name = titleFrom(payload, c).trim();
     return {
       id: String(Date.now()) + Math.random().toString(36).slice(2, 6),
       label: name,
@@ -1122,18 +1413,18 @@ const Mingli = (() => {
       window.DateWheelSetDateTime?.(d0 || '1996-08-12', t0 || '14:30');
       if (e.question) f.querySelector('#f-question').value = e.question;
     } catch (_) {}
-    // 重渲染当时的结果(容错:老版本/异常数据不至于把结果区弄白)
+    // 重渲染当时的结果为三栏工作台(容错:老版本/异常数据不至于把结果区弄白)
     try {
-      let html = renderZiwei(e.data.chart) + renderSanFang(e.data.sanfang, e.question);
-      if (e.data.text) html += `<div class="reading"><div class="meta">${esc(t('airead'))}</div><div class="reading-body">${mdRender(e.data.text)}</div></div>`;
-      result.innerHTML = html;
+      const p = { ...(e.payload || {}), question: e.question || e.payload?.question || '' };
+      result.innerHTML = renderWorkbench(e.data, e.question, p);
       result.classList.remove('reveal', 'in'); window.inkReveal?.(result);
       if (flyLinesOn) drawFlyLines(e.data.chart);
     } catch (err) {
-      // 命盘渲染失败(数据不完整)→ 至少还原 AI 解读全文,不留白屏
+      // 命盘渲染失败(数据不完整)→ 至少还原易学解读全文,不留白屏
+      console.warn('[心易] 命例还原渲染出错:', err);
       result.innerHTML = e.data.text
-        ? `<div class="reading"><div class="meta">${esc(t('airead'))}</div><div class="reading-body">${mdRender(e.data.text)}</div></div>`
-        : `<div class="reading"><span class="err">${esc(t('err'))}${esc(err.message)}</span></div>`;
+        ? `<div class="reading"><span class="wb-block-tag">${esc(t('airead'))}</span><div class="reading-body">${mdRender(e.data.text)}</div></div>`
+        : `<div class="reading"><span class="err">${esc(t('err'))}${esc(t('err.retry'))}</span></div>`;
     }
     render();
     result.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1169,17 +1460,15 @@ const Mingli = (() => {
     return hay.includes(q);
   }
 
+  // 只展示最近一次排盘的单张卡(list 恒新→旧,取 list[0]);无历史则整块隐藏(不占位)
   function render() {
     const list = load();
     const grid = document.getElementById('ml-grid');
-    const count = document.getElementById('ml-count');
+    const section = document.getElementById('mingli');
     if (!grid) return;
-    if (count) count.textContent = `${list.length}/${cap()}`;
-    const q = query.trim().toLowerCase();
-    const shown = list.filter(e => matches(e, q));
-    grid.innerHTML = list.length
-      ? (shown.length ? shown.map(card).join('') : `<div class="ml-empty">${esc(t('ml.no_result'))}</div>`)
-      : `<div class="ml-empty">${esc(t('ml.empty'))}</div>`;
+    const latest = list[0];
+    grid.innerHTML = latest ? card(latest) : '';
+    if (section) section.style.display = latest ? '' : 'none';
   }
   function setQuery(q) { query = q || ''; render(); }
 
@@ -1232,8 +1521,10 @@ const Mingli = (() => {
     save, remove, restore, render, setQuery, cap, load,
     openModal, closeModal, isOpen, selTags, setTags,
     get activeId() { return activeId; }, set activeId(v) { activeId = v; },
+    __titleFrom: titleFrom,  // 供回归测试直接验证标题逻辑(不改行为)
   };
 })();
+window.Mingli = Mingli;  // 暴露命例库 API(调试 + 回归测试用;不改任何行为)
 
 // 事件:点卡片还原 / 点✕删除
 document.getElementById('ml-grid').addEventListener('click', (e) => {
@@ -1246,9 +1537,7 @@ document.getElementById('ml-grid').addEventListener('keydown', (e) => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('ml-card')) { e.preventDefault(); Mingli.restore(e.target.getAttribute('data-id')); }
 });
 // 搜索过滤
-document.getElementById('ml-search')?.addEventListener('input', (e) => Mingli.setQuery(e.target.value));
-
-// 新增命例 → 打开弹窗;关闭途径:✕ / 取消 / 背景点击 / ESC
+// 开始排盘 → 打开弹窗;关闭途径:✕ / 取消 / 背景点击 / ESC
 document.getElementById('ml-add').addEventListener('click', () => Mingli.openModal());
 document.getElementById('ml-close').addEventListener('click', () => Mingli.closeModal());
 document.getElementById('ml-cancel').addEventListener('click', () => Mingli.closeModal());
@@ -1309,6 +1598,38 @@ result.addEventListener('click', (e) => {
   if (sanfang && sfszEl) sfszEl.outerHTML = renderSanFang(sanfang, lastQuestion);
 });
 
+// 左栏「重新排盘」:打开排盘弹窗(表单已在提交/还原时回填当前条件,可微调后重排)
+result.addEventListener('click', (e) => {
+  if (!e.target.closest('#wc-redo')) return;
+  Mingli.openModal?.();
+});
+
+// 右栏「进对话追问」:跨页接力——把刚生成的解读+生辰+所问经 sessionStorage 带进 /chat,
+// chat 页把解读作为首条 AI 气泡续接、就此追问不重排(见 chat.html applyHandoff)。
+result.addEventListener('click', (e) => {
+  const a = e.target.closest('#to-chat'); if (!a) return;
+  e.preventDefault();
+  const p = lastPayload, d = lastZiweiData;
+  // 解读全文:优先易学解读长文,否则退回三方四正总结+段落拼一段
+  let reading = (d && d.text) ? String(d.text) : '';
+  if (!reading && d && d.sanfang) {
+    const s = d.sanfang;
+    reading = [s.标题, (s.chips || []).join(' · '), ...(s.段落 || [])].filter(Boolean).join('\n\n');
+  }
+  const handoff = {
+    from: 'tianming',
+    mode: 'tianming',
+    question: lastQuestion || '',
+    reading,
+    profile: (p && p.datetime && p.gender)
+      ? { datetime: p.datetime, gender: p.gender, name: p.name || '', location: p.place || p.location || '' }
+      : null,
+    ts: Date.now(),
+  };
+  try { sessionStorage.setItem('xy_handoff', JSON.stringify(handoff)); } catch {}
+  location.href = '/chat';
+});
+
 // 年份/大限 步进器:‹›按钮点选事件委托到 #result;切换年份只重新排盘(不带 question),
 // 不重触发 AI 深化(AI 深化只锚定命宫三方四正,与查看年无关,避免重复耗 Key)
 result.addEventListener('click', async (e) => {
@@ -1324,10 +1645,12 @@ result.addEventListener('click', async (e) => {
     });
     const data = await res.json();
     if (!res.ok || data.type !== 'ziwei') throw new Error(data.error || '排盘失败');
-    // 只替换命盘与三方四正解读表(运限随查看年变化);已展示的 AI 深化文字(锚定命宫,与年份无关)保留不变
+    // 只替换命盘与三方四正解读表(运限随查看年变化);已展示的易学解读文字(锚定命宫,与年份无关)保留不变
     lastZiweiData = { ...lastZiweiData, chart: data.chart, sanfang: data.sanfang, 三方四正解读表: data.三方四正解读表 };
+    // 命盘落在中栏 .wb-mid;若无工作台容器(容错)则退回 #result 顶部
+    const midCol = result.querySelector('.wb-mid');
     panel?.remove();
-    result.insertAdjacentHTML('afterbegin', renderZiwei(data.chart));
+    (midCol || result).insertAdjacentHTML('afterbegin', renderZiwei(data.chart));
     drawFlyLines(data.chart);
   } catch (err) {
     panel?.classList.remove('loading-year');
@@ -1410,6 +1733,39 @@ window.addEventListener('resize', () => {
 // ===== 紫微斗数 命盘渲染(消费 /api/ziwei 真排盘数据) =====
 const HUA = { lu: '禄', quan: '权', ke: '科', ji: '忌' };
 
+// ===== 命盘英文显示映射(审计#5:EN 下命盘不再硬中文)=====
+// 宫名 → 英文(标准紫微译名);星名 → 罗马音(命盘/速查/三方四正统一同一套,避免同星两名)。
+const PALACE_EN = {
+  命宫:'Life', 兄弟:'Siblings', 夫妻:'Spouse', 子女:'Children', 财帛:'Wealth', 疾厄:'Health',
+  迁移:'Travel', 仆役:'Friends', 奴仆:'Friends', 交友:'Friends', 官禄:'Career', 事业:'Career', 田宅:'Property', 福德:'Fortune', 父母:'Parents',
+};
+// 星名罗马音:14 主星拼写必须与引擎 src/ziwei.js 的 STAR_EN 完全一致(无空格式),
+// 否则命盘(此处渲染)与三方四正 chip(引擎生成)会「同星两名」(审计#5 明确点名的坑)。
+const STAR_EN = {
+  // 十四主星(与引擎对齐:无空格)
+  紫微:'Ziwei', 天机:'Tianji', 太阳:'Taiyang', 武曲:'Wuqu', 天同:'Tiantong', 廉贞:'Lianzhen', 天府:'Tianfu',
+  太阴:'Taiyin', 贪狼:'Tanlang', 巨门:'Jumen', 天相:'Tianxiang', 天梁:'Tianliang', 七杀:'Qisha', 破军:'Pojun',
+  // 常见辅星/煞星/杂曜(引擎不译这些,前端补,风格统一无空格)
+  左辅:'Zuofu', 右弼:'Youbi', 文昌:'Wenchang', 文曲:'Wenqu', 天魁:'Tiankui', 天钺:'Tianyue',
+  禄存:'Lucun', 擎羊:'Qingyang', 陀罗:'Tuoluo', 火星:'Huoxing', 铃星:'Lingxing', 地空:'Dikong', 地劫:'Dijie',
+  天马:'Tianma', 天姚:'Tianyao', 天刑:'Tianxing', 红鸾:'Hongluan', 天喜:'Tianxi', 咸池:'Xianchi',
+  华盖:'Huagai', 孤辰:'Guchen', 寡宿:'Guasu', 破碎:'Posui', 八座:'Bazuo', 三台:'Santai', 天寿:'Tianshou', 天福:'Tianfu',
+  // 常见杂曜(iztro 会安,EN 下补齐避免夹中文)
+  天月:'Tianyue2', 龙池:'Longchi', 凤阁:'Fengge', 截路:'Jielu', 阴煞:'Yinsha', 恩光:'Enguang', 天官:'Tianguan',
+  月德:'Yuede', 天哭:'Tianku', 天虚:'Tianxu', 天使:'Tianshi', 天巫:'Tianwu', 旬空:'Xunkong', 蜚廉:'Feilian',
+  封诰:'Fenggao', 年解:'Nianjie', 解神:'Jieshen', 天才:'Tiancai', 天厨:'Tianchu', 天贵:'Tiangui', 台辅:'Taifu',
+  天空:'Tiankong', 天德:'Tiande', 天伤:'Tianshang', 天官贵:'Tianguan', 天福贵:'Tianfu', 蜚廉星:'Feilian',
+};
+// 兜底:未收录的星名(极冷门杂曜)→ 至少不夹中文,标为 "Star:原名首字" 太丑;这里退回原文(zh 也会显示),
+// 但绝大多数常见星已覆盖。真正需要时再补 map,不做机器音译(易错)。
+const JU_EN = { 水二局:'Water-2', 木三局:'Wood-3', 金四局:'Metal-4', 土五局:'Earth-5', 火六局:'Fire-6' };
+const ZODIAC_EN = { 鼠:'Rat', 牛:'Ox', 虎:'Tiger', 兔:'Rabbit', 龙:'Dragon', 蛇:'Snake', 马:'Horse', 羊:'Goat', 猴:'Monkey', 鸡:'Rooster', 狗:'Dog', 猪:'Pig' };
+// 显示器:EN 下走映射,命中不了则退回原文(不至于变空)
+const palaceLbl = (z) => (LANG === 'en' && PALACE_EN[z]) ? PALACE_EN[z] : z;
+const starLbl   = (z) => (LANG === 'en' && STAR_EN[z])   ? STAR_EN[z]   : z;
+const juLbl     = (z) => (LANG === 'en' && JU_EN[z])     ? JU_EN[z]     : z;
+const zodiacLbl = (z) => (LANG === 'en' && ZODIAC_EN[z]) ? ZODIAC_EN[z] : z;
+
 let flyLinesOn = false; // 四化飞星连线 开关状态(跨切换年份/宫位点选保持,纯前端记忆)
 
 function renderZiwei(c) {
@@ -1448,12 +1804,12 @@ function renderZiwei(c) {
       return out;
     };
 
-    // 主星:有化则给星名上色
+    // 主星:有化则给星名上色(EN 走罗马音 starLbl,与速查条/三方四正同一套,避免同星两名)
     const majors = (P.主星 || []).map((s) =>
-      `<span class="zw-star main${s.化 ? ` hua-${s.化}` : ''}">${esc(s.名)}${s.亮 ? `<span class="b">${esc(s.亮)}</span>` : ''}${s.化 ? `<span class="zw-hua ${s.化}">${HUA[s.化]}</span>` : ''}${runBadges(s)}</span>`).join('');
+      `<span class="zw-star main${s.化 ? ` hua-${s.化}` : ''}">${esc(starLbl(s.名))}${s.亮 ? `<span class="b">${esc(s.亮)}</span>` : ''}${s.化 ? `<span class="zw-hua ${s.化}">${HUA[s.化]}</span>` : ''}${runBadges(s)}</span>`).join('');
     const empty = majors ? '' : `<span class="zw-star" style="color:var(--faint)">${en ? '(empty)' : '空宫'}</span>`;
     const minor = (P.辅星 || []).slice(0, 6).map((s) =>
-      `${esc(s.名)}${s.化 ? `<span class="zw-hua ${s.化}" style="margin-left:1px">${HUA[s.化]}</span>` : ''}${runBadges(s)}`).join(' · ');
+      `${esc(starLbl(s.名))}${s.化 ? `<span class="zw-hua ${s.化}" style="margin-left:1px">${HUA[s.化]}</span>` : ''}${runBadges(s)}`).join(' · ');
 
     // 当前大限宫显示 ◉ 前缀
     const rangeHtml = P.当前大限
@@ -1463,15 +1819,15 @@ function renderZiwei(c) {
     return `<div class="zw-cell ${cls}" data-gong="${esc(P.宫)}" style="grid-column:${pos[0]};grid-row:${pos[1]}">
       <div class="zw-stars">${majors}${empty}</div>
       ${minor ? `<div class="zw-minor">${minor}</div>` : ''}
-      <div class="zw-foot"><span class="gname">${esc(P.宫)}${P.身宫 ? '<span class="shen">身</span>' : ''}</span>${rangeHtml}<span class="gz">${esc(P.天干)}${esc(P.地支)}</span></div>
+      <div class="zw-foot"><span class="gname">${esc(palaceLbl(P.宫))}${P.身宫 ? `<span class="shen">${en ? 'B' : '身'}</span>` : ''}</span>${rangeHtml}<span class="gz">${esc(P.天干)}${esc(P.地支)}</span></div>
     </div>`;
   }).join('');
 
   const b = c.基本 || {};
   const center = `<div class="zw-center">
-    <div class="zc-name">${esc(b.性别 || '')}${c.生肖 ? ` · ${esc(c.生肖)}${en ? '' : '相'}` : ''}</div>
-    <div class="zc-ju">${esc(c.五行局 || '')}</div>
-    <div class="zc-row">${en ? 'Life' : '命主'} <b>${esc(c.命主 || '')}</b> · ${en ? 'Body' : '身主'} <b>${esc(c.身主 || '')}</b></div>
+    <div class="zc-name">${esc(b.性别 || '')}${c.生肖 ? ` · ${esc(zodiacLbl(c.生肖))}${en ? '' : '相'}` : ''}</div>
+    <div class="zc-ju">${esc(juLbl(c.五行局 || ''))}</div>
+    <div class="zc-row">${en ? 'Life' : '命主'} <b>${esc(starLbl(c.命主 || ''))}</b> · ${en ? 'Body' : '身主'} <b>${esc(starLbl(c.身主 || ''))}</b></div>
     <div class="zc-row">${esc(c.四柱 || '')}　${esc(b.时辰 || '')}</div>
     <div class="zc-row" style="color:var(--faint)">${esc(b.公历生日 || '')}</div>
   </div>`;
@@ -1490,7 +1846,7 @@ function renderZiwei(c) {
     : { lu: '化禄', quan: '化权', ke: '化科', ji: '化忌' };
   const mutTags = ['lu', 'quan', 'ke', 'ji'].flatMap((key) =>
     mutMap[key].map(({ star, gong }) =>
-      `<span class="zw-mut-tag ${key}"><span class="lbl">${mutLbls[key]}</span><span class="star-n">${esc(star)}</span><span class="gong-n">· ${esc(gong)}</span></span>`
+      `<span class="zw-mut-tag ${key}"><span class="lbl">${mutLbls[key]}</span><span class="star-n">${esc(starLbl(star))}</span><span class="gong-n">· ${esc(palaceLbl(gong))}</span></span>`
     )
   );
 
@@ -1500,7 +1856,7 @@ function renderZiwei(c) {
   const runMutTags = (mutagen, cls) => (mutagen || []).map((star, i) => {
     const key = ['lu', 'quan', 'ke', 'ji'][i];
     const gong = starGong[star];
-    return `<span class="zw-mut-tag ${cls} ${key}"><span class="lbl">${mutLbls[key]}</span><span class="star-n">${esc(star)}</span>${gong ? `<span class="gong-n">· ${esc(gong)}</span>` : ''}</span>`;
+    return `<span class="zw-mut-tag ${cls} ${key}"><span class="lbl">${mutLbls[key]}</span><span class="star-n">${esc(starLbl(star))}</span>${gong ? `<span class="gong-n">· ${esc(palaceLbl(gong))}</span>` : ''}</span>`;
   }).join('');
   const 运限 = c.运限 || {};
   const decLbl = en ? 'Decade mutagens' : '大限四化';
@@ -1543,8 +1899,9 @@ function renderZiwei(c) {
   </div>`;
 
   const flyChecked = flyOn ? 'checked' : '';
+  const redoLbl = en ? 'New reading' : '重新排盘';
   return `<div class="zw-panel">
-    <div class="zw-cap"><h3>${title}</h3>${yearStepper}<span class="zw-demo" style="color:var(--faint);border-color:var(--line)">${esc(corr)}</span></div>
+    <div class="zw-cap"><h3>${title}</h3>${yearStepper}<span class="zw-demo" style="color:var(--faint);border-color:var(--line)">${esc(corr)}</span><button type="button" class="zw-redo" id="wc-redo">${esc(redoLbl)}</button></div>
     <div class="zw-grid">${cells}${center}<svg class="zw-fly-svg" style="display:${flyOn ? '' : 'none'}"></svg></div>
     <div class="zw-legend">
       <span class="ming"><i></i>${lgMing}</span>
@@ -1588,6 +1945,8 @@ function renderGeju(c) {
 }
 
 // 三方四正解读(消费 /api/ziwei 的规则版摘要;question 由前端补回)
+// 右栏拆两块:① 三方四正 总结(标题 + 四宫 chips) ② 三方四正 解读(所问 + 段落白话)
+// 外层仍为 .sfsz —— 宫位点选联动时整块替换,兼容旧事件委托选择器。
 function renderSanFang(s, question) {
   if (!s) return '';
   const en = LANG === 'en';
@@ -1595,12 +1954,86 @@ function renderSanFang(s, question) {
   const chips = (s.chips || []).map((c) => `<span class="chip">${esc(c)}</span>`).join('');
   const ps = (s.段落 || []).map((x) => `<p>${esc(x)}</p>`).join('');
   const leadq = q ? `<div class="lead-q">${en ? 'You asked: ' : '你问：'}${esc(q)}</div>` : '';
+  const sumTag = en ? 'Triad · Summary' : '三方四正 · 总结';
+  const detTag = en ? 'Triad · Reading' : '三方四正 · 解读';
   return `<div class="sfsz">
-    <div class="t">${esc(s.标题 || '')}</div>
-    <div class="sf-chips">${chips}</div>
-    ${leadq}
-    ${ps}
+    <div class="sf-summary">
+      <span class="wb-block-tag">${esc(sumTag)}</span>
+      <div class="t">${esc(s.标题 || '')}</div>
+      <div class="sf-chips">${chips}</div>
+    </div>
+    <div class="sf-detail">
+      <span class="wb-block-tag">${esc(detTag)}</span>
+      ${leadq}
+      ${ps}
+    </div>
   </div>`;
+}
+
+// 排盘条件回显(左栏):从 payload 还原「生日 / 时辰 / 地点 / 类型 / 所问 / 标签」,配「重新排盘」。
+function renderConditions(payload) {
+  if (!payload) return '';
+  const en = LANG === 'en';
+  const p = payload;
+  const dt = (p.datetime || '').trim();                       // 公历 "YYYY-MM-DD HH:mm"
+  const [date, time] = dt ? dt.split(' ') : ['', ''];
+  const tags = Array.isArray(p.tags) ? p.tags.filter(Boolean) : [];
+  const L = en
+    ? { cap:'Chart conditions', sub:'the four inputs + what you asked', gender:'Gender', date:'Birth date', time:'Birth time', place:'Birthplace', tz:'True solar time', q:'Your question', tags:'Tags', redo:'New reading', male:'Male', female:'Female', none:'—' }
+    : { cap:'排盘条件', sub:'出生四要素 + 此刻所问', gender:'性别', date:'出生日期', time:'出生时间', place:'出生地点', tz:'真太阳时', q:'所问事项', tags:'标签', redo:'重新排盘', male:'男', female:'女', none:'—' };
+  const genderTxt = p.gender === '男' ? L.male : (p.gender === '女' ? L.female : (p.gender || L.none));
+  const item = (k, v, cls) => v ? `<div class="wc-item"><span class="wk">${esc(k)}</span><span class="wv ${cls||''}">${esc(v)}</span></div>` : '';
+  const tagsBlock = tags.length
+    ? `<div class="wc-item"><span class="wk">${esc(L.tags)}</span><div class="wc-tags">${tags.map((tg) => `<span class="wt">${esc(tg)}</span>`).join('')}</div></div>`
+    : '';
+  return `<aside class="wb-cond" aria-label="${esc(L.cap)}">
+    <div class="wc-head"><h3>${esc(L.cap)}</h3><div class="wc-sub">${esc(L.sub)}</div></div>
+    <div class="wc-body">
+      ${item(L.gender, genderTxt)}
+      ${item(L.date, date)}
+      ${item(L.time, time)}
+      ${item(L.place, p.place)}
+      ${item(L.tz, p.timezone)}
+      ${tagsBlock}
+      ${item(L.q, p.question, 'q')}
+    </div>
+    <div class="wc-foot"><button type="button" class="wc-redo" id="wc-redo">${esc(L.redo)}</button></div>
+  </aside>`;
+}
+
+// 三栏工作台装配:左 条件回显 / 中 命盘方盘(renderZiwei)/ 右 三方四正(总结+解读)+ 易学解读。
+// 三处渲染点(提交、命例还原)统一走此装配器,保证结构一致、右栏顺序一致。
+function renderWorkbench(data, question, payload, opts = {}) {
+  const chartHtml = renderZiwei(data.chart);
+  const sanfangHtml = renderSanFang(data.sanfang, question);
+  // 易学解读改为全宽区块置于三栏之下:长文独立成段、限宽阅读,三栏高度就此平衡。
+  // 「决定权在你」从底部小字提升为解读区顶部一句显眼话(速赢·审计#速赢4)。
+  // 三态:streaming(骨架先出,解读逐字流入)/ 有 text(还原/一次性)/ 无 text(离线纯盘)。
+  let yixueHtml;
+  if (opts.streaming) {
+    // 流式态:解读区先挂进度骨架 + 空 .reading-body 目标,delta 逐字填(审计#3)
+    yixueHtml = `<section class="yixue-full streaming" id="yixue-stream">
+      <span class="wb-block-tag">${esc(t('airead'))}</span>
+      <p class="reading-agency">${esc(t('reading.agency'))}</p>
+      <div class="reading-progress" id="reading-progress">
+        <span class="ink-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="rp-txt">${esc(t('stream.deepening'))}</span><span class="rp-sec" id="reading-sec">0s</span></div>
+      <div class="reading-body" id="reading-body"></div></section>`;
+  } else if (data.text) {
+    yixueHtml = `<section class="yixue-full"><span class="wb-block-tag">${esc(t('airead'))}</span>
+        <p class="reading-agency">${esc(t('reading.agency'))}</p>
+        <div class="reading-body">${mdRender(data.text)}</div></section>`;
+  } else {
+    yixueHtml = `<section class="yixue-full offline"><div class="offline-note">${esc(t('offline_note'))}</div></section>`;
+  }
+  // 直接按当前语言渲染文案:renderWorkbench 在提交后动态插入,applyI18n 不会二次扫描它,
+  // 靠 data-i18n 会让 EN 用户看到中文残留(速赢·审计#速赢6)。
+  const chatBtn = `<a href="/chat" class="to-chat" id="to-chat">${esc(t('chat.ask'))}</a>`;
+  return `<div class="workbench">
+    <div class="wb-col wb-mid">${chartHtml}</div>
+    <div class="wb-col wb-right">${sanfangHtml}${chatBtn}</div>
+  </div>
+  ${yixueHtml}`;
 }
 
 function esc(s) { return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }

@@ -96,6 +96,154 @@
   .xlink .xt span { color:var(--faint); font-size:12px; }
   .xlink .arr { margin-left:auto; color:var(--faint); font-size:18px; }
 
+  /* ===== 地运两栏工作台(中 空间能量方盘 / 右 调场建议);表单收进弹窗,页面初始只留「住房定位」入口 ===== */
+  .dy-workbench { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:22px; align-items:stretch; margin-top:8px; }
+  .dy-col { min-width:0; display:flex; flex-direction:column; }
+  .dy-col.dy-mid { }
+  .dy-col.dy-right { }
+  /* 「住房定位」入口按钮(hero 主行动,与天命页 开始排盘 同款) */
+  .dy-start { display:inline-flex; align-items:center; justify-content:center; margin:24px auto 0;
+    font:inherit; font-size:15px; font-weight:700; color:#F4F1EA; background:var(--ink-strong);
+    border:1px solid transparent; border-radius:999px; cursor:pointer; padding:12px 34px; letter-spacing:3px;
+    box-shadow:0 14px 30px -20px rgba(31,43,49,.9);
+    transition:transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease); }
+  .dy-start:hover { transform:translateY(-1px); background:#2A3841; }
+  .dy-start:focus-visible { outline:2px solid var(--cinnabar); outline-offset:3px; }
+  /* 弹窗(骨架/开关逻辑同天命页) */
+  .dy-modal { position:fixed; inset:0; z-index:80; display:none; align-items:flex-start; justify-content:center; padding:40px 16px; overflow:auto; }
+  .dy-modal.open { display:flex; }
+  .dy-backdrop { position:fixed; inset:0; background:rgba(31,43,49,.42); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); animation:dyFade var(--dur-1) var(--ease); }
+  .dy-dialog { position:relative; z-index:1; width:100%; max-width:560px; max-height:90vh; overflow:auto; border-radius:20px; padding:0; animation:dyRise var(--dur-2) var(--ease); }
+  @keyframes dyFade { from { opacity:0; } }
+  @keyframes dyRise { from { opacity:0; transform:translateY(14px); } }
+  .dy-dhead { display:flex; align-items:flex-start; gap:12px; padding:24px 26px 14px; }
+  .dy-dhead .dt { flex:1; min-width:0; }
+  .dy-dhead h3 { font-family:"Songti SC","Noto Serif SC",serif; font-size:20px; letter-spacing:3px; color:var(--accent); margin:0; }
+  .dy-dhead .dsub { font-size:12.5px; color:var(--muted); margin-top:6px; letter-spacing:.3px; }
+  .dy-close { flex:none; width:32px; height:32px; border-radius:50%; border:1px solid var(--line); background:var(--bg-2);
+    color:var(--muted); cursor:pointer; font-size:16px; line-height:1; display:grid; place-items:center;
+    transition:color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease); }
+  .dy-close:hover { color:var(--cinnabar); border-color:rgba(166,64,47,.4); }
+  .dy-close:focus-visible { outline:2px solid var(--cinnabar); outline-offset:2px; }
+  .dy-modal form#f { padding:0 26px 24px; }
+  .dy-modal form#f .form-cap { display:none; } /* 标题走弹窗头 */
+  .ml-foot { display:flex; gap:12px; margin-top:6px; }
+  .ml-foot .btn-cancel { flex:none; min-width:96px; }
+  .ml-foot button#btn { flex:1; margin-top:0; }
+  .btn-cancel { font:inherit; font-size:15px; letter-spacing:2px; color:var(--muted); background:var(--bg-2);
+    border:1px solid var(--line); border-radius:12px; padding:0 18px; min-height:50px; cursor:pointer;
+    transition:color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease); }
+  .btn-cancel:hover { color:var(--ink); border-color:var(--accent-2); }
+  /* 三道说明卡:横排三列,置于页面最下方 */
+  .dao-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:40px; align-items:stretch; }
+  .dao-cards .cardx { display:flex; flex-direction:column; }
+  @media (max-width:900px){ .dao-cards { grid-template-columns:1fr; } }
+  .dy-panel { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:26px;
+    box-shadow:var(--shadow); display:flex; flex-direction:column; height:100%; }
+  .dy-panel .dt { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:6px; flex-wrap:wrap; }
+  .dy-panel .dt h3 { font-family:"Songti SC","Noto Serif SC",serif; font-size:19px; letter-spacing:2px; color:var(--ink-strong); margin:0; font-weight:700; }
+  .dy-panel .dsub { font-size:12px; color:var(--faint); letter-spacing:.5px; width:100%; margin-top:2px; }
+  /* 示例角标:提示这是页面加载的样例结果(加大加深,别再是 10px 低对比)(审计#2)*/
+  .dy-example { font-family:var(--mono); font-size:11.5px; letter-spacing:1.5px; font-weight:700; color:#fff;
+    background:var(--gold); border:1px solid var(--gold); border-radius:999px; padding:3px 11px; flex:none; }
+
+  /* 示例态:整块视觉降级(降透明 + 斜纹),让「这不是你的结果」一眼可辨(审计#2)*/
+  .dy-panel.is-example, .dy-detail.is-example { position:relative; opacity:.62; }
+  .dy-panel.is-example::after, .dy-detail.is-example::after { content:""; position:absolute; inset:0; pointer-events:none;
+    border-radius:inherit; background:repeating-linear-gradient(45deg, transparent 0 11px, rgba(168,131,76,.09) 11px 22px); }
+  /* 示例顶部横幅:说清「下面是示例」+「填我的生日→」CTA(审计#2)*/
+  .dy-eg-banner { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:0 0 16px;
+    padding:11px 16px; font-size:13px; line-height:1.6; color:var(--ink);
+    background:rgba(168,131,76,.13); border:1px solid rgba(168,131,76,.4); border-radius:12px; }
+  .dy-eg-banner .egb-txt { flex:1 1 auto; min-width:180px; }
+  .dy-eg-banner .egb-cta { flex:none; font:inherit; font-size:12.5px; font-weight:700; letter-spacing:.5px; cursor:pointer;
+    color:#fff; background:var(--cinnabar); border:none; border-radius:9px; padding:7px 15px; transition:background .15s, transform .15s; }
+  .dy-eg-banner .egb-cta:hover { background:#b8492f; transform:translateY(-1px); }
+  .dy-eg-banner .egb-cta:focus-visible { outline:2px solid var(--cinnabar); outline-offset:3px; }
+
+  /* 字段级校验:红边 + 下方红字(审计#2)*/
+  .inkline.field-invalid { border-color:var(--cinnabar) !important; box-shadow:0 0 0 2px rgba(166,64,47,.14); }
+  .field-err { font-size:12px; color:var(--cinnabar); margin-top:6px; letter-spacing:.3px; }
+  /* 排盘前占位(中/右栏空态) */
+  .dy-placeholder { flex:1 1 auto; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:12px; text-align:center; color:var(--faint); padding:48px 24px; }
+  .dy-placeholder svg { width:44px; height:44px; stroke:var(--line); stroke-width:1.2; fill:none; opacity:.8; }
+  .dy-placeholder .pt { font-family:var(--serif); font-size:15px; letter-spacing:2px; color:var(--muted); }
+  .dy-block-tag { display:inline-flex; align-items:center; gap:7px; font-family:var(--mono); font-size:10.5px;
+    letter-spacing:2px; text-transform:uppercase; font-weight:700; color:var(--cinnabar);
+    background:var(--cinnabar-soft); border:1px solid rgba(166,64,47,.24); border-radius:999px; padding:3px 10px; }
+
+  /* ---- 空间能量方盘(八方位 3×3,北上;中央坐向;吉方墨绿 / 凶方赭 / 诉求方描朱边) ---- */
+  .dy-plate { display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:1fr; gap:9px; margin-top:18px; }
+  .dy-cell { position:relative; border:1px solid var(--line); border-radius:14px; padding:14px 8px; text-align:center;
+    background:var(--bg-2); min-height:104px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    transition:box-shadow var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease); }
+  .dy-cell.good { border-color:var(--good-line); background:var(--good-bg); }
+  .dy-cell.bad  { border-color:var(--bad-line);  background:var(--bad-bg); }
+  .dy-cell.good:hover { box-shadow:inset 0 0 22px -8px rgba(78,107,82,.5); border-color:var(--good); }
+  .dy-cell.bad:hover  { box-shadow:inset 0 0 22px -8px rgba(168,94,51,.45); border-color:var(--bad); }
+  /* 诉求方位:描朱砂边 + 角标 */
+  .dy-cell.goal { border-color:var(--cinnabar); box-shadow:inset 0 0 0 1px var(--cinnabar); }
+  .dy-cell.goal::after { content:"诉求"; position:absolute; top:6px; right:6px; font-size:9px; color:#fff;
+    background:var(--cinnabar); border-radius:5px; padding:1px 5px; letter-spacing:1px; }
+  .dy-cell .dir { font-size:11px; color:var(--faint); letter-spacing:1px; }
+  .dy-cell .star { font-family:"Songti SC","Noto Serif SC",serif; font-size:19px; letter-spacing:1px; color:var(--ink-strong); }
+  .dy-cell.good .star { color:var(--good); } .dy-cell.bad .star { color:var(--bad); }
+  .dy-cell .lv { font-size:10px; letter-spacing:1px; color:var(--faint); }
+  .dy-cell.good .lv { color:var(--good); } .dy-cell.bad .lv { color:var(--bad); }
+  /* 中央坐向格 */
+  .dy-cell.center { border-color:rgba(168,131,76,.45); background:var(--card); box-shadow:0 0 22px -8px var(--glow); }
+  .dy-cell.center .gc { font-family:"Songti SC","Noto Serif SC",serif; font-size:26px; letter-spacing:2px; color:var(--ink-strong); }
+  .dy-cell.center .gl { font-size:10px; color:var(--muted); letter-spacing:1px; }
+  /* 白话 TL;DR:术语墙前的一句结论,朱砂描边显眼(审计#4) */
+  .dy-tldr { margin:14px 0 4px; padding:11px 15px; font-size:14px; line-height:1.7; color:var(--ink);
+    background:var(--cinnabar-soft); border-left:3px solid var(--cinnabar); border-radius:0 10px 10px 0; }
+  /* 可点方位格:光标 + 选中态描边(审计#4) */
+  .dy-cell.tapable { cursor:pointer; }
+  .dy-cell.tapable:focus-visible { outline:2px solid var(--cinnabar); outline-offset:2px; }
+  .dy-cell.tapable.on { box-shadow:inset 0 0 0 2px var(--cinnabar); }
+  /* 「点任一方位…」提示 + 展开的白话详情条 */
+  .dy-tap-hint { margin-top:10px; text-align:center; font-size:11.5px; color:var(--faint); letter-spacing:.5px; }
+  .dy-cell-detail { margin-top:12px; padding:13px 16px; border:1px solid var(--line); border-radius:12px;
+    background:var(--card); box-shadow:var(--shadow-soft); }
+  .dy-cell-detail .dcd-head { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:6px; }
+  .dy-cell-detail .dcd-head b { font-family:"Songti SC","Noto Serif SC",serif; font-size:15px; color:var(--ink-strong); letter-spacing:1px; }
+  .dy-cell-detail .dcd-lv { font-size:11px; color:var(--muted); letter-spacing:1px; }
+  .dy-cell-detail .dcd-bh { margin:0; font-size:14px; line-height:1.75; color:var(--ink); }
+  .dy-plate-legend { display:flex; gap:18px; justify-content:center; margin-top:16px; font-size:11px; color:var(--faint); flex-wrap:wrap; }
+  .dy-plate-legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:middle; }
+  .dy-plate-legend .g i { background:var(--good); } .dy-plate-legend .b i { background:var(--bad); }
+  .dy-plate-legend .goal i { background:var(--cinnabar); }
+  /* 底部方位速览卡(财位/诉求/次选/避开) */
+  .dy-dircards { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:20px; }
+  .dy-dircard { border:1px solid var(--line); border-radius:12px; padding:12px 10px; text-align:center; background:var(--bg-2); }
+  .dy-dircard .k { font-size:11px; color:var(--faint); letter-spacing:1px; margin-bottom:4px; }
+  .dy-dircard .v { font-family:"Songti SC","Noto Serif SC",serif; font-size:19px; font-weight:700; color:var(--ink-strong); letter-spacing:1px; }
+  .dy-dircard.good .v { color:var(--good); } .dy-dircard.bad .v { color:var(--bad); }
+
+  /* ---- 调场建议卡(优先调整 / 需要避开 / 执行节奏)---- */
+  .dy-tiao { display:flex; flex-direction:column; gap:14px; margin-top:18px; flex:1 1 auto; }
+  /* 进对话追问按钮(带当前地运结果跳 /chat) */
+  .to-chat { margin-top:16px; display:flex; align-items:center; justify-content:center; gap:8px;
+    font-family:"Songti SC","Noto Serif SC",serif; font-size:15px; font-weight:700; letter-spacing:1px; text-decoration:none;
+    color:#F4F1EA; background:var(--cinnabar); border:1px solid transparent; border-radius:14px; padding:14px 18px;
+    box-shadow:0 14px 30px -20px rgba(166,64,47,.8); transition:transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease); }
+  .to-chat:hover { transform:translateY(-1px); background:#b8492f; }
+  .to-chat:focus-visible { outline:2px solid var(--cinnabar); outline-offset:3px; }
+  .tiao-card { border:1px solid var(--line); border-radius:14px; padding:16px 18px; background:var(--bg-2); }
+  .tiao-card .th { display:flex; align-items:center; gap:9px; margin-bottom:7px; }
+  .tiao-card .dot { width:8px; height:8px; border-radius:50%; flex:none; }
+  .tiao-card.pri  .dot { background:var(--gold); }
+  .tiao-card.avoid .dot { background:var(--cinnabar); }
+  .tiao-card.rhythm .dot { background:var(--dai); }
+  .tiao-card .tt { font-family:"Songti SC","Noto Serif SC",serif; font-size:15px; font-weight:700; color:var(--ink-strong); letter-spacing:1px; }
+  .tiao-card .tp { font-size:13px; color:var(--muted); line-height:1.75; margin:0; }
+  .tiao-card .tp b { color:var(--ink-strong); font-weight:700; }
+  .dy-report-btn { margin-top:16px; width:100%; font:inherit; font-size:15px; font-weight:700; letter-spacing:2px;
+    cursor:pointer; color:#F4F1EA; background:var(--cinnabar); border:1px solid transparent; border-radius:999px; padding:13px 18px;
+    box-shadow:0 14px 30px -20px rgba(166,64,47,.8); transition:transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease); }
+  .dy-report-btn:hover { transform:translateY(-1px); background:#b8492f; }
+
   /* 结果区(整宽,双栏自适应) */
   #result { margin-top:30px; }
   .res-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
@@ -140,6 +288,22 @@
   .di .d-hua { color:var(--muted); }
 
   .reading { white-space:pre-wrap; font-size:15px; line-height:2; color:var(--ink); }
+  /* 户型点评:markdown 渲染后的墨韵阅读排版(替代原 .md 直出) */
+  .reading-body { font-size:15.5px; line-height:2; color:var(--ink); letter-spacing:.2px; max-width:70ch; }
+  .reading-body p { margin:0 0 14px; } .reading-body p:last-child { margin-bottom:0; }
+  .reading-body strong { font-weight:700; color:var(--ink-strong); }
+  .reading-body em { font-style:normal; color:var(--cinnabar); }
+  .reading-body h2, .reading-body h3, .reading-body h4 { font-family:"Songti SC","Noto Serif SC",serif;
+    color:var(--ink-strong); font-weight:700; letter-spacing:1px; line-height:1.5; margin:22px 0 10px; }
+  .reading-body h2 { font-size:18px; padding-left:12px; border-left:3px solid var(--cinnabar); }
+  .reading-body h3 { font-size:16px; } .reading-body h3::before { content:"❖ "; color:var(--cinnabar); font-size:12px; }
+  .reading-body h4 { font-size:14.5px; color:var(--accent-2); }
+  .reading-body h2:first-child, .reading-body h3:first-child, .reading-body h4:first-child { margin-top:0; }
+  .reading-body ul { margin:6px 0 16px; padding:0; list-style:none; }
+  .reading-body ul li { position:relative; padding-left:20px; margin:0 0 9px; line-height:1.85; }
+  .reading-body ul li::before { content:""; position:absolute; left:5px; top:13px; width:5px; height:5px;
+    border-radius:50%; background:var(--cinnabar); opacity:.7; }
+  .reading-body hr { border:none; border-top:1px solid var(--line); margin:20px 0; }
   .err { color:var(--cinnabar); font-size:14px; }
   .note { font-size:12px; color:var(--faint); margin-top:8px; }
   /* 等待态:玻璃卡 + 三墨点 + 醒目提示(视觉解读可达 24s+,流程不动只强化呈现) */
@@ -151,6 +315,11 @@
   @keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
   .hint-foot { text-align:center; color:var(--faint); font-size:12px; margin-top:28px; letter-spacing:.5px; }
 
+  @media (max-width:1024px){
+    .dy-workbench { grid-template-columns:1fr; }
+    .res-grid { grid-template-columns:1fr; }
+  }
+  @media (max-width:560px){ .dy-modal { padding:20px 12px; } }
   @media (max-width:900px){
     .studio { grid-template-columns:1fr; }
     .aside { position:static; }
@@ -195,10 +364,19 @@
     </svg>
     <h1 data-i18n="hero.title">方 位 推 荐</h1>
     <p class="lede"><b data-i18n="hero.motto">天命定其势,地运调其场。</b><span data-i18n="hero.sub">报出生与身份,上传户型图——按八宅东西四命,看你该睡哪个方位、把环境调到帮你的那一面。</span></p>
+    <button type="button" class="dy-start" id="dy-open" data-i18n="dy.start">住房定位</button>
   </header>
 
-  <div class="studio">
-    <form id="f" class="glass">
+  <div class="dy-workbench">
+    <!-- 排盘弹窗:居所信息表单 #f 移入此处;点「住房定位」打开,ESC/背景/取消关闭 -->
+    <div class="dy-modal" id="dy-modal" role="dialog" aria-modal="true" aria-labelledby="dy-modal-title" aria-hidden="true">
+    <div class="dy-backdrop" id="dy-backdrop"></div>
+    <div class="dy-dialog glass">
+      <div class="dy-dhead">
+        <div class="dt"><h3 id="dy-modal-title" data-i18n="form.cap">居所信息</h3><div class="dsub" data-i18n="form.capsub">本命卦 + 户型朝向</div></div>
+        <button type="button" class="dy-close" id="dy-close" aria-label="关闭 · Close">✕</button>
+      </div>
+    <form id="f" novalidate>
       <div class="form-cap"><h2 data-i18n="form.cap">居所信息</h2><span data-i18n="form.capsub">本命卦 + 户型朝向</span></div>
       <div class="row">
         <div>
@@ -207,7 +385,7 @@
         </div>
         <div>
           <label for="d-date" data-i18n="f.date">出生日期(定本命卦)</label>
-          <input id="d-date" type="date" name="date" value="1996-08-12" class="inkline" />
+          <input id="d-date" type="date" name="date" required class="inkline" />
         </div>
       </div>
       <div class="row">
@@ -236,10 +414,39 @@
         </div>
         <input type="file" id="file" accept="image/*" />
       </div>
-      <button type="submit" class="btn-ink go" id="btn" data-i18n="f.submit">勘 定 方 位</button>
+      <div class="ml-foot">
+        <button type="button" class="btn-cancel" id="dy-cancel" data-i18n="ml.cancel">取消</button>
+        <button type="submit" class="btn-ink go" id="btn" data-i18n="f.submit">勘 定 方 位</button>
+      </div>
     </form>
+    </div><!-- /.dy-dialog -->
+    </div><!-- /.dy-modal -->
 
-    <aside class="aside reveal-group">
+    <div class="dy-col dy-mid" id="dy-mid">
+      <div class="dy-panel">
+        <div class="dt"><h3 data-i18n="dy.mid.t">空间能量盘</h3><span class="dsub" data-i18n="dy.mid.sub">以方位、动线、采光与目标权重生成调场优先级</span></div>
+        <div class="dy-placeholder">
+          <svg viewBox="0 0 48 48"><rect x="6" y="6" width="36" height="36" rx="6"/><path d="M6 18h36M6 30h36M18 6v36M30 6v36"/></svg>
+          <div class="pt" data-i18n="dy.mid.ph">点上方「住房定位」填写信息,生成八方位能量方盘</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dy-col dy-right" id="dy-right">
+      <div class="dy-panel">
+        <div class="dt"><h3 data-i18n="dy.right.t">调场建议</h3><span class="dsub" data-i18n="dy.right.sub">先动小处,避免大拆大改</span></div>
+        <div class="dy-placeholder">
+          <svg viewBox="0 0 48 48"><path d="M12 10h24M12 20h24M12 30h16"/><circle cx="38" cy="34" r="5"/></svg>
+          <div class="pt" data-i18n="dy.right.ph">排定方位后,给出可执行的调场建议</div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /.dy-workbench -->
+
+  <div id="result"></div>
+
+    <!-- 三道说明卡:横排,置于页面最下方(#result 之后自然下移) -->
+    <section class="dao-cards reveal-group" aria-label="说明">
       <div class="cardx glass">
         <div class="xh">
           <span class="ico"><svg viewBox="0 0 24 24"><polygon points="12,3 17,5.5 19.5,12 17,18.5 12,21 7,18.5 4.5,12 7,5.5"/><circle cx="12" cy="12" r="2.6"/><path d="M12 4.5v3M12 16.5v3M5.5 12h3M15.5 12h3" stroke-linecap="round"/></svg></span>
@@ -276,10 +483,7 @@
           </a>
         </div>
       </div>
-    </aside>
-  </div>
-
-  <div id="result"></div>
+    </section>
   <div class="hint-foot" data-i18n="foot">本方位建议依八宅东西四命体系推算,仅供居家参考与自我调整,不构成任何确定性预测。</div>
 </div>
 
@@ -298,9 +502,15 @@ const I18N = {
     'loading':'正在为你勘定地脉方位…','err':'出错了：','foot':'本方位建议依八宅东西四命体系推算,仅供居家参考与自我调整,不构成任何确定性预测。',
     'p.benming':'本命卦','p.luopan':'你的八方位吉凶罗盘(图纸北方在上)','p.details':'八方位详解(吉→凶)','p.vision':'户型逐间方位点评','p.vision_label':'户型解读',
     'lg.good':'吉方 · 宜卧室/书房/大门','lg.bad':'凶方 · 宜厕所/厨房压制',
+    'dy.start':'住房定位','ml.cancel':'取消','dy.example':'示例','chat.ask':'就此局进对话追问 →',
+    'v.needdate':'请先填你的出生日期,才能定你的本命卦','dy.eg.banner':'下面是一张示例盘 · 填你自己的出生日期,会换成你的','dy.eg.cta':'填我的生日 →',
+    'dy.tap.hint':'点任一方位,看它对你意味着什么','dy.tap.empty':'这个方位暂无更多说明。',
+    'dy.mid.t':'空间能量盘','dy.mid.sub':'以本命卦定八方位吉凶,标出你的诉求方位','dy.mid.ph':'点上方「住房定位」填写信息,生成八方位能量方盘',
+    'dy.right.t':'调场建议','dy.right.sub':'先动小处,避免大拆大改','dy.right.ph':'排定方位后,给出可执行的调场建议',
+    'dy.card.goal':'诉求方','dy.card.best':'次选吉','dy.card.wealth':'财位','dy.card.avoid':'避开',
     'aside.about.t':'地运这一道','aside.about.p':'八宅以你的出生定本命卦,分东四命/西四命,再把住宅八个方位分出生气、天医、延年等吉凶。看的是居所怎么顺你的势——不是迷信,是把环境调到帮你的那一面。',
     'aside.steps.t':'怎么用','aside.s1':'填出生日期与主要诉求,定出你的本命卦与吉方。','aside.s2':'选户型图正上方的朝向,罗盘才能对准真实方位。','aside.s3':'可选上传户型图,得到逐间方位点评与摆布建议。',
-    'aside.cross.t':'三道互参','cross.tianming':'天命 · 看你的势','cross.tianming.d':'八字四柱,读性格倾向与能量节奏','cross.renjiandao':'人间道 · 问时机','cross.renjiandao.d':'摇一卦,看眼下处境宜动宜静',
+    'aside.cross.t':'三道同参','cross.tianming':'天命 · 看你的势','cross.tianming.d':'八字四柱,读性格倾向与能量节奏','cross.renjiandao':'人间道 · 问时机','cross.renjiandao.d':'摇一卦,看眼下处境宜动宜静',
   },
   en: {
     'nav.tianming':'Tian Ming','nav.diyun':'Di Yun','nav.renjiandao':'Ren Jian Dao','nav.pricing':'Pricing',
@@ -315,6 +525,12 @@ const I18N = {
     'loading':'Surveying your eight directions…','err':'Error: ','foot':'Directions are derived from the Eight Mansions / East-West Life system — for home reference and self-adjustment only, not a definite prediction.',
     'p.benming':'Your life-trigram','p.luopan':'Your eight-direction luck compass (plan-north on top)','p.details':'Eight directions in detail (best→worst)','p.vision':'Per-room direction notes','p.vision_label':'Floor-plan reading',
     'lg.good':'Auspicious · bedroom/study/door','lg.bad':'Inauspicious · suppress with bath/kitchen',
+    'dy.start':'Locate home','ml.cancel':'Cancel','dy.example':'Example','chat.ask':'Ask about this in chat →',
+    'v.needdate':'Enter your birth date first — it sets your life-trigram','dy.eg.banner':'This is a sample reading · enter your own birth date and it becomes yours','dy.eg.cta':'Use my birth date →',
+    'dy.tap.hint':'Tap any direction to see what it means for you','dy.tap.empty':'No further notes for this direction.',
+    'dy.mid.t':'Energy plate','dy.mid.sub':'Eight directions by your life-trigram, goal direction marked','dy.mid.ph':'Tap “Locate home” above to fill in and generate the plate',
+    'dy.right.t':'Adjustments','dy.right.sub':'Start small, avoid major renovation','dy.right.ph':'After the directions are set, get actionable tips',
+    'dy.card.goal':'Goal','dy.card.best':'2nd best','dy.card.wealth':'Wealth','dy.card.avoid':'Avoid',
     'aside.about.t':'About Di Yun','aside.about.p':'Eight Mansions sets your life-trigram from your birth (East or West group), then rates the home\'s eight directions — vitality, health, longevity and so on. It\'s about how your home works with your grain — not superstition, but tuning the space to the side that helps you.',
     'aside.steps.t':'How to use','aside.s1':'Enter your birth date and main aim to set your life-trigram and lucky directions.','aside.s2':'Pick the direction at the top of your plan so the compass aligns to reality.','aside.s3':'Optionally upload the floor plan for per-room notes and layout tips.',
     'aside.cross.t':'Cross-reference','cross.tianming':'Tian Ming · read your force','cross.tianming.d':'BaZi four pillars — tendencies and rhythm','cross.renjiandao':'Ren Jian Dao · ask the timing','cross.renjiandao.d':'Cast a hexagram — move or wait',
@@ -384,24 +600,188 @@ function handleFile(file) {
   reader.readAsDataURL(file);
 }
 
+// ---- 住房定位 弹窗:开/关 + 焦点管理(同天命页交互)----
+const dyModal = document.getElementById('dy-modal');
+let dyLastFocus = null;
+function dyOpen() {
+  dyLastFocus = document.activeElement;
+  dyModal.classList.add('open'); dyModal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('d-gender')?.focus(), 30);
+}
+function dyClose() {
+  dyModal.classList.remove('open'); dyModal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  if (dyLastFocus && dyLastFocus.focus) dyLastFocus.focus();
+}
+document.getElementById('dy-open').addEventListener('click', dyOpen);
+document.getElementById('dy-close').addEventListener('click', dyClose);
+document.getElementById('dy-cancel').addEventListener('click', dyClose);
+document.getElementById('dy-backdrop').addEventListener('click', dyClose);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && dyModal.classList.contains('open')) dyClose(); });
+
+// 中文方位 → EN 缩写(复用页面已有的 dir.* i18n),中文卦名 → 罗马音(EN TL;DR 用,避免夹中文)
+const DIR_EN = { 北:'dir.N', 东北:'dir.NE', 东:'dir.E', 东南:'dir.SE', 南:'dir.S', 西南:'dir.SW', 西:'dir.W', 西北:'dir.NW' };
+const GUA_ROMAN = { 坎:'Kan', 坤:'Kun', 震:'Zhen', 巽:'Xun', 乾:'Qian', 兑:'Dui', 艮:'Gen', 离:'Li' };
+const dirLbl = (z) => (LANG === 'en' && DIR_EN[z]) ? t(DIR_EN[z]) : z;
+const guaLbl = (z) => (LANG === 'en' && GUA_ROMAN[z]) ? GUA_ROMAN[z] : z;
+const groupEn = (z) => z === '东四命' ? 'East group' : z === '西四命' ? 'West group' : z;
+
+// 白话 TL;DR:术语墙前先给一句能懂的结论,纯从结构化数据拼(无 LLM)。(审计#4)
+function fengshuiTldr(d) {
+  if (!d) return '';
+  const en = LANG === 'en';
+  const g = d.命卦 || {};
+  const goal = d.诉求方位, best = (d.吉方 || [])[0];
+  const anchor = goal || best; // 落位方向:优先诉求方,否则首选吉方
+  if (!g.卦 || !anchor) return '';
+  const avoid = (d.凶方 || [])[0]?.方位;
+  if (en) {
+    const grp = g.命组 ? ` (${groupEn(g.命组)})` : '';
+    return `In plain terms: your life-trigram is ${guaLbl(g.卦)}${grp}. Your strongest direction is ${dirLbl(anchor.方位)} — put where you spend the most time there${avoid ? `, and ease off ${dirLbl(avoid)}` : ''}.`;
+  }
+  const gua = g.卦 + '命' + (g.命组 ? `·${g.命组}` : '');
+  return `一句话:你是${gua},最旺你的方向是${anchor.方位}方——把主要活动(卧室/书房/常坐处)往那挪${avoid ? `,少用${avoid}方` : ''}。`;
+}
+
+// 把结构化的地运结果拼成一段可读解读(作 chat 首条 AI 气泡 + priorReading 续接上下文)。
+// 地运没有单一 AI 长文(是八方位/吉凶结构化数据),这里按「命卦→吉凶方→诉求落位→调场→户型点评」组织成人话。
+function fengshuiReadingText(d, payload) {
+  if (!d) return '';
+  const en = LANG === 'en';
+  const g = d.命卦 || {};
+  const goal = d.诉求方位;
+  const best = (d.吉方 || [])[0], worst = (d.凶方 || [])[0];
+  const L = en ? {
+    head: 'Eight-Mansions reading', gua: 'Life-trigram', good: 'Auspicious', bad: 'Inauspicious',
+    goalLine: (name, dir, star) => `Anchor your ${name} on the ${dir} direction (${star}).`,
+    avoid: (dir) => `Keep long-stay use off the ${dir} direction.`,
+  } : {
+    head: '八宅方位速读', gua: '本命卦', good: '吉方', bad: '凶方',
+    goalLine: (name, dir, star) => `把${name}落到${dir}方(${star})。`,
+    avoid: (dir) => `${dir}方别作长期久留。`,
+  };
+  const parts = [];
+  parts.push(`【${L.head}】`);
+  if (g.卦) parts.push(`${L.gua}：${g.卦}${g.命组 ? `（${g.命组}）` : ''}`);
+  if ((d.吉方 || []).length) parts.push(`${L.good}：${d.吉方.map(x => x.方位).join('、')}`);
+  if ((d.凶方 || []).length) parts.push(`${L.bad}：${d.凶方.map(x => x.方位).join('、')}`);
+  if (goal) parts.push(L.goalLine(d.诉求?.名 || (payload?.goal || ''), goal.方位, goal.星));
+  if (worst) parts.push(L.avoid(worst.方位));
+  if (d.摘要) parts.push(d.摘要);
+  if (d.户型解读) parts.push((en ? 'Floor-plan notes: ' : '户型点评：') + d.户型解读);
+  return parts.filter(Boolean).join('\n\n');
+}
+
+// 「进对话追问」:跨页接力——把刚生成的地运解读+生辰经 sessionStorage 带进 /chat,
+// chat 页把解读作为首条 AI 气泡续接、就此追问不重排(见 chat.html applyHandoff)。
+document.getElementById('dy-right').addEventListener('click', (e) => {
+  const a = e.target.closest('#to-chat-dy'); if (!a) return;
+  e.preventDefault();
+  const p = lastPayload;
+  const handoff = {
+    from: 'diyun',
+    mode: 'diyun',
+    question: '',  // 地运无「所问」输入框,续问由 chat 欢迎/用户发起
+    reading: fengshuiReadingText(lastData, lastPayload),
+    profile: (p && p.datetime && p.gender)
+      ? { datetime: p.datetime, gender: p.gender, location: p.place || p.location || '' }
+      : null,
+    ts: Date.now(),
+  };
+  try { sessionStorage.setItem('xy_handoff', JSON.stringify(handoff)); } catch {}
+  location.href = '/chat';
+});
+
+// 示例横幅「填我的生日→」:开弹窗并把焦点直接落到生日输入框(审计#2)
+document.getElementById('dy-mid').addEventListener('click', (e) => {
+  if (e.target.closest('#dy-eg-cta')) {
+    dyOpen();
+    setTimeout(() => document.getElementById('d-date')?.focus(), 40);
+    return;
+  }
+  // 方盘格子点/触:就地展开该方位白话(手机 touch 也灵,替代点不出的 title 悬浮)(审计#4)
+  const cell = e.target.closest('.dy-cell.tapable');
+  if (cell) showCellDetail(cell);
+});
+// 键盘可达:格子聚焦后回车/空格同样展开
+document.getElementById('dy-mid').addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const cell = e.target.closest?.('.dy-cell.tapable'); if (!cell) return;
+  e.preventDefault(); showCellDetail(cell);
+});
+// 展开某格白话到方盘下方的详情条(再点同一格则收起)
+let lastCellDir = null;
+function showCellDetail(cell) {
+  const box = document.getElementById('dy-cell-detail'); if (!box) return;
+  const dir = cell.getAttribute('data-dir');
+  document.querySelectorAll('.dy-cell.tapable.on').forEach(c => c.classList.remove('on'));
+  // 再点同一格收起;但若详情条当前是隐藏的(如刚重排),忽略陈旧 lastCellDir,一律展开
+  if (!box.hidden && lastCellDir === dir) { box.hidden = true; lastCellDir = null; return; }
+  cell.classList.add('on'); lastCellDir = dir;
+  const star = cell.getAttribute('data-star') || '', lv = cell.getAttribute('data-lv') || '', bh = cell.getAttribute('data-bh') || '';
+  const dirTxt = LANG === 'en' ? dirLbl(dir) : `${dir}方`;
+  box.innerHTML = `<div class="dcd-head"><b>${esc(dirTxt)} · ${esc(star)}</b><span class="dcd-lv">${esc(lv)}</span></div>
+    <p class="dcd-bh">${esc(bh || t('dy.tap.empty'))}</p>`;
+  box.hidden = false;
+}
+
+// 页面加载:真实调引擎生成一个示例排盘,让用户先看到「能量盘 + 调场建议」长什么样。
+// 用户一旦自己提交(hasSubmitted=true),示例不再覆盖。
+let hasSubmitted = false;
+let lastData = null, lastPayload = null; // 最近一次真实排盘结果 + 提交信息,供「进对话追问」跨页接力
+async function loadExample() {
+  const midPanel = document.getElementById('dy-mid');
+  const rightPanel = document.getElementById('dy-right');
+  try {
+    const res = await fetch('/api/fengshui', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ gender:'女', datetime:'1996-08-12 12:00', goal:'wealth', facing:'北', lang:LANG }),
+    });
+    const data = await res.json();
+    if (!res.ok || hasSubmitted) return;               // 用户已自行提交则不覆盖
+    midPanel.innerHTML = renderPlate(data, true);      // 第二参数 isExample:加“示例”角标
+    rightPanel.innerHTML = renderTiao(data, true);
+  } catch { /* 示例失败静默,占位仍在 */ }
+}
+loadExample();
+
 f.addEventListener('submit', async (e) => {
   e.preventDefault();
   const d = Object.fromEntries(new FormData(f));
+  // 空生日当场拦下(不再默认填陌生人生日 → 避免误提交成「别人的真结果」,审计#2)
+  if (!d.date) {
+    const de = document.getElementById('d-date');
+    dyShowFieldErr(de, t('v.needdate'));
+    de?.focus();
+    return;
+  }
+  hasSubmitted = true; // 用户已自行排盘,示例不再覆盖
   const payload = { gender: d.gender, datetime: `${d.date} 12:00`, goal: d.goal, facing: d.facing, lang: LANG };
   if (imageDataUrl) payload.image = imageDataUrl;
 
+  const midPanel = document.getElementById('dy-mid');
+  const rightPanel = document.getElementById('dy-right');
+  dyClose(); // 关弹窗,结果展示在下方两栏工作台
   btn.disabled = true; btn.textContent = t('f.loading_btn');
-  result.innerHTML = `<div class="loading glass"><span class="ink-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="load-txt">${esc(t('loading'))}</span></div>`;
+  midPanel.innerHTML = `<div class="dy-panel"><div class="loading"><span class="ink-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="load-txt">${esc(t('loading'))}</span></div></div>`;
+  rightPanel.innerHTML = `<div class="dy-panel"><div class="dy-placeholder"><div class="pt">${esc(t('loading'))}</div></div></div>`;
+  result.innerHTML = '';
   try {
     const res = await fetch('/api/fengshui', {
       method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || '请求失败');
-    result.innerHTML = render(data);
-    window.inkReveal?.(result);
+    lastData = data; lastPayload = payload;  // 存下供跨页接力(进对话追问)
+    // 三栏工作台:中栏能量方盘 / 右栏调场建议 / 下方 命卦+八方位详解+户型点评
+    midPanel.innerHTML = renderPlate(data);
+    rightPanel.innerHTML = renderTiao(data);
+    result.innerHTML = renderDetail(data);
+    window.inkReveal?.(result); window.inkReveal?.(midPanel); window.inkReveal?.(rightPanel);
   } catch (err) {
-    result.innerHTML = `<div class="panel"><span class="err">${esc(t('err'))}${esc(err.message)}</span></div>`;
+    midPanel.innerHTML = `<div class="dy-panel"><span class="err">${esc(t('err'))}${esc(err.message)}</span></div>`;
+    rightPanel.innerHTML = '';
   } finally {
     btn.disabled = false; btn.textContent = t('f.submit');
   }
@@ -410,20 +790,87 @@ f.addEventListener('submit', async (e) => {
 // 九宫格位置(北上)→ data.八方位 里的方位名
 const GRID = ['西北','北','东北','西','中','东','西南','南','东南'];
 
-function render(d) {
+// ---- 中栏:空间能量方盘(八方位 3×3,北上,坐向居中,诉求方描朱边)+ 底部方位速览卡 ----
+// isExample=true 时加「示例」角标,提示这是页面加载的样例结果
+function renderPlate(d, isExample) {
   const byDir = {}; (d.八方位||[]).forEach(x => byDir[x.方位] = x);
   const g = d.命卦 || {};
-
+  const goalDir = d.诉求方位?.方位;
   const cells = GRID.map(dir => {
     if (dir === '中') {
-      return `<div class="cell center"><div class="gc">${esc(g.卦||'')}</div>
-        <div class="gl">${esc(g.命组||'')}</div></div>`;
+      return `<div class="dy-cell center"><div class="gc">${esc(g.卦||'')}</div><div class="gl">${esc(g.命组||'')}</div></div>`;
     }
-    const x = byDir[dir]; if (!x) return `<div class="cell"></div>`;
-    const cls = x.good ? 'good' : 'bad';
-    return `<div class="cell ${cls}" title="${esc(x.白话||'')}">
-      <div class="dir">${dir}</div><div class="star">${esc(x.星)}</div><div class="lv">${esc(x.吉凶)}</div></div>`;
+    const x = byDir[dir]; if (!x) return `<div class="dy-cell"></div>`;
+    const cls = [x.good ? 'good' : 'bad', dir === goalDir ? 'goal' : ''].filter(Boolean).join(' ');
+    // 可点:手机 touch 就地展白话(不再只塞 title 悬浮,移动端点不出)(审计#4)
+    return `<div class="dy-cell tapable ${cls}" role="button" tabindex="0"
+      title="${esc(x.白话||'')}" data-dir="${esc(dir)}" data-star="${esc(x.星)}" data-lv="${esc(x.吉凶)}" data-bh="${esc(x.白话||'')}">
+      <div class="dir">${esc(dirLbl(dir))}</div><div class="star">${esc(x.星)}</div><div class="lv">${esc(x.吉凶)}</div></div>`;
   }).join('');
+  // 底部方位速览:诉求方 / 次选吉方 / 财位(生气) / 避开(首凶)
+  const best = (d.吉方||[])[0], sheng = (d.八方位||[]).find(x=>x.星==='生气'), worst = (d.凶方||[])[0];
+  const dc = (k, x, good) => x ? `<div class="dy-dircard ${good?'good':'bad'}"><div class="k">${esc(k)}</div><div class="v">${esc(x.方位)}</div></div>` : '';
+  const cards = [
+    dc(t('dy.card.goal'), d.诉求方位, true),
+    dc(t('dy.card.best'), best, true),
+    dc(t('dy.card.wealth'), sheng, true),
+    dc(t('dy.card.avoid'), worst, false),
+  ].join('');
+  const badge = isExample ? `<span class="dy-example">${esc(t('dy.example'))}</span>` : '';
+  // 示例态:顶部横幅说清「这是示例」+「填我的生日→」CTA(审计#2)
+  const banner = isExample ? `<div class="dy-eg-banner">
+    <span class="egb-txt">${esc(t('dy.eg.banner'))}</span>
+    <button type="button" class="egb-cta" id="dy-eg-cta">${esc(t('dy.eg.cta'))}</button>
+  </div>` : '';
+  // 白话结论前置(TL;DR):从结构化数据拼一句人话,术语墙前先给一句能懂的(审计#4)
+  const tldr = fengshuiTldr(d);
+  const tldrHtml = tldr ? `<p class="dy-tldr">${esc(tldr)}</p>` : '';
+  return `<div class="dy-panel${isExample ? ' is-example' : ''}">
+    ${banner}
+    <div class="dt"><h3 data-i18n="dy.mid.t">${esc(t('dy.mid.t'))}</h3>${badge}<span class="dsub">${esc(t('dy.mid.sub'))}</span></div>
+    ${tldrHtml}
+    <div class="dy-plate">${cells}</div>
+    <div class="dy-tap-hint" aria-hidden="true">${esc(t('dy.tap.hint'))}</div>
+    <div class="dy-cell-detail" id="dy-cell-detail" hidden></div>
+    <div class="dy-plate-legend"><span class="g"><i></i>${esc(t('lg.good'))}</span><span class="b"><i></i>${esc(t('lg.bad'))}</span><span class="goal"><i></i>${esc(t('dy.card.goal'))}</span></div>
+    <div class="dy-dircards">${cards}</div>
+  </div>`;
+}
+
+// ---- 右栏:调场建议(优先调整 / 需要避开 / 执行节奏)——从首选吉方 / 首凶方 / 目标推导 ----
+function renderTiao(d, isExample) {
+  const en = LANG === 'en';
+  const best = (d.吉方||[])[0], worst = (d.凶方||[])[0], goalDir = d.诉求方位, goal = d.诉求;
+  const priTitle = en ? 'Prioritise' : '优先调整';
+  const avoidTitle = en ? 'Avoid' : '需要避开';
+  const rhyTitle = en ? 'Pace it' : '执行节奏';
+  const priP = goalDir ? (en
+      ? `Anchor your <b>${esc(goal?.名||'')}</b> on the <b>${esc(goalDir.方位)}</b> direction (${esc(goalDir.星)}) — put the bed/desk/main use here, keep it bright and used.`
+      : `把<b>${esc(goal?.名||'')}</b>落到<b>${esc(goalDir.方位)}方</b>(${esc(goalDir.星)})——主卧/书桌/主要停留处放这里,保持明亮常用。`) : '';
+  const avoidP = worst ? (en
+      ? `Keep the <b>${esc(worst.方位)}</b> direction (${esc(worst.星)}·${esc(worst.吉凶)}) off long-stay use — best for bathroom/kitchen to press it down.`
+      : `<b>${esc(worst.方位)}方</b>(${esc(worst.星)}·${esc(worst.吉凶)})别作长期卧室/久留——宜厕所、厨房压制。`) : '';
+  const rhyP = best ? (en
+      ? `Start small: adjust lighting and storage first, and use the <b>${esc(best.方位)}</b> direction (${esc(best.星)}) as your steady spot. Observe for ~7 days before bigger changes.`
+      : `先动小处:先调灯光与收纳,把<b>${esc(best.方位)}方</b>(${esc(best.星)})当稳定位。约七天后再看状态,别一次大拆大改。`) : '';
+  const card = (cls, title, p) => p ? `<div class="tiao-card ${cls}"><div class="th"><span class="dot"></span><span class="tt">${title}</span></div><p class="tp">${p}</p></div>` : '';
+  // 示例态不放追问按钮(避免用户拿示例去追问);真实排盘才给「进对话追问」入口。
+  // 按当前语言直接渲染文案(动态插入,applyI18n 不二次扫描,靠 data-i18n 会让 EN 残留中文)。
+  const chatBtn = isExample ? '' : `<a href="/chat" class="to-chat" id="to-chat-dy">${esc(t('chat.ask'))}</a>`;
+  return `<div class="dy-panel${isExample ? ' is-example' : ''}">
+    <div class="dt"><h3 data-i18n="dy.right.t">${esc(t('dy.right.t'))}</h3>${isExample?`<span class="dy-example">${esc(t('dy.example'))}</span>`:''}<span class="dsub">${esc(t('dy.right.sub'))}</span></div>
+    <div class="dy-tiao">
+      ${card('pri', priTitle, priP)}
+      ${card('avoid', avoidTitle, avoidP)}
+      ${card('rhythm', rhyTitle, rhyP)}
+    </div>
+    ${chatBtn}
+  </div>`;
+}
+
+// ---- 下方(全宽):命卦 + 八方位详解 + 户型逐间点评 ----
+function renderDetail(d) {
+  const g = d.命卦 || {};
 
   const list = (d.八方位||[]).slice().sort((a,b)=> (b.rank)-(a.rank)).map(x => `
     <div class="di ${x.good?'g':'b'}"><span class="d-dir">${esc(x.方位)}</span>
@@ -431,7 +878,7 @@ function render(d) {
 
   let visionHtml = '';
   if (d.户型解读) {
-    visionHtml = `<div class="panel span2"><div class="t">${esc(t('p.vision'))}</div><div class="reading">${esc(d.户型解读)}</div></div>`;
+    visionHtml = `<div class="panel span2"><div class="t">${esc(t('p.vision'))}</div><div class="reading-body">${mdRender(d.户型解读)}</div></div>`;
   } else if (d.户型解读错误) {
     visionHtml = `<div class="panel span2"><div class="t">${esc(t('p.vision_label'))}</div><span class="note">${esc(d.户型解读错误)}</span></div>`;
   }
@@ -448,13 +895,7 @@ function render(d) {
     <div class="note">${esc(g.备注||'')}</div>
   </div>
 
-  <div class="panel">
-    <div class="t">${esc(t('p.luopan'))}</div>
-    <div class="luopan">${cells}</div>
-    <div class="legend"><span class="g"><i></i>${esc(t('lg.good'))}</span><span class="b"><i></i>${esc(t('lg.bad'))}</span></div>
-  </div>
-
-  <div class="panel">
+  <div class="panel span2">
     <div class="t">${esc(t('p.details'))}</div>
     <div class="dirlist">${list}</div>
   </div>
@@ -464,6 +905,38 @@ function render(d) {
 }
 
 function esc(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+// 字段级校验提示:在输入框下方就地插一句红字,不用浏览器原生气泡(可样式化、可 i18n)。(审计#2)
+function dyShowFieldErr(el, msg){
+  if (!el) return;
+  el.classList.add('field-invalid');
+  let tip = el.parentElement.querySelector('.field-err');
+  if (!tip){ tip = document.createElement('div'); tip.className = 'field-err'; el.parentElement.appendChild(tip); }
+  tip.textContent = msg;
+  const clear = () => { el.classList.remove('field-invalid'); tip.remove(); el.removeEventListener('input', clear); el.removeEventListener('change', clear); };
+  el.addEventListener('input', clear); el.addEventListener('change', clear);
+}
+
+// 轻量 markdown 渲染(户型点评用):esc 防注入,再把 **粗体**/### 标题/- 列表/段落 渲染成墨韵排版。
+function mdRender(src){
+  const lines = String(src||'').replace(/\r\n/g,'\n').split('\n');
+  const inline = t => esc(t)
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/(^|[^*])\*(?!\s)([^*\n]+?)\*(?!\*)/g,'$1<em>$2</em>');
+  const out=[]; let buf=[];
+  const flush=()=>{ if(buf.length){ out.push('<ul>'+buf.map(li=>`<li>${inline(li)}</li>`).join('')+'</ul>'); buf=[]; } };
+  for(let raw of lines){
+    const line=raw.trim();
+    if(!line){ flush(); continue; }
+    if(/^---+$/.test(line)||/^===+$/.test(line)){ flush(); out.push('<hr>'); continue; }
+    const h=line.match(/^(#{1,4})\s+(.*)$/);
+    if(h){ flush(); const lv=Math.min(h[1].length+1,4); out.push(`<h${lv}>${inline(h[2])}</h${lv}>`); continue; }
+    const li=line.match(/^\s*(?:[-*•]|[0-9]+[.、)]|[①②③④⑤⑥⑦⑧⑨⑩])\s+(.*)$/);
+    if(li){ buf.push(li[1]); continue; }
+    flush(); out.push(`<p>${inline(line)}</p>`);
+  }
+  flush(); return out.join('');
+}
 </script>
 <script src="/ink.js" defer></script>
 </body>

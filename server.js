@@ -9,7 +9,8 @@
  *        然后浏览器打开 http://localhost:3000
  */
 import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
+import { createReadStream } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { runConsultation } from './src/pipeline.js';
@@ -19,7 +20,7 @@ import { recommendDirections, GOALS } from './src/bazhai.js';
 import { analyzeFloorplan } from './src/fengshui.js';
 import { castHexagram } from './src/liuyao.js';
 import { runRenjiandao } from './src/renjiandao.js';
-import { runZiwei } from './src/ziwei.js';
+import { runZiwei, streamZiwei } from './src/ziwei.js';
 import { runHehun } from './src/hehun.js';
 import { streamChat, castHexagram as castHex } from './src/chat.js';
 import { retrieveKnowledge, formatKnowledge, knowledgeStats } from './src/rag.js';
@@ -68,27 +69,73 @@ const PAGES = {
   // 新中式风格预览(临时,定稿前不动 landing)
   '/preview': 'preview.html',
   '/preview.html': 'preview.html',
+  // 全屏太极 + 光圈扩散预览(临时,转正前不动 landing)
+  '/preview-taiji': 'preview-taiji.html',
+  '/preview-taiji.html': 'preview-taiji.html',
+  // 液态玻璃全流程预览(临时,转正前不动现役页)
+  '/preview-app': 'preview-app.html',
+  '/preview-app.html': 'preview-app.html',
+  '/preview-diyun': 'preview-diyun.html',
+  '/preview-diyun.html': 'preview-diyun.html',
+  '/preview-renjiandao': 'preview-renjiandao.html',
+  '/preview-renjiandao.html': 'preview-renjiandao.html',
+  '/preview-chat': 'preview-chat.html',
+  '/preview-chat.html': 'preview-chat.html',
+  '/preview-hehun': 'preview-hehun.html',
+  '/preview-hehun.html': 'preview-hehun.html',
 };
 
 const server = createServer(async (req, res) => {
   try {
-    if (req.method === 'GET' && PAGES[req.url]) {
-      const html = await readFile(join(__dirname, 'public', PAGES[req.url]));
+    // 页面路由匹配时剥掉查询串(?mode=&q=… 由前端读取),否则 /chat?x=y 不命中 PAGES['/chat']
+    const pathOnly = req.url.split('?')[0];
+    if (req.method === 'GET' && PAGES[pathOnly]) {
+      const html = await readFile(join(__dirname, 'public', PAGES[pathOnly]));
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(html);
     }
 
-    // 静态资源(css/svg/png 等),限定 public 目录,防目录穿越
-    if (req.method === 'GET' && /^\/[\w./-]+\.(css|js|svg|png|jpe?g|webp|ico|woff2?)$/.test(req.url)) {
+    // 静态资源(css/svg/png/mp4 等),限定 public 目录,防目录穿越
+    // 支持 GET/HEAD;视频等大文件支持 HTTP Range(206 分段),避免重播时缓冲卡顿
+    if ((req.method === 'GET' || req.method === 'HEAD') && /^\/[\w./-]+\.(css|js|svg|png|jpe?g|webp|mp4|ico|woff2?)$/.test(req.url)) {
       const rel = req.url.replace(/^\/+/, '');
       const full = join(__dirname, 'public', rel);
       if (full.startsWith(join(__dirname, 'public'))) {
         try {
-          const buf = await readFile(full);
+          const st = await stat(full);
           const ext = rel.split('.').pop();
-          const TYPES = { css: 'text/css', js: 'text/javascript', svg: 'image/svg+xml', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', ico: 'image/x-icon', woff: 'font/woff', woff2: 'font/woff2' };
-          res.writeHead(200, { 'Content-Type': `${TYPES[ext] || 'application/octet-stream'}; charset=utf-8` });
-          return res.end(buf);
+          const TYPES = { css: 'text/css', js: 'text/javascript', svg: 'image/svg+xml', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', mp4: 'video/mp4', ico: 'image/x-icon', woff: 'font/woff', woff2: 'font/woff2' };
+          const type = TYPES[ext] || 'application/octet-stream';
+          const range = req.headers.range;
+          // 带 Range 的请求 → 206 分段流(视频 seek / 流式加载靠这个)
+          if (range) {
+            const m = /^bytes=(\d*)-(\d*)$/.exec(range);
+            if (m) {
+              let start = m[1] === '' ? null : parseInt(m[1], 10);
+              let end = m[2] === '' ? st.size - 1 : parseInt(m[2], 10);
+              if (start === null) { start = st.size - end; end = st.size - 1; }   // 后缀范围
+              if (start > end || start < 0 || end >= st.size) {
+                res.writeHead(416, { 'Content-Range': `bytes */${st.size}` });
+                return res.end();
+              }
+              res.writeHead(206, {
+                'Content-Type': type,
+                'Content-Range': `bytes ${start}-${end}/${st.size}`,
+                'Accept-Ranges': 'bytes',
+                'Content-Length': end - start + 1,
+              });
+              if (req.method === 'HEAD') return res.end();
+              return createReadStream(full, { start, end }).pipe(res);
+            }
+          }
+          // 无 Range → 整体返回(但仍声明 Accept-Ranges,让浏览器知道可分段)
+          res.writeHead(200, {
+            'Content-Type': type,
+            'Content-Length': st.size,
+            'Accept-Ranges': 'bytes',
+          });
+          if (req.method === 'HEAD') return res.end();
+          return createReadStream(full).pipe(res);
         } catch { /* 落到 404 */ }
       }
     }
@@ -138,6 +185,28 @@ const server = createServer(async (req, res) => {
       } catch (e) {
         return sendJSON(res, 400, { error: `排盘失败:${e.message}` });
       }
+    }
+
+    // 天命排盘 · 两段式流式(SSE):命盘骨架秒出 → AI 深化逐字吐(审计#3:消解 11–22s 死等)
+    if (req.method === 'POST' && req.url === '/api/ziwei/stream') {
+      const input = JSON.parse(await readBody(req) || '{}');
+      if (!input.datetime || !input.gender) {
+        return sendJSON(res, 400, { error: '缺少必填项:性别 / 出生时间' });
+      }
+      res.writeHead(200, {
+        'Content-Type':  'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        'Connection':    'keep-alive',
+      });
+      try {
+        for await (const ev of streamZiwei(client, input)) {
+          res.write(`data: ${JSON.stringify(ev)}\n\n`);
+        }
+      } catch (e) {
+        // 骨架阶段(computeZiwei)抛错走这里:排盘失败当场吐 error 事件
+        res.write(`data: ${JSON.stringify({ type: 'error', message: `排盘失败:${e.message}` })}\n\n`);
+      }
+      return res.end();
     }
 
     // 合参 · 双人八字对比:两盘四柱 + 日主/十神/地支/五行互补(纯计算,无需 Key);带问题且有 Key 时叠加 AI 深化 + 危机前置
