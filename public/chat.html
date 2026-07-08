@@ -160,6 +160,28 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
 .seg label:hover span{color:var(--ink);}
 .seg input:checked+span{background:var(--grad);color:#fff;box-shadow:0 4px 12px -4px rgba(31,43,49,.3);}
 
+/* ── 居中欢迎屏(仪式感首屏) ── */
+.hero{flex:1;min-height:0;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:32px 24px;}
+.hero-inner{width:100%;max-width:680px;display:flex;flex-direction:column;align-items:center;text-align:center;
+  animation:heroIn .5s var(--ease) both;}
+@keyframes heroIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.hero-status{display:inline-flex;align-items:center;gap:8px;padding:6px 15px;border-radius:999px;
+  border:1px solid var(--line-soft);background:rgba(250,251,249,.7);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  font-size:12.5px;color:var(--muted);letter-spacing:.4px;margin-bottom:30px;}
+.hero-status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex:none;
+  box-shadow:0 0 0 3px rgba(78,107,82,.16);animation:heroPulse 2.4s var(--ease) infinite;}
+@keyframes heroPulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.hero-title{font-family:var(--serif);font-size:clamp(46px,9vw,76px);font-weight:700;line-height:1.05;
+  letter-spacing:6px;background:linear-gradient(180deg,var(--ink-strong) 8%,#7C8E93 96%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--ink-strong);}
+.hero-rule{display:flex;align-items:center;gap:14px;margin:22px 0 18px;width:min(260px,60%);color:var(--faint);}
+.hero-rule span{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);}
+.hero-rule b{font-size:12px;color:var(--cinnabar);opacity:.7;font-weight:400;}
+.hero-sub{font-family:var(--serif);font-size:16px;color:var(--muted);letter-spacing:2px;line-height:1.9;margin-bottom:34px;}
+.hero-chips{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;max-width:600px;}
+.hero-chips .ck{padding:9px 17px;font-size:13.5px;}
+
 /* ── 聊天视图 ── */
 #chatView{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
 .msgs{max-width:740px;width:100%;margin:0 auto;padding:24px 24px 16px;display:flex;flex-direction:column;gap:20px;}
@@ -187,8 +209,9 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
 .msg.usr{align-items:flex-end;}
 .msg.ai{align-items:flex-start;}
 .bub{padding:12px 17px;max-width:88%;font-size:15px;line-height:1.78;overflow-wrap:break-word;}
-.msg.usr .bub{background:var(--ink-strong);color:#F4F1EA;border-radius:16px 16px 4px 16px;
-  box-shadow:0 6px 18px -12px rgba(31,43,49,.55);}
+/* 用户气泡:柔和宣纸灰(吸收 MetaSight 的轻气泡,去深墨压迫感) */
+.msg.usr .bub{background:rgba(38,52,59,.055);color:var(--ink-strong);border:1px solid var(--line-soft);
+  border-radius:16px 16px 4px 16px;box-shadow:0 2px 8px -6px rgba(31,43,49,.3);}
 .msg.ai .bub{background:var(--glass);
   -webkit-backdrop-filter:blur(14px) saturate(1.05);backdrop-filter:blur(14px) saturate(1.05);
   border:1px solid var(--line);color:var(--ink);border-radius:16px 16px 16px 4px;box-shadow:var(--shs);}
@@ -198,20 +221,36 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
 .ai-txt p{margin:0 0 9px;}
 .ai-txt p:last-child{margin:0;}
 .ai-txt strong{color:var(--ink-strong);font-weight:600;}
+/* AI 回复脚注:斜体免责 + 分享键(吸收 MetaSight) */
+.ai-foot{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:10px;
+  padding-top:9px;border-top:1px solid var(--line-soft);}
+.ai-foot .disc{flex:1;font-size:11.5px;font-style:italic;color:var(--faint);letter-spacing:.2px;line-height:1.5;}
+.ai-share{position:relative;width:30px;height:30px;border-radius:8px;border:1px solid var(--line-soft);
+  background:rgba(250,251,249,.7);color:var(--faint);cursor:pointer;display:grid;place-items:center;flex:none;
+  transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease);}
+.ai-share::after{content:"";position:absolute;inset:-5px;border-radius:inherit;}
+.ai-share:hover{color:var(--ink);border-color:rgba(38,52,59,.28);background:rgba(38,52,59,.06);}
+.ai-share svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.7;}
+.ai-share.done{color:var(--green);border-color:rgba(78,107,82,.4);}
 .cursor{display:inline-block;width:2px;height:1em;background:var(--muted);margin-left:2px;
   animation:cur .7s step-end infinite;vertical-align:text-bottom;}
 @keyframes cur{0%,100%{opacity:1;}50%{opacity:0;}}
-/* AI 等待指示:三墨点(.ink-dots 视觉;::before/::after 兜出三枚同辈墨点,JS 结构不动) */
-.typing{display:inline-flex;align-items:center;gap:6px;padding:15px 18px;
+/* AI 等待指示:朱砂三竖条脉冲(吸收 MetaSight 的 loading;::before/::after 兜出三条,JS 结构不动) */
+.typing{display:inline-flex;align-items:center;gap:5px;padding:14px 18px;
   background:var(--glass);
   -webkit-backdrop-filter:blur(14px) saturate(1.05);backdrop-filter:blur(14px) saturate(1.05);
   border:1px solid var(--line);border-radius:16px 16px 16px 4px;box-shadow:var(--shs);}
 .typing::before,.typing::after{content:"";}
-.typing::before,.typing::after,.typing i{display:block;width:6px;height:6px;border-radius:50%;
-  background:var(--muted);animation:inkBounce 1.05s infinite var(--ease);}
-.typing i{animation-delay:.14s;}
-.typing::after{animation-delay:.28s;}
+.typing::before,.typing::after,.typing i{display:block;width:4px;height:15px;border-radius:3px;
+  background:var(--cinnabar);opacity:.75;animation:barPulse 1s infinite var(--ease);}
+.typing i{animation-delay:.16s;}
+.typing::after{animation-delay:.32s;}
 .typing i i{display:none;}
+@keyframes barPulse{0%,100%{transform:scaleY(.5);opacity:.4;}45%{transform:scaleY(1);opacity:.85;}}
+/* 「思考了 N 秒」折叠标签(吸收 MetaSight) */
+.think-tag{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--faint);
+  padding:2px 2px 6px;letter-spacing:.3px;}
+.think-tag svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.6;opacity:.7;}
 /* 危机:温和宣纸底 + 朱砂发丝左线(文案与结构不动) */
 .crisis{background:rgba(250,251,249,.85);border:1px solid var(--line);
   border-left:2px solid rgba(166,64,47,.6);border-radius:4px 14px 14px 4px;padding:16px 18px;}
@@ -230,6 +269,10 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
   padding:12px 20px 16px;flex:none;}
 .cbar-inner{max-width:740px;margin:0 auto;}
 .cbar-row{display:flex;gap:10px;align-items:flex-end;}
+.cbar-hint{text-align:center;font-size:11.5px;color:var(--faint);letter-spacing:.4px;margin-top:9px;}
+/* 首屏态下输入框更饱满、hint 更显;对话态收回常规 */
+body:not(.chat-on) .chatbar{padding-bottom:22px;}
+body:not(.chat-on) .ctxt{min-height:52px;font-size:15.5px;}
 .ctxt{flex:1;min-width:0;padding:12px 16px;border:1px solid var(--line);border-radius:14px;
   background-color:rgba(250,251,249,.85);color:var(--ink);font-family:inherit;font-size:15px;
   resize:none;outline:none;line-height:1.6;min-height:46px;max-height:160px;overflow-y:auto;
@@ -287,6 +330,8 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
 /* ── reduced motion:页面静止但完整 ── */
 @media (prefers-reduced-motion: reduce){
   .msg,.welcome-msg,.ov,.ov-card,.seal-pulse{animation:none;}
+  .hero-inner,.hero-status-dot{animation:none;}
+  .typing::before,.typing::after,.typing i{transform:scaleY(.8);}
   .typing::before,.typing::after,.typing i,.ink-dots i{animation:none;}
   .cursor{animation:none;}
   .sb-empty-art svg path{animation:none;}
@@ -344,8 +389,19 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
       <button class="langtog" id="langtog" type="button" aria-label="切换中英文 / Switch language">EN</button>
     </div>
 
+    <!-- 居中欢迎屏(新会话·仪式感首屏,吸收 MetaSight 版式) -->
+    <div id="hero" class="hero">
+      <div class="hero-inner">
+        <div class="hero-status"><span class="hero-status-dot"></span><span id="heroStatus" data-i18n="hero.status">易理在线，随时为你解惑</span></div>
+        <h1 class="hero-title" id="heroTitle">心易</h1>
+        <div class="hero-rule"><span></span><b>✦</b><span></span></div>
+        <p class="hero-sub" id="heroSub" data-i18n="hero.sub">心有所问，易理为答</p>
+        <div class="hero-chips" id="heroChips"></div>
+      </div>
+    </div>
+
     <!-- 聊天视图 -->
-    <div id="chatView" style="display:flex;flex:1;overflow-y:auto;flex-direction:column;">
+    <div id="chatView" style="display:none;flex:1;overflow-y:auto;flex-direction:column;">
       <div class="msgs" id="msgs"></div>
     </div>
 
@@ -358,6 +414,7 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2 15 22l-4-9-9-4Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
         </div>
+        <p class="cbar-hint" id="cbarHint" data-i18n="cbar.hint">心诚则灵 · 易理会引导你找到答案</p>
       </div>
     </div>
   </div>
@@ -405,6 +462,11 @@ const I18N = {
     'prof.setup':'设置生辰','prof.set':'已设生辰',
     'mode.suiwen':'随问','mode.tianming':'天命','mode.renjiandao':'人间道','mode.diyun':'地运',
     'mode.ph.suiwen':'随便问…','mode.ph.tianming':'关于命盘的任何问题…','mode.ph.renjiandao':'说说你想卜问的事…','mode.ph.diyun':'关于居所方位的问题…',
+    'hero.status':'易理在线，随时为你解惑','hero.title':'心易','hero.sub':'心有所问，易理为答',
+    'hero.greet': n => `${n}，慢慢来`,
+    'cbar.hint':'心诚则灵 · 易理会引导你找到答案',
+    'disclaimer':'易理因人而异，仅供参考，请勿盲从',
+    'copied':'已复制','think': s => `思考了 ${s} 秒`,
     'modal.title':'修改生辰档案','modal.hint':'数据仅存于本机 localStorage',
     'modal.dob':'出生日期 & 时间 *','modal.gender':'性别 *','modal.male':'男','modal.female':'女',
     'modal.name':'称呼','modal.name.ph':'可选','modal.city':'出生城市','modal.city.ph':'可选，提升精度',
@@ -431,6 +493,11 @@ const I18N = {
     'prof.setup':'Set birth info','prof.set':'Birth info set',
     'mode.suiwen':'Ask anything','mode.tianming':'Tian Ming','mode.renjiandao':'Ren Jian Dao','mode.diyun':'Di Yun',
     'mode.ph.suiwen':'Ask anything…','mode.ph.tianming':'Anything about your chart…','mode.ph.renjiandao':'What do you want to divine…','mode.ph.diyun':'Questions about your home\'s layout…',
+    'hero.status':'Advisor online — ask anything','hero.title':'Xin Yi','hero.sub':'Ask from the heart, the Yi will answer',
+    'hero.greet': n => `Take your time, ${n}`,
+    'cbar.hint':'Sincerity guides — the Yi will help you find your answer',
+    'disclaimer':'Readings vary by person; for reference only, don\'t follow blindly',
+    'copied':'Copied','think': s => `Thought for ${s}s`,
     'modal.title':'Edit birth info','modal.hint':'Stored locally in this browser only',
     'modal.dob':'Date & time of birth *','modal.gender':'Gender *','modal.male':'Male','modal.female':'Female',
     'modal.name':'Name','modal.name.ph':'Optional','modal.city':'Birth city','modal.city.ph':'Optional, improves accuracy',
@@ -514,6 +581,7 @@ function applyHandoff() {
   sessions.unshift(sess);
   ls.set('xy_sessions', sessions);
 
+  enterChat();                                     // 进对话态(隐藏居中 hero)
   $('msgs').innerHTML = '';                        // 清掉欢迎屏
   addAIBub(h.reading, h.hexagram || null, true);   // 首条 = 上一页的解读原文
   sess.msgs.push({ role: 'ai', content: h.reading, hexagram: h.hexagram || null });
@@ -587,7 +655,8 @@ function bindEvents() {
     LANG = LANG === 'en' ? 'zh' : 'en';
     localStorage.setItem('lang', LANG);
     applyI18n();
-    if (!curSid) { $('msgs').innerHTML = ''; renderWelcome(); }  // 尚未开始对话时，重绘欢迎屏应用新语言
+    // 尚在首屏(未进对话)时，重绘居中欢迎屏应用新语言
+    if (!document.body.classList.contains('chat-on')) renderWelcome();
   };
 
   // 模式切换
@@ -622,6 +691,8 @@ function switchMode(mode) {
   curMode = mode;
   document.querySelectorAll('#modeRow .mt').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
   $('cTxt').placeholder = t(`mode.ph.${mode}`);
+  // 首屏态下切模式 → 刷新居中欢迎屏的建议问题(未进对话时)
+  if (!document.body.classList.contains('chat-on')) renderWelcome();
 }
 
 function showChat() {
@@ -723,7 +794,7 @@ function loadSession(sid) {
   curSid  = sid;
   curMode = sess.mode || 'suiwen';
   switchMode(curMode);
-  showChat();
+  enterChat();
   // 重绘消息
   $('msgs').innerHTML = '';
   sess.msgs.forEach(m => {
@@ -746,33 +817,37 @@ function newSession() {
   renderSidebar();
 }
 
+// 首屏态 ⇄ 对话态切换。进入对话态:隐藏居中 hero,显示消息流。
+function enterChat() {
+  document.body.classList.add('chat-on');
+  $('hero').style.display = 'none';
+  $('chatView').style.display = 'flex';
+}
+function enterHero() {
+  document.body.classList.remove('chat-on');
+  $('chatView').style.display = 'none';
+  $('hero').style.display = 'flex';
+}
+
+// 渲染居中欢迎屏(仪式感首屏):大字标题(称呼/应用名)+ 诗意副标 + 建议问题网格。
 function renderWelcome() {
-  const hasProf = !!(profile?.datetime);
-  const name    = profile?.name ? t('welcome.namePrefix')(profile.name) : '';
-
-  // 欢迎语：有命盘 / 无命盘 两套
-  const introMap = {
-    suiwen:     t(hasProf ? 'welcome.suiwen.on'   : 'welcome.suiwen.off')(name),
-    tianming:   t(hasProf ? 'welcome.tianming.on' : 'welcome.tianming.off')(name),
-    renjiandao: t('welcome.renjiandao')(),
-    diyun:      t(hasProf ? 'welcome.diyun.on'    : 'welcome.diyun.off')(name),
-  };
-  const intro = introMap[curMode] || introMap.suiwen;
-
+  enterHero();
+  // 标题:有称呼用称呼,否则用应用名
+  $('heroTitle').textContent = profile?.name ? profile.name : t('hero.title');
+  // 副标:有称呼给一句「XX，慢慢来」的引导,否则用通用诗意副标
+  $('heroSub').textContent = profile?.name ? t('hero.greet')(profile.name) : t('hero.sub');
+  $('heroStatus').textContent = t('hero.status');
+  // 建议问题网格(按当前 mode)
   const chips = t(`chips.${curMode}`) || t('chips.suiwen');
-
-  const div = document.createElement('div');
-  div.className = 'welcome-msg';
-  div.innerHTML = `<p>${intro}</p>
-<div class="chips">${chips.map(c => `<button class="ck">${esc(c)}</button>`).join('')}</div>`;
-  div.querySelectorAll('.ck').forEach(b => b.onclick = () => send(b.textContent));
-  $('msgs').appendChild(div);
-  scrollBottom();
+  const wrap = $('heroChips');
+  wrap.innerHTML = chips.map(c => `<button class="ck">${esc(c)}</button>`).join('');
+  wrap.querySelectorAll('.ck').forEach(b => b.onclick = () => send(b.textContent));
 }
 
 async function send(q) {
   if (!q || streaming) return;
 
+  enterChat();                        // 首屏 → 对话态(幂等)
   streaming = true;
   $('sendBtn').disabled = true;
   $('cTxt').value = '';
@@ -849,6 +924,12 @@ async function send(q) {
           } else if (ev.type === 'done') {
             if (cursor) cursor.remove();
             if (txtEl) txtEl.innerHTML = md(fullTxt);
+            // 流式完成 → 给气泡补脚注(免责 + 复制)
+            const bub = aiBub.querySelector('.bub');
+            if (bub && !bub.querySelector('.ai-foot')) {
+              bub.insertAdjacentHTML('beforeend', aiFootHtml());
+              bindShare(aiBub);
+            }
           }
         } catch (_) { /* partial JSON */ }
       }
@@ -906,10 +987,35 @@ function addAIBub(text, hexagram, done, isErr) {
   }
   const bubCls = isErr ? 'bub err-bub' : 'bub';
   const cursor = done ? '' : '<span class="cursor"></span>';
-  d.innerHTML = `${modeTag}<div class="${bubCls}">${hexHtml}<div class="ai-txt">${md(text)}${cursor}</div></div><div class="ts">${hhmm()}</div>`;
+  const foot = (done && !isErr) ? aiFootHtml() : '';
+  d.innerHTML = `${modeTag}<div class="${bubCls}">${hexHtml}<div class="ai-txt">${md(text)}${cursor}</div>${foot}</div><div class="ts">${hhmm()}</div>`;
   $('msgs').appendChild(d);
+  if (foot) bindShare(d);
   scrollBottom();
   return d;
+}
+
+// AI 气泡脚注:斜体免责 + 复制/分享键(吸收 MetaSight)
+function aiFootHtml() {
+  return `<div class="ai-foot"><span class="disc">${esc(t('disclaimer'))}</span>
+<button class="ai-share" type="button" aria-label="复制 / Copy" title="${esc(LANG==='en'?'Copy':'复制')}">
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h9a1 1 0 0 1 1 1v11" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="8" width="12" height="12" rx="1.4"/></svg>
+</button></div>`;
+}
+// 复制该 AI 气泡正文到剪贴板,反馈 ✓ 态
+function bindShare(msgEl) {
+  const btn = msgEl.querySelector('.ai-share');
+  if (!btn) return;
+  btn.onclick = () => {
+    const txt = msgEl.querySelector('.ai-txt')?.innerText || '';
+    const ok = () => { btn.classList.add('done'); btn.title = t('copied');
+      btn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17.5 19 6.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`; };
+    const legacy = () => { try { const ta=document.createElement('textarea'); ta.value=txt;
+      ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); ta.remove(); ok(); } catch {} };
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(txt).then(ok).catch(legacy);
+    else legacy();
+  };
 }
 
 // 极简 Markdown
