@@ -173,12 +173,18 @@
   .cast-stage .stage-cap { font-family:var(--serif); font-size:15px; letter-spacing:4px; color:var(--ink);
     opacity:.9; animation:pulse 1.8s ease-in-out infinite; }
 
-  /* 龟壳 */
-  .turtle-wrap { position:relative; width:150px; height:132px; display:grid; place-items:center; }
-  .turtle-svg { width:150px; height:132px; display:block; transform-origin:50% 62%;
-    animation:turtleShake 1.5s ease-in-out; }
+  /* 龟甲 medallion(八卦太极龟甲,240 viewBox 缩到 200px 显示) */
+  .turtle-wrap { position:relative; width:200px; height:200px; display:grid; place-items:center; }
+  .turtle-svg { width:200px; height:200px; display:block; transform-origin:50% 52%;
+    animation:turtleShake 1.5s ease-in-out; overflow:visible; }
   .turtle-svg .sh-shadow { fill:var(--glow); }
-  .turtle-shadow { position:absolute; bottom:-6px; left:50%; width:104px; height:15px; transform:translateX(-50%);
+  /* 太极中盘:极缓自转 + 摇卦时的微光晕(纯装饰) */
+  .turtle-svg .rj-taiji { transform-box:fill-box; transform-origin:center; animation:rjTaijiSpin 14s linear infinite; }
+  @keyframes rjTaijiSpin { to { transform:rotate(360deg); } }
+  /* 朱砂符环:轻微明灭 */
+  .turtle-svg .rj-glyph { animation:rjGlyphShim 3.2s ease-in-out infinite; }
+  @keyframes rjGlyphShim { 0%,100%{opacity:.4;} 46%{opacity:.72;} }
+  .turtle-shadow { position:absolute; bottom:2px; left:50%; width:132px; height:16px; transform:translateX(-50%);
     background:radial-gradient(ellipse at center, var(--glow), transparent 72%);
     border-radius:50%; animation:turtleShadow 1.5s ease-in-out; }
   @keyframes turtleShake {
@@ -249,8 +255,8 @@
 
   @media (max-width:560px){
     .cast-stage { padding:40px 12px 40px; min-height:300px; }
-    .turtle-wrap, .turtle-svg { width:122px; height:108px; }
-    .turtle-shadow { width:86px; }
+    .turtle-wrap, .turtle-svg { width:158px; height:158px; }
+    .turtle-shadow { width:104px; }
     .coin-row { gap:7px; }
     .coin, .coin-svg { width:38px; height:38px; }
   }
@@ -270,8 +276,10 @@
     .lead .dao-motif, .xlink { transition:none; }
     .xlink:hover { transform:none; }
     .turtle-svg, .turtle-shadow, .turtle-wrap.spilling .turtle-svg,
+    .turtle-svg .rj-taiji, .turtle-svg .rj-glyph,
     .coin, .coin.fly, .coin.landed .coin-svg, .coin.landed .halo,
     .cast-stage .stage-cap, .cast-stage.fading { animation:none; }
+    .turtle-svg .rj-glyph { opacity:.6; }
     .coin { opacity:1; transform:none; }
   }
 </style>
@@ -503,23 +511,44 @@ f.addEventListener('submit', async (e) => {
   }
 });
 
-const TURTLE_SVG = `<svg class="turtle-svg" viewBox="0 0 150 132" fill="none" aria-hidden="true">
-  <ellipse class="sh-shadow" cx="75" cy="118" rx="46" ry="7"/>
-  <!-- 龟头 -->
-  <path d="M75 24 q-9 -12 0 -18 q9 6 0 18" fill="var(--bg-2)" stroke="var(--muted)" stroke-width="2"/>
-  <circle cx="71" cy="10" r="1.4" fill="var(--ink)"/><circle cx="79" cy="10" r="1.4" fill="var(--ink)"/>
-  <!-- 四足 -->
-  <path d="M30 62 q-14 -4 -18 8 M120 62 q14 -4 18 8 M40 98 q-10 8 -6 18 M110 98 q10 8 6 18"
-    stroke="var(--muted)" stroke-width="2.4" stroke-linecap="round"/>
-  <!-- 龟壳椭圆轮廓 -->
-  <ellipse cx="75" cy="66" rx="52" ry="42" fill="var(--bg-2)" stroke="var(--ink)" stroke-width="2.6"/>
-  <ellipse cx="75" cy="66" rx="40" ry="31" fill="none" stroke="var(--muted)" stroke-width="1.4" opacity=".7"/>
-  <!-- 龟背中脊六格纹路 -->
-  <path d="M75 27 V105 M55 38 L55 94 M95 38 L95 94" stroke="var(--muted)" stroke-width="1.4" opacity=".7"/>
-  <path d="M55 48 H95 M55 66 H95 M55 84 H95 M35 60 Q45 66 35 72 M115 60 Q105 66 115 72"
-    stroke="var(--muted)" stroke-width="1.3" opacity=".6"/>
-  <!-- 朱砂点缀 -->
-  <circle cx="75" cy="66" r="3.4" fill="var(--cinnabar)" opacity=".85"/>
+// 八卦龟甲 medallion(源自 preview-yaogua,黑底白描 → 墨韵淡底墨描,800→240 等比缩放)。
+// 龟甲外缘鳞片、朱砂符环、八卦太极中盘均由 buildTurtleShell() 程序化构建(见下)。
+const TURTLE_SVG = `<svg class="turtle-svg" viewBox="0 0 240 240" fill="none" aria-hidden="true">
+  <defs>
+    <radialGradient id="rjHaloG" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="var(--cinnabar)" stop-opacity=".5"/>
+      <stop offset="55%" stop-color="var(--cinnabar)" stop-opacity=".16"/>
+      <stop offset="100%" stop-color="var(--cinnabar)" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- 龟甲主体(椭圆);cx=120 cy=124,rx=64 ry=77(800 盘的 215/258 等比缩到 240) -->
+  <g class="rj-shell">
+    <g id="rj-rim" stroke="var(--muted)" stroke-width=".9" fill="none" opacity=".7"></g>
+    <ellipse cx="120" cy="124" rx="64" ry="77" fill="var(--bg-2)" stroke="var(--ink)" stroke-width="2"/>
+    <ellipse cx="120" cy="124" rx="58" ry="71" fill="none" stroke="var(--muted)" stroke-width=".8" opacity=".55"/>
+    <!-- 中脊 + 甲片缝 -->
+    <path d="M120,50 L120,198" stroke="var(--muted)" stroke-width=".9" opacity=".6"/>
+    <g stroke="var(--muted)" stroke-width=".8" opacity=".5" fill="none">
+      <path d="M64,90 Q120,75 176,90"/><path d="M61,114 Q120,104 179,114"/>
+      <path d="M61,141 Q120,151 179,141"/><path d="M64,166 Q120,180 176,166"/>
+      <path d="M90,65 Q96,124 90,186"/><path d="M150,65 Q144,124 150,186"/>
+    </g>
+    <!-- 朱砂符环(甲骨文样式,程序化) -->
+    <g id="rj-glyphRing" class="rj-glyph" stroke="var(--cinnabar)" stroke-width=".9" fill="none" stroke-linecap="round" opacity=".62"></g>
+    <!-- 八卦太极中盘 -->
+    <g id="rj-medallion">
+      <circle cx="120" cy="124" r="29" fill="var(--bg)" stroke="var(--ink)" stroke-width="1.4"/>
+      <circle cx="120" cy="124" r="27" fill="none" stroke="var(--muted)" stroke-width=".7" opacity=".5"/>
+      <g id="rj-trigrams" stroke="var(--ink)" stroke-width="1.5" stroke-linecap="round"></g>
+      <g class="rj-taiji">
+        <circle cx="120" cy="124" r="15.5" fill="var(--bg-2)" stroke="var(--ink)" stroke-width="1"/>
+        <path d="M120,108.5 a7.75,7.75 0 0,1 0,15.5 a7.75,7.75 0 0,0 0,15.5 a15.5,15.5 0 0,1 0,-31 Z"
+          fill="var(--ink)" opacity=".82"/>
+        <circle cx="120" cy="116.2" r="2.1" fill="var(--bg-2)"/>
+        <circle cx="120" cy="131.8" r="2.1" fill="var(--ink)"/>
+      </g>
+    </g>
+  </g>
 </svg>`;
 
 function coinSVG(){
@@ -530,6 +559,73 @@ function coinSVG(){
     <rect class="sqhole" x="18" y="18" width="10" height="10" rx="1"/>
     <text class="glyph" x="14" y="16">易</text>
   </svg>`;
+}
+
+// 程序化补全龟甲 medallion:外缘鳞片 / 朱砂符环 / 八卦(源自 preview-yaogua,800→240 缩放,cx=120 cy=124)。
+// 在 TURTLE_SVG 插入 DOM 后调用一次(runCastRitual 里)。
+function buildTurtleShell(root){
+  const svgns = 'http://www.w3.org/2000/svg';
+  const cx = 120, cy = 124;
+  // 外缘鳞片(marginal scutes):锯齿轮廓 + 放射刻痕
+  const rim = root.querySelector('#rj-rim');
+  if (rim && !rim.childElementCount){
+    const N = 34, RX = 64, RY = 77, amp = 3.9;
+    let d = '';
+    for (let i=0;i<=N;i++){
+      const t = i/N*Math.PI*2 - Math.PI/2;
+      const rx = RX + (i%2 ? amp : -amp*0.2);
+      const ry = RY + (i%2 ? amp : -amp*0.2);
+      d += (i?'L':'M') + (cx+rx*Math.cos(t)).toFixed(1) + ',' + (cy+ry*Math.sin(t)).toFixed(1) + ' ';
+    }
+    const p = document.createElementNS(svgns,'path');
+    p.setAttribute('d', d+'Z'); p.setAttribute('fill','none');
+    rim.appendChild(p);
+    for (let i=0;i<N;i++){
+      const t = i/N*Math.PI*2 - Math.PI/2;
+      const ln = document.createElementNS(svgns,'line');
+      ln.setAttribute('x1',(cx+(RX-1)*Math.cos(t)).toFixed(1)); ln.setAttribute('y1',(cy+(RY-1)*Math.sin(t)).toFixed(1));
+      ln.setAttribute('x2',(cx+(RX-7)*Math.cos(t)).toFixed(1)); ln.setAttribute('y2',(cy+(RY-8)*Math.sin(t)).toFixed(1));
+      rim.appendChild(ln);
+    }
+  }
+  // 朱砂甲骨符环
+  const ring = root.querySelector('#rj-glyphRing');
+  if (ring && !ring.childElementCount){
+    const glyphSet = [
+      'M-6,-8 L0,8 L6,-8 M-4,0 L4,0','M-7,-7 L7,7 M-7,7 L7,-7','M0,-9 L0,9 M-7,-3 Q0,-9 7,-3',
+      'M-7,-8 L7,-8 M0,-8 L0,8 M-5,8 L5,8','M-6,-8 Q0,-2 -6,8 M6,-8 Q0,-2 6,8','M-8,0 L8,0 M-4,-6 L-4,6 M4,-6 L4,6',
+      'M0,-9 L-6,3 L6,3 Z M0,3 L0,9','M-7,-6 Q0,-10 7,-6 Q4,4 0,9 Q-4,4 -7,-6','M-6,-8 L6,-8 M-6,0 L6,0 M-6,8 L6,8',
+      'M0,-9 L0,9 M-6,-4 L6,-4 M-6,4 L6,4','M-7,-7 L0,0 L-7,7 M0,-7 L7,0 L0,7','M-5,-9 Q6,-4 -3,2 Q6,6 -4,9'
+    ];
+    const G = 22, RX = 64, RY = 77;
+    for (let i=0;i<G;i++){
+      const t = i/G*Math.PI*2 - Math.PI/2;
+      const x = cx+(RX-13)*0.9*Math.cos(t), y = cy+(RY-13)*0.9*Math.sin(t);
+      const g = document.createElementNS(svgns,'g');
+      g.setAttribute('transform',`translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${(t*180/Math.PI+90).toFixed(1)}) scale(.42)`);
+      const p = document.createElementNS(svgns,'path');
+      p.setAttribute('d', glyphSet[i%glyphSet.length]);
+      g.appendChild(p); ring.appendChild(g);
+      g.style.animationDelay = (i*0.05)+'s';
+    }
+  }
+  // 八卦(乾 巽 坎 艮 坤 震 离 兑),阳=整线 阴=断线
+  const trig = root.querySelector('#rj-trigrams');
+  if (trig && !trig.childElementCount){
+    const bagua = [[1,1,1],[1,1,0],[0,1,0],[0,0,1],[0,0,0],[1,0,0],[1,0,1],[0,1,1]];
+    const tr = 22.5;
+    for (let i=0;i<8;i++){
+      const t = i/8*Math.PI*2 - Math.PI/2;
+      const g = document.createElementNS(svgns,'g');
+      g.setAttribute('transform',`translate(${(cx+tr*Math.cos(t)).toFixed(1)},${(cy+tr*Math.sin(t)).toFixed(1)}) rotate(${(t*180/Math.PI+90).toFixed(1)})`);
+      bagua[i].forEach((yang,li)=>{
+        const yy = (li-1)*3;
+        const seg = (x1,x2)=>{ const l=document.createElementNS(svgns,'line'); l.setAttribute('x1',x1);l.setAttribute('x2',x2);l.setAttribute('y1',yy);l.setAttribute('y2',yy);l.setAttribute('stroke','var(--ink)');l.setAttribute('stroke-width','1.5');l.setAttribute('stroke-linecap','round');g.appendChild(l); };
+        if (yang) seg(-4.6,4.6); else { seg(-4.6,-1.3); seg(1.3,4.6); }
+      });
+      trig.appendChild(g);
+    }
+  }
 }
 
 // 龟壳仪式:先摇龟壳(不依赖数据)→ 数据到后六钱按真实 bits 落定 → 过渡到卦象
@@ -551,6 +647,7 @@ function runCastRitual(fetchPromise){
        <div class="stage-hint">${esc(t('skip'))}</div>`;
     result.innerHTML = '';
     result.appendChild(stage);
+    buildTurtleShell(stage);  // 程序化补全龟甲鳞片/朱砂符环/八卦
 
     const coinRow = stage.querySelector('.coin-row');
     const capEl = stage.querySelector('.stage-cap');
@@ -679,6 +776,8 @@ async function interpret(){
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 </script>
-<script src="/ink.js" defer></script>
+<!-- 鼠标流体特效(深墨黑水墨,全站铺;取代旧 ink.js 墨迹;reduced-motion 自动不启动) -->
+<script src="/splash-cursor.js"></script>
+<script>window.initSplashCursor && window.initSplashCursor();</script>
 </body>
 </html>

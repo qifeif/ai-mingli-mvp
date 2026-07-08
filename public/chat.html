@@ -929,5 +929,8 @@ function esc(s='') { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
 function hhmm()   { const d=new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
 function scrollBottom() { const cv=$('chatView'); if(cv) setTimeout(()=>{ cv.scrollTop=cv.scrollHeight; },30); }
 </script>
+<!-- 鼠标流体特效(深墨黑水墨,全站铺;reduced-motion 自动不启动) -->
+<script src="/splash-cursor.js"></script>
+<script>window.initSplashCursor && window.initSplashCursor();</script>
 </body>
 </html>

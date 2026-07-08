@@ -61,8 +61,6 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E");
     mix-blend-mode: multiply;
   }
-  /* 鼠标墨迹画布(landing 自包含,不引 theme.css,需自带定位) */
-  #ink-canvas { position: fixed; inset: 0; z-index: 60; pointer-events: none; mix-blend-mode: multiply; }
   a { color: inherit; text-decoration: none; }
   .container { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
 
@@ -104,6 +102,17 @@
     padding: 0 16px; border-radius: 999px; transition: background .18s, color .18s;
   }
   .nav-links a:hover { background: rgba(38, 52, 59, .06); }
+  /* 导航悬停说明气泡:实线浅灰框 + 透明底 + 轻灰字(悬停淡入、2.5s 后 JS 自动淡出) */
+  .nav-links a[data-tip] { position: relative; }
+  .nav-tip {
+    position: absolute; top: calc(100% + 9px); left: 50%; transform: translateX(-50%) translateY(-4px);
+    white-space: nowrap; font-size: 12.5px; font-weight: 400; letter-spacing: .3px; line-height: 1.5;
+    color: rgba(38, 52, 59, .5); background: transparent; border: 1px solid rgba(38, 52, 59, .1);
+    border-radius: 9px; padding: 6px 13px;
+    opacity: 0; pointer-events: none; z-index: 60; transition: opacity .22s ease, transform .22s ease;
+  }
+  .nav-links a.tip-on .nav-tip { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @media (prefers-reduced-motion: reduce) { .nav-tip { transition: none; } }
   .nav-actions { justify-self: end; display: inline-flex; align-items: center; gap: 12px; }
   .nav-login {
     display: inline-flex; align-items: center; justify-content: center; height: 44px; min-width: 68px;
@@ -578,10 +587,10 @@
   <div class="container">
     <a class="logo" href="/"><span class="seal-mini">易</span><span class="lt">心易</span></a>
     <div class="nav-links" aria-label="主导航">
-      <a href="/app" data-i18n="nav.tianming">天命</a>
-      <a href="/diyun" data-i18n="nav.diyun">地运</a>
-      <a href="/renjiandao" data-i18n="nav.renjiandao">人间道</a>
-      <a href="/chat" data-i18n="nav.chat">对话</a>
+      <a href="/app" data-i18n="nav.tianming" data-tip="tip.tianming">天命</a>
+      <a href="/diyun" data-i18n="nav.diyun" data-tip="tip.diyun">地运</a>
+      <a href="/renjiandao" data-i18n="nav.renjiandao" data-tip="tip.renjiandao">人间道</a>
+      <a href="/chat" data-i18n="nav.chat" data-tip="tip.chat">对话</a>
       <a href="#pricing" data-i18n="nav.pricing">定价</a>
     </div>
     <div class="nav-actions">
@@ -909,6 +918,7 @@
 const I18N = {
   zh: {
     'nav.tianming':'天命','nav.diyun':'地运','nav.renjiandao':'人间道','nav.hehun':'合参','nav.chat':'对话','nav.pricing':'定价','nav.login':'登录','nav.cta':'开启对话',
+    'tip.tianming':'紫微排盘','tip.diyun':'住房选位','tip.renjiandao':'六爻问卜 + 合八字','tip.chat':'易理顾问 · 随问随答',
     'hero.kicker':'东方易理 · 现代决策',
     'hero.tagline':'由易入理 · 三才合一',
     'hero.intro':'承周易之体，演 AI 之用。把「算命」重做成陪你想清楚的决策工具：<br>天命看势，地运调场，人间道问时机。',
@@ -945,6 +955,7 @@ const I18N = {
   },
   en: {
     'nav.tianming':'Tian Ming','nav.diyun':'Di Yun','nav.renjiandao':'Ren Jian Dao','nav.hehun':'Dual Chart','nav.chat':'Chat','nav.pricing':'Pricing','nav.login':'Log in','nav.cta':'Start chat',
+    'tip.tianming':'Zi Wei chart','tip.diyun':'Home direction siting','tip.renjiandao':'I Ching divination + BaZi matching','tip.chat':'I Ching advisor · ask anything',
     'hero.kicker':'Eastern Yi · Modern Decision',
     'hero.tagline':'By the Yi into insight · Heaven, Earth & Human as one',
     'hero.intro':'Rooted in the I Ching, expressed through AI — we remade "fortune-telling" into a tool that helps you think a decision through. Life is shaped in three equal parts: Destiny ⅓, Environment ⅓, Effort ⅓.',
@@ -990,11 +1001,39 @@ function applyI18n(){
     else el.textContent = t(key);
   });
   document.getElementById('langtog').textContent = LANG==='en'?'中':'EN';
+  // 导航悬停说明气泡:确保每个 data-tip 链接有一个 .nav-tip 子元素,并按当前语言填文案
+  document.querySelectorAll('.nav-links a[data-tip]').forEach(a=>{
+    let tip = a.querySelector('.nav-tip');
+    if (!tip){ tip = document.createElement('span'); tip.className = 'nav-tip'; tip.setAttribute('aria-hidden','true'); a.appendChild(tip); }
+    tip.textContent = t(a.getAttribute('data-tip'));
+  });
 }
 document.getElementById('langtog').addEventListener('click', ()=>{ LANG = LANG==='en'?'zh':'en'; localStorage.setItem('lang',LANG); applyI18n(); });
 applyI18n();
+
+// 悬停说明:鼠标移入 → 淡入 → 2.5s 后自动淡出(即便仍悬停);移开则立刻收起,可再次触发
+(function(){
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('.nav-links a[data-tip]').forEach(a=>{
+    let hideTimer = null;
+    const show = ()=>{
+      if (!a.querySelector('.nav-tip')) return;
+      a.classList.add('tip-on');
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(()=> a.classList.remove('tip-on'), 2500); // 2.5s 后自动消失
+    };
+    const hide = ()=>{ clearTimeout(hideTimer); a.classList.remove('tip-on'); };
+    a.addEventListener('mouseenter', show);
+    a.addEventListener('mouseleave', hide);
+    // 键盘可达:聚焦也提示(reduce 下不自动计时消失,靠 blur 收)
+    a.addEventListener('focus', ()=>{ a.classList.add('tip-on'); if (!reduce){ clearTimeout(hideTimer); hideTimer = setTimeout(()=>a.classList.remove('tip-on'), 2500); } });
+    a.addEventListener('blur', hide);
+  });
+})();
 </script>
 <script src="/fx.js" defer></script>
-<script src="/ink.js" defer></script>
+<!-- 鼠标流体特效(深墨黑水墨,全站铺;取代旧 ink.js 墨迹;reduced-motion 自动不启动) -->
+<script src="/splash-cursor.js"></script>
+<script>window.initSplashCursor && window.initSplashCursor();</script>
 </body>
 </html>
