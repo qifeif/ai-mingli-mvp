@@ -74,6 +74,16 @@ ${pr}
 `;
   }
 
+  // 用户偏好适配：由前端点赞/点踩样本拼成的风格提示（extras.prefHint），软性调教语气/详略。
+  let prefCtx = '';
+  if (extras.prefHint) {
+    prefCtx = `
+# 回答风格适配（依用户点赞/点踩，软性参考、非硬规则）
+${String(extras.prefHint).slice(0, 800)}
+（据此微调详略、语气与结构，贴近用户赞过的、避开踩过的；但不得因此违反下方核心原则或编造数据。）
+`;
+  }
+
   const hasProfile = !!(chartCtx || fsCtx);
 
   const modeTip = {
@@ -101,12 +111,12 @@ ${pr}
 ---
 
 以下是命主的完整命盘数据，请基于此进行对话式解读（多轮问答，紧扣命盘作答，不重复堆砌整盘信息）：
-${chartCtx}${priorCtx}`;
+${chartCtx}${priorCtx}${prefCtx}`;
   }
 
   // 其余模式(综合易理/六爻/八宅):保持「心易」克制对话顾问人设。
   return `你是「心易」AI 易理顾问，用自然流畅的对话，从易理（周易、紫微斗数、六爻、八宅风水等东方智慧）角度帮用户看清处境、想明白选择。
-${chartCtx}${hexCtx}${fsCtx}${priorCtx}
+${chartCtx}${hexCtx}${fsCtx}${priorCtx}${prefCtx}
 # 当前解读角度
 ${modeTip[mode] || modeTip.suiwen}
 

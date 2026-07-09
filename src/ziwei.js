@@ -205,6 +205,46 @@ const MUT_NOTE = {
   ke: ['化科 · 名声专业', 'Ke · repute and craft'],
   ji: ['化忌 · 执念卡点', 'Ji · fixation and friction'],
 };
+
+// ---------- 三方四正逐宫解读:让财/官/迁/命四个宫读来明显不同(规则版,离线) ----------
+// 宫职语义:每宫在问什么事 —— 驱动标题/开场/主体措辞随目标宫而变(取自 palaceName,不再硬认命宫)。
+// 每字段 [zh, en] 成对,取值统一 [en?1:0],杜绝「只做中文半」。
+const JOB = {
+  命宫: { 问: ['你自己的底色与立身', 'who you are and how you stand'], 主体: ['本性', 'your nature'], 落点: ['立身', 'standing'] },
+  财帛: { 问: ['钱怎么进、守不守得住', 'how money comes in and whether it stays'], 主体: ['钱财', 'money'], 落点: ['聚财与守成', 'earning and keeping'] },
+  官禄: { 问: ['事业心往哪使、舞台在何方', 'where your drive goes and where the stage is'], 主体: ['事业', 'career'], 落点: ['担纲与谋事', 'taking charge'] },
+  迁移: { 问: ['外出机遇与人际、在外顺不顺', 'outer chances, people, and how you fare away from home'], 主体: ['外出', 'moving out'], 落点: ['把握外部机遇', 'seizing outer chances'] },
+  夫妻: { 问: ['亲密关系的相处与磨合', 'intimacy and how you two mesh'], 主体: ['感情', 'partnership'], 落点: ['经营关系', 'tending the bond'] },
+  子女: { 问: ['子女缘与你的创造、桃花', 'children, creativity, and warmth'], 主体: ['子女与创造', 'children and creativity'], 落点: ['养育与创造', 'nurturing'] },
+  疾厄: { 问: ['身心健康的强弱区', 'where body and mind run strong or weak'], 主体: ['健康', 'health'], 落点: ['养身调心', 'keeping well'] },
+  田宅: { 问: ['家宅、不动产与安身之所', 'home, property, and where you settle'], 主体: ['家宅', 'home'], 落点: ['安家守业', 'settling'] },
+  福德: { 问: ['心气、福分与享受', 'inner ease, fortune, and enjoyment'], 主体: ['心气', 'inner ease'], 落点: ['安顿身心', 'settling the mind'] },
+  父母: { 问: ['与长辈、上级的缘分', 'elders, superiors, and support'], 主体: ['长辈缘', 'elders'], 落点: ['承接荫护', 'drawing on support'] },
+  兄弟: { 问: ['手足、平辈与合伙', 'siblings, peers, and partners'], 主体: ['平辈缘', 'peers'], 落点: ['协力共事', 'working together'] },
+  仆役: { 问: ['朋友、下属与人脉', 'friends, staff, and your network'], 主体: ['人脉', 'network'], 落点: ['经营人脉', 'building ties'] },
+};
+const JOB_ALIAS = { 事业: '官禄', 交友: '仆役', 奴仆: '仆役' }; // iztro 宫名兼容
+function jobOf(name) { return JOB[name] || JOB[JOB_ALIAS[name]] || JOB.命宫; }
+
+// 亮度三档:庙旺得利→强、平不闲→中、陷→弱。措辞真正入句,旺陷同星读出不同结论。
+const BRIGHT = {
+  强: { zh: '得地生力', en: 'well-placed and potent' },
+  中: { zh: '力量平平', en: 'middling in strength' },
+  弱: { zh: '落陷需留意', en: 'weakly placed, mind the edges' },
+};
+function brightTier(liang) {
+  if (['庙', '旺', '得', '利'].includes(liang)) return '强';
+  if (['陷'].includes(liang)) return '弱';
+  return '中'; // 平/不/闲/空 归中平
+}
+// 四化按角色位落点解读:禄权科忌落在「这件事」的哪一角,是助力还是卡点。
+const MUT_ROLE = {
+  lu: { zh: '是顺水的助力', en: 'a favourable current' },
+  quan: { zh: '给了掌控与推进的劲', en: 'grants control and drive' },
+  ke: { zh: '带来名声与专业加持', en: 'lends repute and craft' },
+  ji: { zh: '是要先看清的卡点', en: 'a sticking point to name first' },
+};
+
 // 十四主星中英对照(EN 模式 chip / 标题用罗马字星名)
 const STAR_EN = {
   紫微: 'Ziwei', 天机: 'Tianji', 太阳: 'Taiyang', 武曲: 'Wuqu', 天同: 'Tiantong', 廉贞: 'Lianzhen',
@@ -237,14 +277,23 @@ function starsLabel(palace, lang) {
 export function summarizeSanFang(chart, lang = 'zh', palaceName = '命宫') {
   const en = lang === 'en';
   const S = chart.三方四正表?.[palaceName] || chart.三方四正;
-  const ming = S.命宫;
-  const mingMajors = ming.主星;
-  const mingMut = mingMajors.map((s) => s.化).filter(Boolean);
+  const J = jobOf(palaceName);
+  const 问 = J.问[en ? 1 : 0], 主体 = J.主体[en ? 1 : 0], 落点 = J.落点[en ? 1 : 0];
 
+  // 每个角色位取首星 + 星情白话 + 亮度档 + 四化(沿用现有字段,空宫标记)
+  const read = (P) => {
+    const s = (P.主星 || [])[0];
+    if (!s) return { 空: true, tier: '中', hua: '' };
+    return { 空: false, 名: s.名, 亮: s.亮 || '', tier: brightTier(s.亮), hua: s.化 || '', 白话: (STARS[s.名] || ['', ''])[en ? 1 : 0] };
+  };
+  const R = { 本: read(S.命宫), 对: read(S.迁移), 财: read(S.财帛), 官: read(S.官禄) };
+
+  // 标题:把目标宫的职能写进(容器形态与旧版一致,前端 renderSanFang 无需改)
   const 标题 = en
-    ? `Triad & Opposition · read from ${palaceName === '命宫' ? 'the Life palace' : `the ${palaceEnName(palaceName, true)} palace`}${mingMajors[0] ? ` (${starName(mingMajors[0].名, true)})` : ''}`
-    : `三方四正 · 以${palaceName}${mingMajors[0] ? mingMajors[0].名 : '空宫'}起读`;
+    ? `Triad & Opposition · reading ${palaceName === '命宫' ? 'the Life palace' : `the ${palaceEnName(palaceName, true)} palace`} — ${问}`
+    : `三方四正 · 以${palaceName}问${主体}`;
 
+  // chips:沿用四条 starsLabel,契约零改动
   const chips = [
     `${en ? 'Life' : '命宫'} · ${starsLabel(S.命宫, lang)}`,
     `${en ? 'Travel' : '迁移'} · ${starsLabel(S.迁移, lang)}`,
@@ -252,35 +301,45 @@ export function summarizeSanFang(chart, lang = 'zh', palaceName = '命宫') {
     `${en ? 'Career' : '官禄'} · ${starsLabel(S.官禄, lang)}`,
   ];
 
-  const trait = (palace) => {
-    const s = palace.主星[0];
-    return s && STARS[s.名] ? STARS[s.名][en ? 1 : 0] : (en ? 'takes its cue from the opposite palace' : '性质借对宫而定');
-  };
+  // 段落[0] 定制开场:把目标宫的职能写进「三方四正定义」句,不再是通用套话
+  const p0 = en
+    ? `To read ${palaceName === '命宫' ? 'yourself' : `the matter of ${主体}`}, weigh four angles together: the home palace looks at ${问}; the opposite palace is the mirror of inner and outer; the two trine helpers are the hands that back you or check you. Never one star alone.`
+    : `看${主体}这件事,问的是${问}——不能只盯一处。要把四个角度合看:本宫看你${落点}的路数,对宫看里外那面镜子,两个三合助手看谁替你托底、谁在牵制。`;
 
+  // 段落[1] 主体读:以目标宫本宫坐星起,依落点串对宫/三合,措辞全指向这件事,亮度旺陷改写形容词
+  const desc = (r) => r.空
+    ? (en ? 'borrows from its opposite' : '空宫,借对宫而定')
+    : (en ? `${starName(r.名, true)} (${BRIGHT[r.tier].en}) — ${r.白话}` : `${r.名}${r.亮}(${BRIGHT[r.tier].zh})—${r.白话}`);
+  const tierNote = en
+    ? (R.本.tier === '弱' ? ` The home palace runs weak here, so ${主体} leans on the trines to make up the force.` : R.本.tier === '强' ? ` The home palace is well-placed, so this line of ${主体} has strength to spend.` : '')
+    : (R.本.tier === '弱' ? `本宫偏弱,${主体}上更要扬短避锋、靠三合补力。` : R.本.tier === '强' ? `本宫得力,${主体}这条路使得上劲。` : '');
+  // 角色位如实称呼(本宫/对宫/两三合助手),不冒充具体宫名 —— 避免非命宫视角下张冠李戴
   const p1 = en
-    ? 'The triad-and-opposition are the four angles that matter most for any single matter: the Life palace (your own grain), its opposite Travel (the outer world and others), and the two trine palaces Wealth and Career (your resources and where work lands). Read all four together, never one star alone.'
-    : '三方四正,是看一件事最关键的四个角度:本宫(命宫)看你自身的底色,对宫(迁移)看外部环境与他人,两个三合宫(财帛、官禄)看你的资源与事业落点——四宫合看,才不偏听一星。';
+    ? `The home palace ${desc(R.本)}, which sets the tone for ${落点}. Opposite it ${desc(R.对)}, showing how the outside bears on this; and the two trine helpers — one ${desc(R.财)}, the other ${desc(R.官)} — say who lends weight to ${主体}.${tierNote}`
+    : `本宫${desc(R.本)}——这是你${落点}的底盘。对宫${desc(R.对)},看外部给不给力;两个三合助手,一头${desc(R.财)}、一头${desc(R.官)},看资源与舞台能否替${主体}托底。${tierNote}`;
 
-  const p2 = en
-    ? `Your Life palace is ${starsLabel(S.命宫, lang)} — ${trait(S.命宫)}. The opposite Travel shows ${trait(S.迁移)} in the outer world; Wealth runs on ${trait(S.财帛)}; Career leans to ${trait(S.官禄)}.`
-    : `你的命宫坐${starsLabel(S.命宫, lang)},${trait(S.命宫)};对宫迁移看外部,${trait(S.迁移)};财帛宫${trait(S.财帛)};官禄宫${trait(S.官禄)}。`;
-
-  let p3;
-  if (mingMut.includes('ji')) {
-    p3 = en
-      ? 'With a Ji (friction) transformation on the Life palace, there is a sticking point worth naming before you act — clear the knot first, then move. A perspective, not a verdict; the call stays yours.'
-      : '命宫见化忌,说明有个执念或卡点值得先看清:先解结,再动,别带着拧巴硬冲。这是视角不是定数,决定权仍在你。';
-  } else if (mingMut.includes('lu') || mingMut.includes('ke') || mingMut.includes('quan')) {
-    p3 = en
-      ? 'A favourable transformation sits on the Life palace — there is momentum to use, but lean on Career and Wealth to land it steadily rather than gamble. A perspective, not a verdict; the call stays yours.'
-      : '命宫见吉化,有股顺势的劲可借;但要落地,靠官禄与财帛稳着接,别赌一把。这是视角不是定数,决定权仍在你。';
+  // 段落[2] 四化按落点入句 + 归还决定权。扫四位所有 .化,凡出现禄权科忌点名落在哪个角色位、对这件事是助是卡
+  const POS = { 本: ['本宫', 'the home palace'], 对: ['对宫', 'the opposite'], 财: ['一个三合助手', 'one trine helper'], 官: ['另一个三合助手', 'the other trine helper'] };
+  const hits = [];
+  for (const k of ['本', '对', '财', '官']) {
+    if (R[k].hua && MUT_ROLE[R[k].hua]) {
+      hits.push(en ? `${MUT_ROLE[R[k].hua].en} on ${POS[k][1]}` : `${MUT_ROLE[R[k].hua].zh}(落在${POS[k][0]})`);
+    }
+  }
+  const tail = en ? ' A perspective, not a verdict; the call stays yours.' : '这是视角不是定数,决定权仍在你。';
+  let p2;
+  if (hits.length) {
+    p2 = en
+      ? `On the matter of ${主体}, the transformations land thus: ${hits.join('; ')}. Read together, keep the focus on ${落点}.${tail}`
+      : `就${主体}这一局,四化这样落:${hits.join(';')}。合看四宫,把重心放在${落点}上。${tail}`;
   } else {
-    p3 = en
-      ? 'No transformation marks the Life palace this time — weigh the four palaces evenly and let Career and Wealth ground the choice. A perspective, not a verdict; the call stays yours.'
-      : '此局命宫无四化,更要四宫均衡看,让官禄与财帛替选择托底,稳中求进。这是视角不是定数,决定权仍在你。';
+    // 无四化:仍用角色位措辞(两个三合助手),不硬写"财帛/官禄"——否则目标宫恰为财帛/官禄时会自指且点错宫
+    p2 = en
+      ? `No transformation marks these four palaces — weigh them evenly and let the two trine helpers ground the matter of ${主体}.${tail}`
+      : `此局四宫无四化,更要均衡看,让两个三合助手替${主体}托底,稳中求进。${tail}`;
   }
 
-  return { 标题, chips, 段落: [p1, p2, p3] };
+  return { 标题, chips, 段落: [p0, p1, p2] };
 }
 
 // ---------- AI 深化解读(「赛博倪海夏」人设,移植自开源 ziwei-2.0) ----------

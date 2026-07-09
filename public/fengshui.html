@@ -147,10 +147,8 @@
   .dy-example { font-family:var(--mono); font-size:11.5px; letter-spacing:1.5px; font-weight:700; color:#fff;
     background:var(--gold); border:1px solid var(--gold); border-radius:999px; padding:3px 11px; flex:none; }
 
-  /* 示例态:整块视觉降级(降透明 + 斜纹),让「这不是你的结果」一眼可辨(审计#2)*/
-  .dy-panel.is-example, .dy-detail.is-example { position:relative; opacity:.62; }
-  .dy-panel.is-example::after, .dy-detail.is-example::after { content:""; position:absolute; inset:0; pointer-events:none;
-    border-radius:inherit; background:repeating-linear-gradient(45deg, transparent 0 11px, rgba(168,131,76,.09) 11px 22px); }
+  /* 示例态:仅极轻降透明(不再斜纹),靠「示例」角标 + 横幅辨识,不做丑化(用户反馈)*/
+  .dy-panel.is-example, .dy-detail.is-example { position:relative; opacity:.94; }
   /* 示例顶部横幅:说清「下面是示例」+「填我的生日→」CTA(审计#2)*/
   .dy-eg-banner { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:0 0 16px;
     padding:11px 16px; font-size:13px; line-height:1.6; color:var(--ink);
@@ -286,6 +284,31 @@
   .di .d-star { width:44px; flex:none; }
   .di.g .d-star { color:var(--good); } .di.b .d-star { color:var(--bad); }
   .di .d-hua { color:var(--muted); }
+
+  /* 户型逐间点评 · 墨韵卡片(沿用八方位 --good/--bad 配色,新增中性 .n) */
+  .fp-list { display:grid; gap:10px; margin-top:4px; }
+  .fp-room { padding:12px 14px; border-radius:12px; border:1px solid var(--line); border-left:3px solid var(--line);
+    background:var(--bg-2); transition:border-color var(--dur-1) var(--ease); }
+  .fp-room.g { border-left-color:var(--good); background:var(--good-bg); border-color:var(--good-line); }
+  .fp-room.b { border-left-color:var(--bad);  background:var(--bad-bg);  border-color:var(--bad-line); }
+  .fp-room.n { border-left-color:var(--faint); }
+  .fp-room-top { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .fp-room-name { font-family:"Songti SC",serif; font-size:15px; color:var(--ink-strong); }
+  .fp-dir { font-size:12px; color:var(--faint); letter-spacing:1px; }
+  .fp-badge { margin-left:auto; font-size:11px; padding:2px 10px; border-radius:999px; border:1px solid var(--line); }
+  .fp-room.g .fp-badge { color:var(--good); border-color:var(--good-line); }
+  .fp-room.b .fp-badge { color:var(--bad);  border-color:var(--bad-line); }
+  .fp-room.n .fp-badge { color:var(--faint); }
+  .fp-note { font-size:13.5px; color:var(--muted); line-height:1.75; margin-top:6px; }
+  .fp-advice { font-size:12.5px; color:var(--cinnabar); margin-top:5px; }
+  .fp-overall { margin-top:16px; padding-top:14px; border-top:1px solid var(--line); display:grid; gap:9px; }
+  .fp-pill { font-size:13px; color:var(--ink); line-height:1.7; }
+  .fp-pill b { color:var(--accent-2); margin-right:7px; font-weight:600; }
+  .fp-fixes b { display:block; color:var(--bad); font-size:13px; margin-bottom:5px; }
+  .fp-fixes ul { margin:0; padding:0; list-style:none; display:grid; gap:5px; }
+  .fp-fixes li { position:relative; padding-left:16px; font-size:13px; color:var(--muted); line-height:1.7; }
+  .fp-fixes li::before { content:""; position:absolute; left:3px; top:10px; width:4px; height:4px; border-radius:50%; background:var(--bad); opacity:.7; }
+  .fp-summary { margin-top:2px; }
 
   .reading { white-space:pre-wrap; font-size:15px; line-height:2; color:var(--ink); }
   /* 户型点评:markdown 渲染后的墨韵阅读排版(替代原 .md 直出) */
@@ -501,6 +524,7 @@ const I18N = {
     'dir.N':'北','dir.NE':'东北','dir.E':'东','dir.SE':'东南','dir.S':'南','dir.SW':'西南','dir.W':'西','dir.NW':'西北',
     'loading':'正在为你勘定地脉方位…','err':'出错了：','foot':'本方位建议依八宅东西四命体系推算,仅供居家参考与自我调整,不构成任何确定性预测。',
     'p.benming':'本命卦','p.luopan':'你的八方位吉凶罗盘(图纸北方在上)','p.details':'八方位详解(吉→凶)','p.vision':'户型逐间方位点评','p.vision_label':'户型解读',
+    'p.fp.bedroom':'主卧宜','p.fp.study':'书房/办公宜','p.fp.fix':'需化解','p.fp.unknown':'方位待核',
     'lg.good':'吉方 · 宜卧室/书房/大门','lg.bad':'凶方 · 宜厕所/厨房压制',
     'dy.start':'住房定位','ml.cancel':'取消','dy.example':'示例','chat.ask':'就此局进对话追问 →',
     'v.needdate':'请先填你的出生日期,才能定你的本命卦','dy.eg.banner':'下面是一张示例盘 · 填你自己的出生日期,会换成你的','dy.eg.cta':'填我的生日 →',
@@ -524,6 +548,7 @@ const I18N = {
     'dir.N':'N','dir.NE':'NE','dir.E':'E','dir.SE':'SE','dir.S':'S','dir.SW':'SW','dir.W':'W','dir.NW':'NW',
     'loading':'Surveying your eight directions…','err':'Error: ','foot':'Directions are derived from the Eight Mansions / East-West Life system — for home reference and self-adjustment only, not a definite prediction.',
     'p.benming':'Your life-trigram','p.luopan':'Your eight-direction luck compass (plan-north on top)','p.details':'Eight directions in detail (best→worst)','p.vision':'Per-room direction notes','p.vision_label':'Floor-plan reading',
+    'p.fp.bedroom':'Master bedroom','p.fp.study':'Study / desk','p.fp.fix':'To ease','p.fp.unknown':'Dir. unverified',
     'lg.good':'Auspicious · bedroom/study/door','lg.bad':'Inauspicious · suppress with bath/kitchen',
     'dy.start':'Locate home','ml.cancel':'Cancel','dy.example':'Example','chat.ask':'Ask about this in chat →',
     'v.needdate':'Enter your birth date first — it sets your life-trigram','dy.eg.banner':'This is a sample reading · enter your own birth date and it becomes yours','dy.eg.cta':'Use my birth date →',
@@ -669,7 +694,15 @@ function fengshuiReadingText(d, payload) {
   if (goal) parts.push(L.goalLine(d.诉求?.名 || (payload?.goal || ''), goal.方位, goal.星));
   if (worst) parts.push(L.avoid(worst.方位));
   if (d.摘要) parts.push(d.摘要);
-  if (d.户型解读) parts.push((en ? 'Floor-plan notes: ' : '户型点评：') + d.户型解读);
+  // 户型点评拼进对话上下文:结构化字段须序列化(否则拼进 [object Object]);无结构化时用回退文本
+  if (d.户型点评 && (d.户型点评.rooms||[]).length) {
+    const rooms = d.户型点评.rooms.map(r => `${r.room}(${r.dir}${r.吉凶?'·'+r.吉凶:''})${r.note||''}`).join(' ');
+    const ov = d.户型点评.overall || {};
+    const ovTxt = [ov.bedroom, ov.study, (ov.cautions||[]).join('/'), ov.summary].filter(Boolean).join(' ');
+    parts.push((en ? 'Floor-plan notes: ' : '户型点评：') + rooms + (ovTxt ? ' | ' + ovTxt : ''));
+  } else if (d.户型解读) {
+    parts.push((en ? 'Floor-plan notes: ' : '户型点评：') + d.户型解读);
+  }
   return parts.filter(Boolean).join('\n\n');
 }
 
@@ -740,7 +773,8 @@ async function loadExample() {
     });
     const data = await res.json();
     if (!res.ok || hasSubmitted) return;               // 用户已自行提交则不覆盖
-    midPanel.innerHTML = renderPlate(data, true);      // 第二参数 isExample:加“示例”角标
+    // 示例态:中栏只展示「九宫方位盘」让用户看清盘长什么样(简化,用户反馈);右栏「调场建议」恢复原样例展示。
+    midPanel.innerHTML = renderPlate(data, true);
     rightPanel.innerHTML = renderTiao(data, true);
   } catch { /* 示例失败静默,占位仍在 */ }
 }
@@ -802,7 +836,11 @@ function renderPlate(d, isExample) {
     }
     const x = byDir[dir]; if (!x) return `<div class="dy-cell"></div>`;
     const cls = [x.good ? 'good' : 'bad', dir === goalDir ? 'goal' : ''].filter(Boolean).join(' ');
-    // 可点:手机 touch 就地展白话(不再只塞 title 悬浮,移动端点不出)(审计#4)
+    // 真实态可点:手机 touch 就地展白话(审计#4);示例态只展示、不可点(无详情条容器)
+    if (isExample) {
+      return `<div class="dy-cell ${cls}" title="${esc(x.白话||'')}">
+        <div class="dir">${esc(dirLbl(dir))}</div><div class="star">${esc(x.星)}</div><div class="lv">${esc(x.吉凶)}</div></div>`;
+    }
     return `<div class="dy-cell tapable ${cls}" role="button" tabindex="0"
       title="${esc(x.白话||'')}" data-dir="${esc(dir)}" data-star="${esc(x.星)}" data-lv="${esc(x.吉凶)}" data-bh="${esc(x.白话||'')}">
       <div class="dir">${esc(dirLbl(dir))}</div><div class="star">${esc(x.星)}</div><div class="lv">${esc(x.吉凶)}</div></div>`;
@@ -822,12 +860,22 @@ function renderPlate(d, isExample) {
     <span class="egb-txt">${esc(t('dy.eg.banner'))}</span>
     <button type="button" class="egb-cta" id="dy-eg-cta">${esc(t('dy.eg.cta'))}</button>
   </div>` : '';
-  // 白话结论前置(TL;DR):从结构化数据拼一句人话,术语墙前先给一句能懂的(审计#4)
+
+  // 示例态:只展示「九宫方位盘 + 图例」,让用户先看清九宫代表什么;下方内容(TL;DR/点按详情/方位速览卡)不展示(用户反馈)。
+  if (isExample) {
+    return `<div class="dy-panel is-example">
+      ${banner}
+      <div class="dt"><h3 data-i18n="dy.mid.t">${esc(t('dy.mid.t'))}</h3>${badge}<span class="dsub">${esc(t('dy.mid.sub'))}</span></div>
+      <div class="dy-plate">${cells}</div>
+      <div class="dy-plate-legend"><span class="g"><i></i>${esc(t('lg.good'))}</span><span class="b"><i></i>${esc(t('lg.bad'))}</span><span class="goal"><i></i>${esc(t('dy.card.goal'))}</span></div>
+    </div>`;
+  }
+
+  // 真实排盘态:完整展示(白话结论 TL;DR + 可点九宫 + 图例 + 方位速览卡)
   const tldr = fengshuiTldr(d);
   const tldrHtml = tldr ? `<p class="dy-tldr">${esc(tldr)}</p>` : '';
-  return `<div class="dy-panel${isExample ? ' is-example' : ''}">
-    ${banner}
-    <div class="dt"><h3 data-i18n="dy.mid.t">${esc(t('dy.mid.t'))}</h3>${badge}<span class="dsub">${esc(t('dy.mid.sub'))}</span></div>
+  return `<div class="dy-panel">
+    <div class="dt"><h3 data-i18n="dy.mid.t">${esc(t('dy.mid.t'))}</h3><span class="dsub">${esc(t('dy.mid.sub'))}</span></div>
     ${tldrHtml}
     <div class="dy-plate">${cells}</div>
     <div class="dy-tap-hint" aria-hidden="true">${esc(t('dy.tap.hint'))}</div>
@@ -876,12 +924,15 @@ function renderDetail(d) {
     <div class="di ${x.good?'g':'b'}"><span class="d-dir">${esc(x.方位)}</span>
       <span class="d-star">${esc(x.星)}</span><span class="d-hua">${esc(x.主)} —— ${esc(x.白话)}</span></div>`).join('');
 
+  // 户型点评四态判定(任一态漏判即白屏):①结构化卡片 ②文本回退(mdRender)③错误提示 ④都无则不渲染
   let visionHtml = '';
-  if (d.户型解读) {
-    visionHtml = `<div class="panel span2"><div class="t">${esc(t('p.vision'))}</div><div class="reading-body">${mdRender(d.户型解读)}</div></div>`;
+  if (d.户型点评 && (d.户型点评.rooms||[]).length) {
+    visionHtml = renderFloorplan(d.户型点评);                                    // ① 结构化 → 墨韵卡片
+  } else if (d.户型解读) {
+    visionHtml = `<div class="panel span2"><div class="t">${esc(t('p.vision'))}</div><div class="reading-body">${mdRender(d.户型解读)}</div></div>`; // ② 回退长文
   } else if (d.户型解读错误) {
-    visionHtml = `<div class="panel span2"><div class="t">${esc(t('p.vision_label'))}</div><span class="note">${esc(d.户型解读错误)}</span></div>`;
-  }
+    visionHtml = `<div class="panel span2"><div class="t">${esc(t('p.vision_label'))}</div><span class="note">${esc(d.户型解读错误)}</span></div>`; // ③ 三降级提示
+  }                                                                             // ④ 都无 → 空串
 
   return `<div class="res-grid">
   <div class="panel span2">
@@ -902,6 +953,33 @@ function renderDetail(d) {
 
   ${visionHtml}
   </div>`;
+}
+
+// 户型逐间点评 · 墨韵卡片(替代原 md 长文):每间一行「房间 · 方位 · 吉/凶徽 · 点评」,吉凶态取 r.luck 枚举而非文案匹配。
+// 徽标沿用八方位详解 .di.g/.di.b 的 --good/--bad 配色语言,新增中性 .n(方位待核)。壳层文案全走 t(),EN 不混杂。
+function renderFloorplan(v){
+  const cls = l => l==='good'?'g':l==='bad'?'b':'n';
+  const rows = (v.rooms||[]).map(r=>`
+    <div class="fp-room ${cls(r.luck)}">
+      <div class="fp-room-top">
+        <span class="fp-room-name">${esc(r.room)}</span>
+        <span class="fp-dir">${esc(r.dir)}</span>
+        <span class="fp-badge">${esc(r.吉凶||t('p.fp.unknown'))}${r.star?` · ${esc(r.star)}`:''}</span>
+      </div>
+      <div class="fp-note">${esc(r.note)}</div>
+      ${r.advice?`<div class="fp-advice">${esc(r.advice)}</div>`:''}
+    </div>`).join('');
+  const o = v.overall||{};
+  const fixes = (o.cautions||[]).map(x=>`<li>${esc(x)}</li>`).join('');
+  const overall = (o.bedroom||o.study||fixes||o.summary) ? `<div class="fp-overall">
+      ${o.bedroom?`<div class="fp-pill"><b>${esc(t('p.fp.bedroom'))}</b>${esc(o.bedroom)}</div>`:''}
+      ${o.study?`<div class="fp-pill"><b>${esc(t('p.fp.study'))}</b>${esc(o.study)}</div>`:''}
+      ${fixes?`<div class="fp-fixes"><b>${esc(t('p.fp.fix'))}</b><ul>${fixes}</ul></div>`:''}
+      ${o.summary?`<div class="fp-summary note">${esc(o.summary)}</div>`:''}
+    </div>` : '';
+  return `<div class="panel span2"><div class="t">${esc(t('p.vision'))}</div>
+    <div class="fp-list">${rows}</div>
+    ${overall}</div>`;
 }
 
 function esc(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }

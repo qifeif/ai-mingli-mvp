@@ -63,6 +63,10 @@ const PAGES = {
   // 对话页
   '/chat': 'chat.html',
   '/chat.html': 'chat.html',
+  // 登录 / 注册(前端占位,暂无真实后端账号体系)
+  '/login': 'login.html',
+  '/login.html': 'login.html',
+  '/register': 'login.html',
   // 合参(双人八字对比)
   '/hehun': 'hehun.html',
   '/hehun.html': 'hehun.html',
@@ -83,6 +87,30 @@ const PAGES = {
   '/preview-chat.html': 'preview-chat.html',
   '/preview-hehun': 'preview-hehun.html',
   '/preview-hehun.html': 'preview-hehun.html',
+  // 摇卦龟甲动效(800x800,3秒循环,白描黑底)
+  '/preview-yaogua': 'preview-yaogua.html',
+  '/preview-yaogua.html': 'preview-yaogua.html',
+  // 星云太极流转(WebGL,中轴不动·星云内流,天然无缝循环)
+  '/preview-nebula': 'preview-nebula.html',
+  '/preview-nebula.html': 'preview-nebula.html',
+  // 录制版:固定尺寸+外部逐帧驱动,用于导出无缝 mp4
+  '/preview-nebula-record': 'preview-nebula-record.html',
+  '/preview-nebula-record.html': 'preview-nebula-record.html',
+  // 竖版长条背景(阴/阳两变体,9:16,WebGL 实时)
+  '/preview-strip': 'preview-strip.html',
+  '/preview-strip.html': 'preview-strip.html',
+  // 星云太极滚动首页(阴/阳两版,?tone=yin|yang,固定背景+液态玻璃长页)
+  '/preview-scroll': 'preview-scroll.html',
+  '/preview-scroll.html': 'preview-scroll.html',
+  // 竖版长条阴/阳对照页(现配置 vs 加强版,审查产出)
+  '/preview-strip-compare': 'preview-strip-compare.html',
+  '/preview-strip-compare.html': 'preview-strip-compare.html',
+  // 预览索引页(汇总所有 preview-* 的导航入口)
+  '/previews': 'previews-index.html',
+  '/previews.html': 'previews-index.html',
+  // anime.js 风格三道卡片动效(stagger 入场/spring 弹性/网格波纹/SVG 描边)
+  '/preview-anime': 'preview-anime.html',
+  '/preview-anime.html': 'preview-anime.html',
 };
 
 const server = createServer(async (req, res) => {
@@ -243,10 +271,13 @@ const server = createServer(async (req, res) => {
       if (input.image && client) {
         try {
           const goal = GOALS.find((g) => g.key === input.goal) || GOALS[0];
-          out.户型解读 = await analyzeFloorplan(client, {
+          const fp = await analyzeFloorplan(client, {
             mingGua: rec.命卦, dirs: rec.八方位, goal,
             facing: input.facing, imageDataUrl: input.image, lang: input.lang,
           });
+          // 解析成功 → 结构化字段(前端渲墨韵卡片);解析降级 → 原文交回老 mdRender 分支
+          if (fp._fallback) out.户型解读 = fp.raw;
+          else out.户型点评 = fp.vision;
         } catch (e) {
           out.户型解读错误 = `视觉解读失败:${e.message}`;
         }

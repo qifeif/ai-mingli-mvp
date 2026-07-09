@@ -93,6 +93,46 @@
   .ptag.b { background:var(--accent-2); box-shadow:0 2px 8px -2px rgba(51,69,58,.5); }
   .pgroup .pg-cap h3 { font-family:"Songti SC","Noto Serif SC",serif; font-size:15px; letter-spacing:2px; color:var(--accent); margin:0; }
 
+  /* ===== 出生日期时间:阳历/阴历 + 五列一体拨转轮(与天命页同款,甲乙各一套) ===== */
+  .datefield { display:flex; flex-direction:column; gap:10px; }
+  .datefield .seg { margin:0; }
+  .wheels { position:relative; display:grid; grid-template-columns:1.28fr 1fr 1fr .82fr .82fr; gap:0;
+    border:1px solid var(--line); border-radius:14px; background:var(--bg-2); overflow:hidden;
+    box-shadow:var(--shadow-soft); }
+  .wheel { position:relative; height:176px; overflow:hidden; text-align:center; touch-action:pan-y;
+    -webkit-user-select:none; user-select:none; }
+  .wheel + .wheel { border-left:1px solid var(--line-soft); }
+  .wheel-unit { position:absolute; left:0; right:0; bottom:0; height:22px; line-height:22px;
+    font-size:11px; color:var(--faint); letter-spacing:1px; pointer-events:none; z-index:3;
+    background:linear-gradient(to top, var(--bg-2) 55%, rgba(225,232,231,0)); }
+  .wheel-scroll { position:absolute; left:0; right:0; top:0; bottom:22px; overflow-y:auto;
+    scroll-snap-type:y mandatory; scrollbar-width:none; -ms-overflow-style:none;
+    -webkit-overflow-scrolling:touch; scroll-behavior:smooth; outline:none; }
+  .wheel-scroll::-webkit-scrollbar { display:none; }
+  .wheel-scroll .pad { height:66px; }
+  .wheel-item { height:33px; line-height:33px; scroll-snap-align:center; font-size:15px;
+    color:var(--faint); font-variant-numeric:tabular-nums; cursor:pointer;
+    transition:color var(--dur-1) var(--ease); }
+  .wheel-item.on { color:var(--ink-strong); font-family:"Songti SC","Noto Serif SC",serif; font-size:16px; }
+  .wheel-scroll:focus-visible .wheel-item.on { color:var(--cinnabar); }
+  .wheels .wheel-sel { position:absolute; left:0; right:0; top:66px; height:33px;
+    pointer-events:none; z-index:1; background:rgba(110,103,91,.10); }
+  .wheels::before, .wheels::after { content:""; position:absolute; left:0; right:0; height:1px;
+    background:var(--cinnabar); opacity:.5; pointer-events:none; z-index:2; }
+  .wheels::before { top:66px; }
+  .wheels::after  { top:99px; }
+  .wheel-mask { position:absolute; left:0; right:0; top:0; bottom:22px; pointer-events:none; z-index:2;
+    background:linear-gradient(to bottom, var(--bg-2) 0%, rgba(225,232,231,0) 40%, rgba(225,232,231,0) 60%, var(--bg-2) 100%); }
+  @media (prefers-reduced-motion: reduce) {
+    .wheel-scroll { scroll-behavior:auto; }
+    .wheel-item { transition:none; }
+  }
+  @media (max-width:560px) {
+    .wheels { grid-template-columns:1.24fr 1fr 1fr .84fr .84fr; }
+    .wheel { height:168px; }
+    .wheel-item { font-size:14px; } .wheel-item.on { font-size:15px; }
+  }
+
   /* 侧栏 */
   .aside { display:flex; flex-direction:column; gap:16px; position:sticky; top:24px; }
   /* 侧栏卡(玻璃化:视觉交给 .glass) */
@@ -313,14 +353,43 @@
             <input id="fa-place" name="placeA" class="inkline" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
           </div>
         </div>
-        <div class="row">
-          <div>
-            <label for="fa-date" data-i18n="f.date">出生日期</label>
-            <input id="fa-date" type="date" name="dateA" required class="inkline" />
-          </div>
-          <div>
-            <label for="fa-time" data-i18n="f.time">出生时间</label>
-            <input id="fa-time" type="time" name="timeA" required class="inkline" />
+        <div style="margin-bottom:0">
+          <label data-i18n="f.datetime">出生日期时间</label>
+          <div class="datefield" id="datefield-a">
+            <div class="seg" role="radiogroup" aria-label="阳历 / 阴历 · Solar / Lunar">
+              <label><input type="radio" name="caltypeA" value="solar" checked /><span data-i18n="f.solar">阳历</span></label>
+              <label><input type="radio" name="caltypeA" value="lunar" /><span data-i18n="f.lunar">阴历</span></label>
+            </div>
+            <div class="wheels" id="wheels-a">
+              <div class="wheel" data-col="year">
+                <div class="wheel-scroll" data-col="year" tabindex="0" role="listbox" aria-label="年 · Year"></div>
+                <div class="wheel-mask" aria-hidden="true"></div>
+                <div class="wheel-unit" data-i18n="f.unit_y" aria-hidden="true">年</div>
+              </div>
+              <div class="wheel" data-col="month">
+                <div class="wheel-scroll" data-col="month" tabindex="0" role="listbox" aria-label="月 · Month"></div>
+                <div class="wheel-mask" aria-hidden="true"></div>
+                <div class="wheel-unit" data-i18n="f.unit_mo" aria-hidden="true">月</div>
+              </div>
+              <div class="wheel" data-col="day">
+                <div class="wheel-scroll" data-col="day" tabindex="0" role="listbox" aria-label="日 · Day"></div>
+                <div class="wheel-mask" aria-hidden="true"></div>
+                <div class="wheel-unit" data-i18n="f.unit_d" aria-hidden="true">日</div>
+              </div>
+              <div class="wheel" data-col="hour">
+                <div class="wheel-scroll" data-col="hour" tabindex="0" role="listbox" aria-label="时 · Hour"></div>
+                <div class="wheel-mask" aria-hidden="true"></div>
+                <div class="wheel-unit" data-i18n="f.unit_h" aria-hidden="true">时</div>
+              </div>
+              <div class="wheel" data-col="minute">
+                <div class="wheel-scroll" data-col="minute" tabindex="0" role="listbox" aria-label="分 · Minute"></div>
+                <div class="wheel-mask" aria-hidden="true"></div>
+                <div class="wheel-unit" data-i18n="f.unit_mi" aria-hidden="true">分</div>
+              </div>
+              <div class="wheel-sel" aria-hidden="true"></div>
+            </div>
+            <input type="hidden" name="dateA" id="fa-date" value="1996-08-12" />
+            <input type="hidden" name="timeA" id="fa-time" value="14:30" />
           </div>
         </div>
       </div>
@@ -340,14 +409,43 @@
             <input id="fb-place" name="placeB" class="inkline" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
           </div>
         </div>
-        <div class="row">
-          <div>
-            <label for="fb-date" data-i18n="f.date">出生日期</label>
-            <input id="fb-date" type="date" name="dateB" required class="inkline" />
-          </div>
-          <div>
-            <label for="fb-time" data-i18n="f.time">出生时间</label>
-            <input id="fb-time" type="time" name="timeB" required class="inkline" />
+        <div style="margin-bottom:0">
+          <label data-i18n="f.datetime">出生日期时间</label>
+          <div class="datefield" id="datefield-b">
+            <div class="seg" role="radiogroup" aria-label="阳历 / 阴历 · Solar / Lunar">
+              <label><input type="radio" name="caltypeB" value="solar" checked /><span data-i18n="f.solar">阳历</span></label>
+              <label><input type="radio" name="caltypeB" value="lunar" /><span data-i18n="f.lunar">阴历</span></label>
+            </div>
+            <div class="wheels" id="wheels-b">
+              <div class="wheel" data-col="year">
+                <div class="wheel-scroll" data-col="year" tabindex="0" role="listbox" aria-label="年 · Year"></div>
+                <div class="wheel-mask" aria-hidden="true"></div>
+                <div class="wheel-unit" data-i18n="f.unit_y" aria-hidden="true">年</div>
+              </div>
+              <div class="wheel" data-col="month">
+                <div class="wheel-scroll" data-col="month" tabindex="0" role="listbox" aria-label="月 · Month"></div>
+                <div class="wheel-mask" aria-hidden="true"></div>
+                <div class="wheel-unit" data-i18n="f.unit_mo" aria-hidden="true">月</div>
+              </div>
+              <div class="wheel" data-col="day">
+                <div class="wheel-scroll" data-col="day" tabindex="0" role="listbox" aria-label="日 · Day"></div>
+                <div class="wheel-mask" aria-hidden="true"></div>
+                <div class="wheel-unit" data-i18n="f.unit_d" aria-hidden="true">日</div>
+              </div>
+              <div class="wheel" data-col="hour">
+                <div class="wheel-scroll" data-col="hour" tabindex="0" role="listbox" aria-label="时 · Hour"></div>
+                <div class="wheel-mask" aria-hidden="true"></div>
+                <div class="wheel-unit" data-i18n="f.unit_h" aria-hidden="true">时</div>
+              </div>
+              <div class="wheel" data-col="minute">
+                <div class="wheel-scroll" data-col="minute" tabindex="0" role="listbox" aria-label="分 · Minute"></div>
+                <div class="wheel-mask" aria-hidden="true"></div>
+                <div class="wheel-unit" data-i18n="f.unit_mi" aria-hidden="true">分</div>
+              </div>
+              <div class="wheel-sel" aria-hidden="true"></div>
+            </div>
+            <input type="hidden" name="dateB" id="fb-date" value="1996-08-12" />
+            <input type="hidden" name="timeB" id="fb-time" value="14:30" />
           </div>
         </div>
       </div>
@@ -410,6 +508,7 @@
   <div class="hint" data-i18n="f.disclaimer">合参说的是互动倾向,仅供参考与自我思考,不构成任何预测或婚恋/合作建议 · 关系的决定权永远在你们手里</div>
 </div>
 
+<script src="/lunar.js"></script>
 <script>
 const I18N = {
   zh: {
@@ -420,12 +519,14 @@ const I18N = {
     'f.rel':'合参类型','f.rel_love':'婚恋合参','f.rel_partner':'合伙合参',
     'f.pa':'甲 · 第一人','f.pb':'乙 · 第二人',
     'f.gender':'性别','f.female':'女','f.male':'男','f.place':'出生地','f.place_ph':'如 杭州',
-    'f.date':'出生日期','f.time':'出生时间','f.q':'想一起看清的事(可选)','f.q_ph':'比如:合伙做生意会不会挣钱?越具体越好…',
+    'f.date':'出生日期','f.time':'出生时间','f.datetime':'出生日期时间',
+    'f.solar':'阳历','f.lunar':'阴历','f.unit_y':'年','f.unit_mo':'月','f.unit_d':'日','f.unit_h':'时','f.unit_mi':'分',
+    'f.q':'想一起看清的事(可选)','f.q_ph':'比如:合伙做生意会不会挣钱?越具体越好…',
     'f.submit':'两 盘 合 参','f.loading_btn':'合 参 中…',
     'f.disclaimer':'合参说的是互动倾向,仅供参考与自我思考,不构成任何预测或婚恋/合作建议 · 关系的决定权永远在你们手里',
     'loading':'正在对照两张命盘…','loading.hint':'AI 深化通常需 20–60 秒,请稍候','err':'出错了：','err.retry':'服务开小差了,请稍后再试一次;若一直不行,检查一下网络。',
     'offline_note':'以上为离线规则版合参;配置 ANTHROPIC_API_KEY 后可获得 AI 深化解读。','airead':'AI 深度解读',
-    'v.needrel':'请先选合参类型:婚恋合参 或 合伙合参','v.miss':'请补全两个人的出生日期与时间','v.bad':'出生日期或时间格式不对,请检查后重试',
+    'v.needrel':'请先选合参类型:婚恋合参 或 合伙合参','v.bad':'出生日期或时间格式不对,请检查后重试',
     'aside.about.t':'合参是什么','aside.about.p':'合参把两张八字盘放在一起对照:日主看气质生克,十神看彼此角色,地支看合冲刑害,五行看互补长短。它照见的是互动模式,不是姻缘或成败的判决——给你们一面看清彼此的镜子。',
     'aside.steps.t':'怎么用','aside.s1':'选类型:婚恋看相处沟通,合伙看分工机制。','aside.s2':'填两个人的出生信息,出生地用于真太阳时校正。','aside.s3':'读四维对照与摘要,把它当参考,关系由你们自己定。',
     'aside.cross.t':'三道同参','cross.tianming':'天命 · 看自己','cross.tianming.d':'紫微命盘,先照见自己的底色',
@@ -450,12 +551,14 @@ const I18N = {
     'f.rel':'Reading type','f.rel_love':'Love','f.rel_partner':'Business partnership',
     'f.pa':'Person A · first chart','f.pb':'Person B · second chart',
     'f.gender':'Gender','f.female':'Female','f.male':'Male','f.place':'Birthplace','f.place_ph':'e.g. Hangzhou',
-    'f.date':'Birth date','f.time':'Birth time','f.q':'What you two want to see clearly (optional)','f.q_ph':'e.g. Will our business partnership make money? The more specific, the better…',
+    'f.date':'Birth date','f.time':'Birth time','f.datetime':'Birth date & time',
+    'f.solar':'Solar','f.lunar':'Lunar','f.unit_y':'Y','f.unit_mo':'M','f.unit_d':'D','f.unit_h':'h','f.unit_mi':'m',
+    'f.q':'What you two want to see clearly (optional)','f.q_ph':'e.g. Will our business partnership make money? The more specific, the better…',
     'f.submit':'C O M P A R E','f.loading_btn':'Reading…',
     'f.disclaimer':'A dual-chart reading describes interaction tendencies, for reflection only — not a prediction or advice on love or business · the decision always stays with the two of you',
     'loading':'Comparing the two charts…','loading.hint':'AI deepening usually takes 20–60s, hang tight','err':'Error: ','err.retry':'Something hiccupped on our end — please try again in a moment; if it keeps failing, check your connection.',
     'offline_note':'Above is the offline rule-based reading; set ANTHROPIC_API_KEY to get the AI reading.','airead':'AI reading',
-    'v.needrel':'Pick a reading type first: Love or Partnership','v.miss':'Please complete birth date and time for both people','v.bad':'Birth date or time looks invalid — please check and retry',
+    'v.needrel':'Pick a reading type first: Love or Partnership','v.bad':'Birth date or time looks invalid — please check and retry',
     'aside.about.t':'What is a dual-chart reading','aside.about.p':'It places two BaZi charts side by side: day masters for temperament dynamics, Ten Gods for the roles you play to each other, earthly branches for harmony and clash, five elements for complementarity. It mirrors interaction patterns — never a verdict on the relationship or the venture.',
     'aside.steps.t':'How to use','aside.s1':'Pick a type: Love reads how you get along; Partnership reads roles and mechanisms.','aside.s2':'Enter both birth details; birthplace drives true-solar-time correction.','aside.s3':'Read the four-way comparison and summary as a reference — the relationship stays yours to shape.',
     'aside.cross.t':'Cross-reference','cross.tianming':'Tian Ming · see yourself','cross.tianming.d':'Zi Wei chart — see your own baseline first',
@@ -481,7 +584,7 @@ function applyI18n(){
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.placeholder = t(el.getAttribute('data-i18n-ph')); });
   document.getElementById('langtog').textContent = LANG==='en'?'中':'EN';
 }
-document.getElementById('langtog').addEventListener('click', ()=>{ LANG = LANG==='en'?'zh':'en'; localStorage.setItem('lang',LANG); applyI18n(); });
+document.getElementById('langtog').addEventListener('click', ()=>{ LANG = LANG==='en'?'zh':'en'; localStorage.setItem('lang',LANG); applyI18n(); window.DateWheelRelabel && window.DateWheelRelabel(); });
 applyI18n();
 
 // ===== EN 模式术语对照(数据层白话恒为中文,EN 渲染时用罗马字 + 意译,风格同 ziwei.js 的 STAR_EN) =====
@@ -548,6 +651,225 @@ const f = document.getElementById('f');
 const btn = document.getElementById('btn');
 const result = document.getElementById('result');
 
+// ═══════════════════════════════════════════════════
+//  出生日期时间 五列一体拨转轮(阳历/阴历 · 与天命页 DateWheel 同款,改成可重入工厂供甲乙各建一份)
+//  - 全局 window.Solar/Lunar/LunarYear 来自 /lunar.js(UMD)
+//  - 数据流:任何变化 → 公历 YYYY-MM-DD 写入 hidden #{prefix}-date、HH:mm 写入 #{prefix}-time
+// ═══════════════════════════════════════════════════
+function makeDateWheel(prefix) {
+  const SOLAR = window.Solar, LUNAR = window.Lunar, LUNARYEAR = window.LunarYear;
+  const hiddenDate = document.getElementById(`${prefix}-date`);
+  const hiddenTime = document.getElementById(`${prefix}-time`);
+  const wheelsEl = document.getElementById(`wheels-${prefix === 'fa' ? 'a' : 'b'}`);
+  const fieldEl = document.getElementById(`datefield-${prefix === 'fa' ? 'a' : 'b'}`);
+  const caltypeName = prefix === 'fa' ? 'caltypeA' : 'caltypeB';
+  const COLS = ['year', 'month', 'day', 'hour', 'minute'];
+  const cols = {};
+  COLS.forEach((name) => { cols[name] = { scroll: wheelsEl.querySelector(`.wheel-scroll[data-col="${name}"]`) }; });
+  const ITEM_H = 33;
+  const LUNAR_MONTH_CN = ['', '正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '冬', '腊'];
+  const LUNAR_DAY_CN = ['', '初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十',
+    '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
+    '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
+  const Y_MIN = 1900, Y_MAX = 2100;
+
+  let ready = !!(SOLAR && LUNAR && LUNARYEAR);
+  let mode = 'solar';
+  let sel = { year: 1996, month: 8, day: 12, hour: 14, minute: 30 };
+
+  const en = () => LANG === 'en';
+  const pad2 = (n) => String(n).padStart(2, '0');
+
+  function yearOpts() { const out = []; for (let y = Y_MIN; y <= Y_MAX; y++) out.push({ v: y, label: String(y) }); return out; }
+  function monthOpts(year) {
+    if (mode === 'solar') { const out = []; for (let m = 1; m <= 12; m++) out.push({ v: m, label: en() ? String(m) : LUNAR_MONTH_CN[m] + '月' }); return out; }
+    const leap = LUNARYEAR ? LUNARYEAR.fromYear(year).getLeapMonth() : 0;
+    const out = [];
+    for (let m = 1; m <= 12; m++) {
+      out.push({ v: m, label: en() ? String(m) : LUNAR_MONTH_CN[m] + '月' });
+      if (leap && m === leap) out.push({ v: -m, label: en() ? 'L' + m : '闰' + LUNAR_MONTH_CN[m] + '月' });
+    }
+    return out;
+  }
+  function dayCountOf(year, month) {
+    if (mode === 'solar') return new Date(year, month, 0).getDate();
+    if (!LUNARYEAR) return 30;
+    const lm = LUNARYEAR.fromYear(year).getMonth(month);
+    return lm ? lm.getDayCount() : 30;
+  }
+  function dayOpts(year, month) {
+    const n = dayCountOf(year, month);
+    const out = [];
+    for (let d = 1; d <= n; d++) out.push({ v: d, label: mode === 'lunar' && !en() ? LUNAR_DAY_CN[d] : String(d) });
+    return out;
+  }
+  function hourOpts() { const out = []; for (let h = 0; h <= 23; h++) out.push({ v: h, label: pad2(h) }); return out; }
+  function minuteOpts() { const out = []; for (let mi = 0; mi <= 59; mi++) out.push({ v: mi, label: pad2(mi) }); return out; }
+
+  function renderCol(name, opts, value) {
+    const { scroll } = cols[name];
+    scroll.innerHTML = '<div class="pad"></div>' +
+      opts.map(o => `<div class="wheel-item" role="option" data-v="${o.v}">${o.label}</div>`).join('') +
+      '<div class="pad"></div>';
+    setColValue(name, value, false);
+  }
+  function itemsOf(name) { return cols[name].scroll.querySelectorAll('.wheel-item'); }
+  function indexOfValue(name, value) {
+    const items = itemsOf(name);
+    for (let i = 0; i < items.length; i++) if (Number(items[i].dataset.v) === Number(value)) return i;
+    return 0;
+  }
+  function setColValue(name, value, smooth) {
+    const { scroll } = cols[name];
+    const idx = indexOfValue(name, value);
+    const items = itemsOf(name);
+    items.forEach((el, i) => el.classList.toggle('on', i === idx));
+    const prev = scroll.style.scrollBehavior;
+    if (!smooth) scroll.style.scrollBehavior = 'auto';
+    scroll.scrollTop = idx * ITEM_H;
+    if (!smooth) scroll.style.scrollBehavior = prev || '';
+  }
+  function valueAtScroll(name) {
+    const { scroll } = cols[name];
+    const items = itemsOf(name);
+    if (!items.length) return null;
+    let idx = Math.round(scroll.scrollTop / ITEM_H);
+    idx = Math.max(0, Math.min(items.length - 1, idx));
+    return { idx, v: Number(items[idx].dataset.v) };
+  }
+  function renderAll() {
+    renderCol('year', yearOpts(), sel.year);
+    const mOpts = monthOpts(sel.year);
+    if (!mOpts.some(o => o.v === sel.month)) sel.month = mOpts[0].v;
+    renderCol('month', mOpts, sel.month);
+    const dMax = dayCountOf(sel.year, sel.month);
+    if (sel.day > dMax) sel.day = dMax;
+    renderCol('day', dayOpts(sel.year, sel.month), sel.day);
+    renderCol('hour', hourOpts(), sel.hour);
+    renderCol('minute', minuteOpts(), sel.minute);
+    commit();
+  }
+  function toSolarYmd() {
+    if (!ready) return hiddenDate.value || '1996-08-12';
+    try {
+      if (mode === 'solar') return SOLAR.fromYmd(sel.year, sel.month, sel.day).toYmd();
+      return LUNAR.fromYmd(sel.year, sel.month, sel.day).getSolar().toYmd();
+    } catch (err) {
+      return hiddenDate.value || '1996-08-12';
+    }
+  }
+  function commit() {
+    hiddenDate.value = toSolarYmd();
+    hiddenTime.value = pad2(sel.hour) + ':' + pad2(sel.minute);
+  }
+  function loadFrom(ymd, hm) {
+    const m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec((ymd || '').trim());
+    if (m) {
+      const y = +m[1], mo = +m[2], d = +m[3];
+      if (mode === 'solar') { sel.year = y; sel.month = mo; sel.day = d; }
+      else if (ready) {
+        const lu = SOLAR.fromYmd(y, mo, d).getLunar();
+        sel.year = lu.getYear(); sel.month = lu.getMonth(); sel.day = lu.getDay();
+      }
+    }
+    const tm = /^(\d{1,2}):(\d{1,2})/.exec((hm || '').trim());
+    if (tm) {
+      sel.hour = Math.max(0, Math.min(23, +tm[1]));
+      sel.minute = Math.max(0, Math.min(59, +tm[2]));
+    }
+    renderAll();
+  }
+  const scrollTimers = {};
+  function onScroll(name) {
+    clearTimeout(scrollTimers[name]);
+    const cur = valueAtScroll(name);
+    if (cur) itemsOf(name).forEach((el, i) => el.classList.toggle('on', i === cur.idx));
+    scrollTimers[name] = setTimeout(() => {
+      const r = valueAtScroll(name);
+      if (!r) return;
+      applySel(name, r.v, false);
+      setColValue(name, r.v, true);
+    }, 110);
+  }
+  function onItemClick(name, e) {
+    const item = e.target.closest('.wheel-item');
+    if (!item) return;
+    applySel(name, Number(item.dataset.v), true);
+    setColValue(name, Number(item.dataset.v), true);
+  }
+  function onKey(name, e) {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    const items = itemsOf(name);
+    let idx = indexOfValue(name, sel[name === 'month' ? 'month' : name]);
+    idx += e.key === 'ArrowDown' ? 1 : -1;
+    idx = Math.max(0, Math.min(items.length - 1, idx));
+    const v = Number(items[idx].dataset.v);
+    applySel(name, v, true);
+    setColValue(name, v, true);
+  }
+  function applySel(name, v) {
+    if (name === 'year') { sel.year = v; renderAll(); }
+    else if (name === 'month') {
+      sel.month = v;
+      const dMax = dayCountOf(sel.year, sel.month); if (sel.day > dMax) sel.day = dMax;
+      renderCol('day', dayOpts(sel.year, sel.month), sel.day); commit();
+    }
+    else if (name === 'day') { sel.day = v; commit(); }
+    else if (name === 'hour') { sel.hour = v; commit(); }
+    else if (name === 'minute') { sel.minute = v; commit(); }
+  }
+  function switchMode(next) {
+    if (next === mode) return;
+    const curSolar = toSolarYmd();
+    const curTime = hiddenTime.value;
+    mode = next;
+    loadFrom(curSolar, curTime);
+  }
+  function bind() {
+    COLS.forEach((name) => {
+      const sc = cols[name].scroll;
+      sc.addEventListener('scroll', () => onScroll(name), { passive: true });
+      sc.addEventListener('click', (e) => onItemClick(name, e));
+      sc.addEventListener('keydown', (e) => onKey(name, e));
+    });
+    fieldEl.querySelectorAll(`input[name="${caltypeName}"]`).forEach((r) => {
+      r.addEventListener('change', () => { if (r.checked) switchMode(r.value); });
+    });
+  }
+  function init() {
+    if (!ready) {
+      // lunar.js 未就绪:优雅降级为原生 datetime-local,契约仍走隐藏 date/time
+      wheelsEl.style.display = 'none';
+      fieldEl.querySelectorAll(`input[name="${caltypeName}"]`).forEach((r) => { if (r.value === 'lunar') r.disabled = true; });
+      const fb = document.createElement('input');
+      fb.type = 'datetime-local';
+      fb.value = (hiddenDate.value || '1996-08-12') + 'T' + (hiddenTime.value || '14:30');
+      fb.setAttribute('aria-label', '出生日期时间 · Birth date & time');
+      fb.style.marginTop = '8px';
+      fb.addEventListener('change', () => {
+        const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/.exec(fb.value);
+        if (m) { hiddenDate.value = m[1]; hiddenTime.value = m[2]; }
+      });
+      fieldEl.appendChild(fb);
+      return;
+    }
+    loadFrom(hiddenDate.value || '1996-08-12', hiddenTime.value || '14:30');
+    bind();
+  }
+
+  return {
+    init,
+    relabel: () => { if (ready) renderAll(); },
+    setDateTime: (ymd, hm) => { if (ready) loadFrom(ymd, hm); else { if (ymd) hiddenDate.value = ymd; if (hm) hiddenTime.value = hm; } },
+  };
+}
+const DateWheelA = makeDateWheel('fa');
+const DateWheelB = makeDateWheel('fb');
+DateWheelA.init();
+DateWheelB.init();
+window.DateWheelRelabel = () => { DateWheelA.relabel(); DateWheelB.relabel(); };
+
 f.addEventListener('submit', async (e) => {
   e.preventDefault();
   const d = Object.fromEntries(new FormData(f));
@@ -558,13 +880,7 @@ f.addEventListener('submit', async (e) => {
     document.querySelector('input[name="relation"]')?.focus();
     return;
   }
-  // 两人日期时间必填(不再预填陌生人生日 → 空提交当场拦下)+ 日期可解析
-  if (!d.dateA || !d.timeA || !d.dateB || !d.timeB) {
-    result.innerHTML = `<div class="reading"><span class="err">${esc(t('v.miss'))}</span></div>`;
-    result.scrollIntoView({ behavior: prefersReduced() ? 'auto' : 'smooth', block: 'start' });
-    (document.getElementById(!d.dateA ? 'fa-date' : !d.timeA ? 'fa-time' : !d.dateB ? 'fb-date' : 'fb-time'))?.focus();
-    return;
-  }
+  // 两人日期时间由拨轮给出,恒有合法值(与天命页同款拨轮契约一致,无需空值拦截);仅防御性校验可解析。
   const dtA = `${d.dateA} ${d.timeA}`;
   const dtB = `${d.dateB} ${d.timeB}`;
   if (isNaN(new Date(`${d.dateA}T${d.timeA}`)) || isNaN(new Date(`${d.dateB}T${d.timeB}`))) {

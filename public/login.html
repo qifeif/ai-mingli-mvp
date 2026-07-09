@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>心易 · 登录</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#EDF1EF; --bg-2:#E1E8E7; --card:rgba(247,249,246,.9);
+  --ink:#26343B; --ink-strong:#1F2B31; --muted:#526872; --faint:#697B82;
+  --line:rgba(38,52,59,.16); --line-soft:rgba(38,52,59,.08);
+  --seal:#A6402F; --seal-soft:rgba(166,64,47,.1);
+  --grad:linear-gradient(150deg,#1F2B31,#4F6873);
+  --serif:"Songti SC","Noto Serif SC","STSong",serif;
+  --kai:"Ma Shan Zheng","Kaiti SC","Noto Serif SC",serif;
+  --dur-1:.2s; --dur-2:.34s; --ease:cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;}
+body{background:var(--bg);color:var(--ink);font-family:var(--serif);
+  display:grid;place-items:center;padding:28px;position:relative;overflow:hidden;}
+/* 宣纸柔光背景(水墨微晕,静态) */
+.aurora{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(60% 50% at 78% 12%,rgba(79,104,115,.16) 0%,transparent 60%),
+    radial-gradient(55% 45% at 14% 92%,rgba(166,64,47,.08) 0%,transparent 55%);}
+/* 远山淡影(极淡水墨) */
+.aurora::after{content:"";position:absolute;left:0;right:0;bottom:0;height:38%;
+  background:linear-gradient(to top,rgba(38,52,59,.06),transparent);}
+
+.wrap{position:relative;z-index:1;width:100%;max-width:440px;}
+.brand{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:26px;}
+.seal{display:grid;place-items:center;width:52px;height:52px;border-radius:11px;
+  background:linear-gradient(150deg,#B24936 8%,#9A3826 92%);color:#F7F3EA;
+  font-family:var(--kai);font-size:24px;
+  box-shadow:inset 0 0 0 2px rgba(247,243,234,.34),inset 0 0 16px rgba(96,22,10,.42),
+    0 12px 26px -14px rgba(122,32,18,.6);transform:rotate(3deg);}
+.brand-t{font-family:var(--kai);font-size:26px;letter-spacing:6px;color:var(--ink-strong);}
+.brand-s{font-size:12.5px;letter-spacing:2px;color:var(--faint);}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:0;
+  -webkit-backdrop-filter:blur(14px) saturate(1.05);backdrop-filter:blur(14px) saturate(1.05);
+  box-shadow:0 24px 64px -22px rgba(31,43,49,.32);overflow:hidden;
+  animation:rise .4s var(--ease) both;}
+@keyframes rise{from{opacity:0;transform:translateY(12px);}}
+
+/* tab 切换 */
+.tabs{display:flex;position:relative;border-bottom:1px solid var(--line-soft);}
+.tab{flex:1;text-align:center;padding:20px 0 16px;font-size:16px;letter-spacing:3px;
+  color:var(--faint);background:none;border:none;cursor:pointer;font-family:var(--serif);
+  transition:color var(--dur-1) var(--ease);}
+.tab:hover{color:var(--muted);}
+.tab.on{color:var(--ink-strong);font-weight:600;}
+.tab-ink{position:absolute;bottom:-1px;height:2px;width:50%;left:0;border-radius:2px;
+  background:linear-gradient(90deg,transparent,var(--seal) 25%,var(--seal) 75%,transparent);
+  transition:transform var(--dur-2) var(--ease);}
+.tabs.reg .tab-ink{transform:translateX(100%);}
+
+form{padding:26px 28px 28px;}
+.fl{margin-bottom:18px;}
+.fl:last-of-type{margin-bottom:0;}
+.fl label{display:block;font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:8px;}
+.fl input{width:100%;padding:13px 15px;border:1px solid var(--line);border-radius:12px;
+  background:var(--bg-2);color:var(--ink);font-family:inherit;font-size:15px;outline:none;
+  transition:border-color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease);}
+.fl input::placeholder{color:var(--faint);}
+.fl input:focus{border-color:rgba(166,64,47,.45);box-shadow:0 0 0 3px var(--seal-soft);}
+.fl input.bad{border-color:rgba(166,64,47,.6);}
+.field-err{font-size:11.5px;color:var(--seal);margin-top:6px;letter-spacing:.2px;}
+.only-reg{display:none;}
+.card.reg-mode .only-reg{display:block;}
+
+/* 人机验证(墨韵占位,后期接真实验证) */
+.verify{display:flex;align-items:center;gap:14px;margin:20px 0 4px;padding:14px 16px;
+  border:1px solid var(--line);border-radius:12px;background:var(--bg-2);}
+.vbox{flex:none;width:24px;height:24px;border-radius:6px;border:1.5px solid var(--muted);
+  background:#fff;cursor:pointer;display:grid;place-items:center;
+  transition:all var(--dur-1) var(--ease);position:relative;}
+.vbox svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.4;
+  stroke-linecap:round;stroke-linejoin:round;opacity:0;transform:scale(.5);
+  transition:opacity var(--dur-1) var(--ease),transform var(--dur-1) var(--ease);}
+.vbox.on{background:var(--seal);border-color:var(--seal);}
+.vbox.on svg{opacity:1;transform:scale(1);}
+.vbox.checking{border-color:var(--seal);}
+.vbox .spin{position:absolute;inset:2px;border:2px solid var(--seal-soft);
+  border-top-color:var(--seal);border-radius:50%;opacity:0;animation:vspin .7s linear infinite;}
+.vbox.checking .spin{opacity:1;}
+@keyframes vspin{to{transform:rotate(360deg);}}
+.vtext{flex:1;font-size:14px;color:var(--ink);letter-spacing:.3px;}
+.vbrand{display:flex;flex-direction:column;align-items:flex-end;gap:2px;opacity:.85;}
+.vbrand .vb-seal{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;
+  background:linear-gradient(150deg,#B24936,#9A3826);color:#F7F3EA;font-family:var(--kai);font-size:12px;}
+.vbrand .vb-t{font-size:9px;letter-spacing:1.5px;color:var(--faint);}
+.vbrand a{color:var(--faint);text-decoration:underline;}
+
+.submit{width:100%;margin-top:22px;min-height:52px;border:none;border-radius:14px;cursor:pointer;
+  font-family:var(--serif);font-size:16px;letter-spacing:5px;color:#F4F1EA;
+  background:var(--grad);position:relative;overflow:hidden;
+  box-shadow:0 12px 28px -12px rgba(31,43,49,.5);
+  transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),opacity var(--dur-1) var(--ease);}
+.submit::before{content:"";position:absolute;left:16px;top:50%;width:7px;height:7px;border-radius:50%;
+  background:var(--seal);transform:translateY(-50%);box-shadow:0 0 0 3px var(--seal-soft);}
+.submit:hover{transform:translateY(-1px);box-shadow:0 16px 32px -12px rgba(31,43,49,.6);}
+.submit:active{transform:translateY(0) scale(.99);}
+.submit:disabled{opacity:.5;cursor:default;transform:none;}
+
+/* GUEST-LOGIN start · 临时游客入口样式,后期随 HTML/JS 一起删 */
+.guest{padding:0 28px 24px;}
+.guest-div{display:flex;align-items:center;gap:12px;margin:16px 0 14px;
+  font-size:12px;color:var(--faint);letter-spacing:2px;}
+.guest-div::before,.guest-div::after{content:"";flex:1;height:1px;background:var(--line-soft);}
+.guest-btn{width:100%;min-height:46px;border:1px solid var(--line);border-radius:13px;cursor:pointer;
+  font-family:var(--serif);font-size:14.5px;letter-spacing:2px;color:var(--muted);
+  background:rgba(250,251,249,.7);
+  transition:color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease);}
+.guest-btn:hover{color:var(--ink);border-color:rgba(38,52,59,.3);background:rgba(38,52,59,.05);}
+.guest-btn:active{transform:scale(.99);}
+.guest-btn:focus-visible{outline:2px solid var(--seal);outline-offset:2px;}
+/* GUEST-LOGIN end */
+
+.foot{text-align:center;margin-top:20px;font-size:12.5px;color:var(--faint);letter-spacing:.3px;}
+.foot a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line);}
+.foot a:hover{color:var(--seal);}
+.toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);z-index:5;
+  background:var(--ink-strong);color:#F4F1EA;padding:12px 22px;border-radius:999px;font-size:14px;
+  letter-spacing:1px;box-shadow:0 12px 30px -10px rgba(31,43,49,.5);opacity:0;pointer-events:none;
+  transition:opacity var(--dur-2) var(--ease),transform var(--dur-2) var(--ease);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media(max-width:480px){ form{padding:22px 20px 24px;} .brand-t{font-size:23px;} }
+@media(prefers-reduced-motion:reduce){ .card,.tab-ink,.vbox .spin{animation:none;transition:none;} }
+@media (prefers-color-scheme:dark){
+  :root{--bg:#1a2228;--bg-2:#20292f;--card:rgba(30,39,45,.9);--ink:#dce4e6;--ink-strong:#eef3f4;
+    --muted:#9fb0b7;--faint:#83949b;--line:rgba(220,228,230,.16);--line-soft:rgba(220,228,230,.08);}
+  .fl input,.verify{background:#20292f;} .vbox{background:#2a343a;}
+}
+:root[data-theme=dark]{--bg:#1a2228;--bg-2:#20292f;--card:rgba(30,39,45,.9);--ink:#dce4e6;--ink-strong:#eef3f4;
+  --muted:#9fb0b7;--faint:#83949b;--line:rgba(220,228,230,.16);--line-soft:rgba(220,228,230,.08);}
+:root[data-theme=light]{--bg:#EDF1EF;--bg-2:#E1E8E7;--ink:#26343B;--ink-strong:#1F2B31;--muted:#526872;--faint:#697B82;}
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"></div>
+
+<div class="wrap">
+  <div class="brand">
+    <div class="seal">易</div>
+    <div class="brand-t">心 易</div>
+    <div class="brand-s">易理为答 · 心有所问</div>
+  </div>
+
+  <div class="card" id="card">
+    <div class="tabs" id="tabs">
+      <button class="tab on" type="button" data-tab="login">登录</button>
+      <button class="tab" type="button" data-tab="register">注册</button>
+      <span class="tab-ink" aria-hidden="true"></span>
+    </div>
+
+    <form id="form" novalidate>
+      <div class="fl only-reg">
+        <label for="f-name">称呼</label>
+        <input type="text" id="f-name" placeholder="怎么称呼你" autocomplete="nickname"/>
+      </div>
+      <div class="fl">
+        <label for="f-email">邮箱</label>
+        <input type="email" id="f-email" placeholder="your@email.com" autocomplete="email"/>
+      </div>
+      <div class="fl">
+        <label for="f-pass">密码</label>
+        <input type="password" id="f-pass" placeholder="至少 6 位" autocomplete="current-password"/>
+      </div>
+      <div class="fl only-reg">
+        <label for="f-pass2">确认密码</label>
+        <input type="password" id="f-pass2" placeholder="再输一次密码" autocomplete="new-password"/>
+      </div>
+
+      <!-- 人机验证(墨韵占位,后期接真实 Turnstile/hCaptcha) -->
+      <div class="verify" id="verify">
+        <div class="vbox" id="vbox" role="checkbox" aria-checked="false" tabindex="0" aria-label="人机验证">
+          <div class="spin" aria-hidden="true"></div>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17.5 19 6.5"/></svg>
+        </div>
+        <span class="vtext" id="vtext">请验证您是真人</span>
+        <div class="vbrand" aria-hidden="true">
+          <div class="vb-seal">易</div>
+          <div class="vb-t">心易验证</div>
+        </div>
+      </div>
+
+      <button class="submit" id="submit" type="submit">登 录</button>
+    </form>
+
+    <!-- GUEST-LOGIN start · 临时游客入口,后期整块删除即可(含下方 CSS .guest* 与 JS 段) -->
+    <div class="guest">
+      <div class="guest-div"><span>或</span></div>
+      <button class="guest-btn" type="button" id="guest-btn">游客登录 · 免注册体验</button>
+    </div>
+    <!-- GUEST-LOGIN end -->
+  </div>
+
+  <div class="foot">
+    <span id="foot-txt">还没有账号?</span> <a href="#" id="foot-link">去注册</a>
+    <span style="margin:0 8px;color:var(--line);">·</span>
+    <a href="/">返回首页</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let mode = 'login';        // 'login' | 'register'
+let verified = false;
+
+// ── tab 切换 ──
+function setMode(next) {
+  mode = next;
+  const card = $('card'), tabs = $('tabs');
+  card.classList.toggle('reg-mode', mode === 'register');
+  tabs.classList.toggle('reg', mode === 'register');
+  document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('on', b.dataset.tab === mode));
+  $('submit').textContent = mode === 'login' ? '登 录' : '注 册';
+  $('f-pass').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+  $('foot-txt').textContent = mode === 'login' ? '还没有账号?' : '已经有账号了?';
+  $('foot-link').textContent = mode === 'login' ? '去注册' : '去登录';
+  clearErrs();
+}
+document.querySelectorAll('.tab').forEach((b) => b.onclick = () => setMode(b.dataset.tab));
+$('foot-link').onclick = (e) => { e.preventDefault(); setMode(mode === 'login' ? 'register' : 'login'); };
+
+// ── 人机验证占位(点一下 → 转圈 0.6s → 打勾) ──
+function toggleVerify() {
+  if (verified) { verified = false; $('vbox').classList.remove('on'); $('vbox').setAttribute('aria-checked','false'); $('vtext').textContent = '请验证您是真人'; return; }
+  const box = $('vbox');
+  box.classList.add('checking'); $('vtext').textContent = '正在验证…';
+  setTimeout(() => {
+    box.classList.remove('checking'); box.classList.add('on'); box.setAttribute('aria-checked','true');
+    verified = true; $('vtext').textContent = '已验证 · 你是真人';
+  }, 650);
+}
+$('vbox').onclick = toggleVerify;
+$('vbox').onkeydown = (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleVerify(); } };
+
+// ── 校验提示 ──
+function clearErrs() { document.querySelectorAll('.field-err').forEach((n) => n.remove()); document.querySelectorAll('input.bad').forEach((n) => n.classList.remove('bad')); }
+function showErr(inp, msg) {
+  inp.classList.add('bad');
+  let tip = inp.parentElement.querySelector('.field-err');
+  if (!tip) { tip = document.createElement('div'); tip.className = 'field-err'; inp.parentElement.appendChild(tip); }
+  tip.textContent = msg;
+  const clr = () => { inp.classList.remove('bad'); tip.remove(); inp.removeEventListener('input', clr); };
+  inp.addEventListener('input', clr);
+}
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
+
+// ── 提交(前端占位:存 localStorage.xy_account,后期接真后端) ──
+$('form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  clearErrs();
+  const email = $('f-email').value.trim();
+  const pass = $('f-pass').value;
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  let bad = null;
+  if (mode === 'register' && !$('f-name').value.trim()) { showErr($('f-name'), '请填个称呼'); bad = bad || $('f-name'); }
+  if (!emailOk) { showErr($('f-email'), '邮箱格式不对'); bad = bad || $('f-email'); }
+  if (pass.length < 6) { showErr($('f-pass'), '密码至少 6 位'); bad = bad || $('f-pass'); }
+  if (mode === 'register' && $('f-pass2').value !== pass) { showErr($('f-pass2'), '两次密码不一致'); bad = bad || $('f-pass2'); }
+  if (!verified) { toast('请先完成人机验证'); if (!bad) $('vbox').focus(); }
+  if (bad) { bad.focus(); return; }
+  if (!verified) return;
+
+  // 前端占位:仅存本机,标记已「登录」。后期替换为真实 /api/auth 请求。
+  try {
+    const acct = { email, name: ($('f-name').value.trim() || email.split('@')[0]), ts: Date.now() };
+    localStorage.setItem('xy_account', JSON.stringify(acct));
+  } catch (_) {}
+  toast(mode === 'login' ? '登录成功(占位)' : '注册成功(占位)');
+  $('submit').disabled = true;
+  setTimeout(() => { location.href = '/chat'; }, 900);
+});
+
+// GUEST-LOGIN start · 临时游客入口逻辑,后期随 HTML/CSS 一起删
+$('guest-btn').onclick = () => {
+  // 免注册/免验证:存游客占位账号(带 guest 标记,便于后期识别清理)后直接进对话
+  try { localStorage.setItem('xy_account', JSON.stringify({ guest: true, name: '游客', ts: Date.now() })); } catch (_) {}
+  toast('以游客身份进入');
+  $('guest-btn').disabled = true;
+  setTimeout(() => { location.href = '/chat'; }, 600);
+};
+// GUEST-LOGIN end
+
+// URL ?tab=register 直达注册
+if (/[?&]tab=register/.test(location.search)) setMode('register');
+</script>
+</body>
+</html>

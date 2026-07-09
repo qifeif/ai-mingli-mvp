@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>心易 · 新一代 AI 命理决策助手</title>
 <link rel="icon" href="data:," />
-<noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
+<noscript><style>.reveal,.triad-grid .dao.reveal{opacity:1;transform:none}</style></noscript>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@500;600;700;900&display=swap" rel="stylesheet" />
@@ -478,6 +478,22 @@
     translate: 0 -3px; border-color: rgba(168, 131, 76, .46); box-shadow: var(--shadow);
   }
 
+  /* ---- 三道合一卡片:滚动入场「翻面落定」——从背面翻转落到当前位置(与 .reveal 同一套 .in 触发,fx.js 无需改) ---- */
+  .triad-grid { perspective: 1400px; }
+  .triad-grid .dao.reveal {
+    opacity: 0; transform: none; /* 覆盖 .reveal 的位移式初态,改走 3D 翻转 */
+    transform-style: preserve-3d; backface-visibility: hidden;
+    transform-origin: 50% 50% -40px;
+    transform: rotateX(-100deg) translateY(10px) scale(.94);
+    transition: opacity var(--dur-3, .55s) var(--ease) var(--d, 0ms),
+      transform var(--dur-3, .55s) cubic-bezier(.22, .8, .32, 1.1) var(--d, 0ms),
+      translate var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+  }
+  .triad-grid .dao.reveal.in { opacity: 1; transform: rotateX(0deg) translateY(0) scale(1); }
+  @media (prefers-reduced-motion: reduce) {
+    .triad-grid .dao.reveal, .triad-grid .dao.reveal.in { transform: none; transition: none; opacity: 1; }
+  }
+
   /* ---- 定价:衬线价格放大 + 最受欢迎卡(朱砂发丝顶线 + 轻放大 1.02) ---- */
   .tier .price { font-size: 46px; }
   .tier.popular { scale: 1.02; border-color: var(--line); box-shadow: var(--shadow); }
@@ -707,13 +723,13 @@
       </a>
       <a class="dao" href="/renjiandao">
         <div class="medal">
-          <!-- 人间道 · 卦爻:六横爻,两断四连错落 -->
+          <!-- 人间道 · 地天泰卦(坤上乾下):上三爻断(坤/地),下三爻连(乾/天) -->
           <svg viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
-            <path d="M16 15 H56"/>
+            <path d="M16 15 H33 M39 15 H56"/>
             <path d="M16 23.4 H33 M39 23.4 H56"/>
-            <path d="M16 31.8 H56"/>
+            <path d="M16 31.8 H33 M39 31.8 H56"/>
             <path d="M16 40.2 H56"/>
-            <path d="M16 48.6 H30 M36 48.6 H56"/>
+            <path d="M16 48.6 H56"/>
             <path d="M16 57 H56"/>
           </svg>
         </div>

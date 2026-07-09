@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>心易 · 预览索引</title>
+<style>
+  :root{
+    /* 字号 5 档 */
+    --text-caption:0.8rem; --text-body:1rem; --text-subhead:1.25rem;
+    --text-heading:1.563rem; --text-display:2.5rem;
+    /* 间距 4 倍数 */
+    --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+    --space-6:24px; --space-8:32px; --space-12:48px; --space-16:64px; --space-24:96px;
+    /* 颜色(按角色) */
+    --page-bg:#07070a;
+    --ink:#f4f1ea; --ink-muted:rgba(238,234,225,.66); --ink-faint:rgba(238,234,225,.40);
+    --seal:#b24936; --seal-soft:rgba(178,73,54,.9); --on-seal:#f7f3ea;
+    --glass:rgba(255,255,255,.05); --glass-strong:rgba(255,255,255,.09);
+    --glass-line:rgba(255,255,255,.14); --glass-line-soft:rgba(255,255,255,.08);
+    /* 其它 */
+    --radius:16px; --leading-body:1.7; --leading-tight:1.25;
+    --ease:cubic-bezier(.4,0,.2,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Noto Serif SC",Georgia,serif;
+    color:var(--ink); line-height:var(--leading-body);
+    background:var(--page-bg); min-height:100vh; -webkit-font-smoothing:antialiased;
+  }
+  .bg-fixed{ position:fixed; inset:0; z-index:0; overflow:hidden; opacity:.5; }
+  .bg-fixed video{ width:100%; height:100%; object-fit:cover; filter:brightness(.7) contrast(1.05); }
+  .bg-scrim{ position:fixed; inset:0; z-index:1; pointer-events:none;
+    background:radial-gradient(ellipse at 50% 30%, rgba(7,7,10,.55), rgba(7,7,10,.86)); }
+
+  .page{ position:relative; z-index:2; max-width:1160px; margin:0 auto; padding:var(--space-16) var(--space-8) var(--space-24); }
+
+  header.head{ text-align:center; margin-bottom:var(--space-16); }
+  .head .seal{ display:inline-grid; place-items:center; width:52px; height:52px; border-radius:14px; background:var(--seal); color:var(--on-seal); font-size:var(--text-subhead); margin-bottom:var(--space-6); }
+  .head h1{ font-size:var(--text-display); font-weight:500; letter-spacing:.28em; margin-bottom:var(--space-4); }
+  .head p{ color:var(--ink-muted); font-size:var(--text-subhead); }
+  .head .note{ color:var(--ink-faint); font-size:var(--text-caption); margin-top:var(--space-6); letter-spacing:.08em; }
+
+  .group{ margin-bottom:var(--space-16); }
+  .group-head{ display:flex; align-items:center; gap:var(--space-4); margin-bottom:var(--space-8); }
+  .group-head .dot{ width:8px; height:8px; border-radius:50%; background:var(--seal); flex:none; }
+  .group-head h2{ font-size:var(--text-heading); font-weight:500; letter-spacing:.16em; }
+  .group-head .ln{ flex:1; height:1px; background:var(--glass-line-soft); }
+
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:var(--space-6); }
+
+  .card{
+    display:flex; flex-direction:column; gap:var(--space-3);
+    padding:var(--space-8); border-radius:var(--radius);
+    background:var(--glass); backdrop-filter:blur(14px) saturate(1.1);
+    -webkit-backdrop-filter:blur(14px) saturate(1.1);
+    border:1px solid var(--glass-line-soft);
+    text-decoration:none; color:var(--ink);
+    transition:transform .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease);
+  }
+  .card:hover{ transform:translateY(-4px); border-color:var(--glass-line); background:var(--glass-strong); }
+  .card.star{ border-color:var(--seal-soft); background:var(--glass-strong); }
+  .card .row{ display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); }
+  .card .title{ font-size:var(--text-subhead); letter-spacing:.06em; }
+  .card .badge{ font-size:var(--text-caption); color:var(--seal); border:1px solid var(--seal-soft); border-radius:999px; padding:var(--space-1) var(--space-3); flex:none; }
+  .card .desc{ font-size:var(--text-body); color:var(--ink-muted); line-height:var(--leading-body); }
+  .card .path{ font-size:var(--text-caption); color:var(--ink-faint); font-family:ui-monospace,Menlo,monospace; letter-spacing:0; word-break:break-all; }
+  .card .links{ display:flex; flex-wrap:wrap; gap:var(--space-2); margin-top:var(--space-2); }
+  .card .links a{ font-size:var(--text-caption); color:var(--ink); background:var(--glass-strong); border:1px solid var(--glass-line-soft); border-radius:999px; padding:var(--space-1) var(--space-4); text-decoration:none; transition:background .2s var(--ease); }
+  .card .links a:hover{ background:var(--seal); color:var(--on-seal); }
+  .card .go{ color:var(--seal); font-size:var(--text-subhead); }
+
+  footer{ text-align:center; color:var(--ink-faint); font-size:var(--text-caption); margin-top:var(--space-16); line-height:var(--leading-body); }
+  footer code{ font-family:ui-monospace,Menlo,monospace; color:var(--ink-muted); }
+</style>
+</head>
+<body>
+  <div class="bg-fixed"><video src="/nebula-taiji-bg.mp4" muted loop autoplay playsinline preload="auto"></video></div>
+  <div class="bg-scrim"></div>
+
+  <div class="page">
+    <header class="head">
+      <div class="seal">易</div>
+      <h1>心 易 · 预 览 索 引</h1>
+      <p>所有预览版的统一入口 —— 现役产品未受影响</p>
+      <p class="note">全部为独立 preview-* 文件 · 落地页/功能页现役一行未动</p>
+    </header>
+
+    <!-- 首页方向 -->
+    <section class="group">
+      <div class="group-head"><span class="dot"></span><h2>首 页 方 向</h2><span class="ln"></span></div>
+      <div class="grid">
+        <div class="card star">
+          <div class="row"><span class="title">星云太极滚动首页</span><span class="badge">最新 · 主推</span></div>
+          <div class="desc">星云太极作固定背景，完整可下滑长页(导航→心易→三道→对话→定价→CTA)。阴/阳两版。</div>
+          <div class="path">preview-scroll.html</div>
+          <div class="links"><a href="/preview-scroll?tone=yang">阳版 →</a><a href="/preview-scroll?tone=yin">阴版 →</a></div>
+        </div>
+        <a class="card" href="/preview-taiji">
+          <div class="row"><span class="title">液态玻璃落地页</span><span class="go">→</span></div>
+          <div class="desc">Asme 液态玻璃单屏落地页，已换星云太极背景(object-position 62%)。滚动首页的首屏原型。</div>
+          <div class="path">preview-taiji.html</div>
+        </a>
+        <a class="card" href="/preview-nebula">
+          <div class="row"><span class="title">星云太极全屏背景</span><span class="badge">WebGL</span></div>
+          <div class="desc">WebGL 实时渲染:中轴不动·星云内流·两侧星点外扩，天然无缝循环。背景效果之源。</div>
+          <div class="path">preview-nebula.html</div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 动态背景素材 -->
+    <section class="group">
+      <div class="group-head"><span class="dot"></span><h2>动 态 背 景 素 材</h2><span class="ln"></span></div>
+      <div class="grid">
+        <a class="card" href="/preview-strip">
+          <div class="row"><span class="title">竖版长条(阴/阳)</span><span class="badge">9:16</span></div>
+          <div class="desc">竖版 9:16 长条背景，阴(黑鱼主导·沉静) / 阳(白鱼主导·通透)两变体并排。</div>
+          <div class="path">preview-strip.html</div>
+        </a>
+        <a class="card" href="/preview-strip-compare">
+          <div class="row"><span class="title">竖版阴阳对照</span><span class="go">→</span></div>
+          <div class="desc">现配置 vs 加强版(拉大明暗/冷暖/位移差)横向对比，用于定稿阴阳区分参数。</div>
+          <div class="path">preview-strip-compare.html</div>
+        </a>
+        <a class="card" href="/preview-yaogua">
+          <div class="row"><span class="title">摇卦龟甲动效</span><span class="badge">3s 循环</span></div>
+          <div class="desc">800×800 白描龟甲摇卦:6 枚金钱入甲→摇动 3 次→吐出散落。</div>
+          <div class="path">preview-yaogua.html</div>
+        </a>
+        <a class="card" href="/nebula-taiji-bg.mp4">
+          <div class="row"><span class="title">终版动图 mp4</span><span class="badge">1080p · 24s</span></div>
+          <div class="desc">星云太极背景导出的无缝循环视频(PSNR 验证接缝=帧间基准)。原件在 动态背景设计/终版动图.mp4。</div>
+          <div class="path">public/nebula-taiji-bg.mp4</div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 全流程页面(液态玻璃) -->
+    <section class="group">
+      <div class="group-head"><span class="dot"></span><h2>全 流 程 页 面(液态玻璃)</h2><span class="ln"></span></div>
+      <div class="grid">
+        <a class="card" href="/preview-app">
+          <div class="row"><span class="title">天命</span><span class="go">→</span></div>
+          <div class="desc">紫微斗数十二宫方盘 + 三方四正 + AI 解读。</div>
+          <div class="path">preview-app.html</div>
+        </a>
+        <a class="card" href="/preview-diyun">
+          <div class="row"><span class="title">地运</span><span class="go">→</span></div>
+          <div class="desc">八宅九宫罗盘，吉绿凶红方位布局。</div>
+          <div class="path">preview-diyun.html</div>
+        </a>
+        <a class="card" href="/preview-renjiandao">
+          <div class="row"><span class="title">人间道</span><span class="go">→</span></div>
+          <div class="desc">周易六爻卦象 + 动爻，观象悟辞。</div>
+          <div class="path">preview-renjiandao.html</div>
+        </a>
+        <a class="card" href="/preview-chat">
+          <div class="row"><span class="title">对话</span><span class="go">→</span></div>
+          <div class="desc">左会话栏 + 聊天流 + 模式切换的 AI 易理对话。</div>
+          <div class="path">preview-chat.html</div>
+        </a>
+        <a class="card" href="/preview-hehun">
+          <div class="row"><span class="title">合参</span><span class="go">→</span></div>
+          <div class="desc">双人八字对比双盘。</div>
+          <div class="path">preview-hehun.html</div>
+        </a>
+        <a class="card" href="/preview">
+          <div class="row"><span class="title">新中式预览(早期)</span><span class="go">→</span></div>
+          <div class="desc">更早的新中式风格落地页探索，保留备查。</div>
+          <div class="path">preview.html</div>
+        </a>
+      </div>
+    </section>
+
+    <footer>
+      现役产品:<code>/</code> 落地页 · <code>/app</code> 天命 · <code>/diyun</code> 地运 · <code>/renjiandao</code> 人间道 · <code>/chat</code> 对话 · <code>/hehun</code> 合参<br>
+      预览文件均在 <code>~/ai-mingli-mvp/public/</code> · 路由登记在 <code>server.js</code> · 索引地址 <code>/previews</code>
+    </footer>
+  </div>
+</body>
+</html>

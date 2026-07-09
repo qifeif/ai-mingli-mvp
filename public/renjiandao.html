@@ -300,8 +300,9 @@
 
   <header class="lead">
     <div class="kick"><span class="dot"></span><span data-i18n="hero.badge">人间道 · 周易六爻 · 卦图象解</span>　<span class="cn" data-i18n="hero.kickcn">观象悟辞</span></div>
+    <!-- 地天泰卦(坤上乾下):上三爻断(坤/地),下三爻连(乾/天) -->
     <svg class="dao-motif" aria-hidden="true" width="64" height="64" viewBox="0 0 96 96" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-      <path d="M20 18 H76 M20 30 H42 M54 30 H76 M20 42 H76 M20 54 H76 M20 66 H42 M54 66 H76 M20 78 H76"/>
+      <path d="M20 18 H42 M54 18 H76 M20 30 H42 M54 30 H76 M20 42 H42 M54 42 H76 M20 54 H76 M20 66 H76 M20 78 H76"/>
     </svg>
     <h1 data-i18n="hero.title">人 间 道</h1>
     <p class="lede"><b data-i18n="hero.motto">人事尽其为。</b><span data-i18n="hero.sub">心中默念所问之事,摇一卦——观此刻处境之象、宜动宜静之时机,给的是视角不是定数。</span></p>
@@ -370,6 +371,11 @@
           <span class="xt"><b data-i18n="cross.diyun">地运 · 调你的场</b><span data-i18n="cross.diyun.d">八宅方位,把居所调到帮你的那一面</span></span>
           <span class="arr">→</span>
         </a>
+        <a class="xlink" href="/hehun">
+          <span class="ico"><svg viewBox="0 0 24 24"><circle cx="9" cy="12" r="6.5"/><circle cx="15" cy="12" r="6.5"/></svg></span>
+          <span class="xt"><b data-i18n="cross.hehun">合参 · 看彼此的镜子</b><span data-i18n="cross.hehun.d">用八字命途画像来进行匹配,给你一面看清彼此的镜子</span></span>
+          <span class="arr">→</span>
+        </a>
       </div>
     </div>
   </section>
@@ -394,7 +400,7 @@ const I18N = {
     'recast':'重新摇一卦','need_q':'先写下你要问的事',
     'aside.about.t':'人间道这一道','aside.about.p':'周易六爻摇出一卦,以卦图之象映照你此刻所问的处境——本卦看当下,动爻与变卦看走向。它给的是看待时机的视角,不是写死的结局。',
     'aside.steps.t':'怎么用','aside.s1':'把要问的一件事在心里默念清楚,再写下来。','aside.s2':'点「摇卦」,模拟三铜钱六摇,定出本卦与动爻。','aside.s3':'让它观象悟辞,把卦象翻成此刻处境与时机的人话。',
-    'aside.cross.t':'三道同参','cross.tianming':'天命 · 看你的势','cross.tianming.d':'八字四柱,读性格倾向与能量节奏','cross.diyun':'地运 · 调你的场','cross.diyun.d':'八宅方位,把居所调到帮你的那一面',
+    'aside.cross.t':'三道同参','cross.tianming':'天命 · 看你的势','cross.tianming.d':'八字四柱,读性格倾向与能量节奏','cross.diyun':'地运 · 调你的场','cross.diyun.d':'八宅方位,把居所调到帮你的那一面','cross.hehun':'合参 · 看彼此的镜子','cross.hehun.d':'用八字命途画像来进行匹配,给你一面看清彼此的镜子',
   },
   en: {
     'nav.tianming':'Tian Ming','nav.diyun':'Di Yun','nav.renjiandao':'Ren Jian Dao','nav.pricing':'Pricing',
@@ -411,7 +417,7 @@ const I18N = {
     'recast':'Cast again','need_q':'Write your question first',
     'aside.about.t':'About Ren Jian Dao','aside.about.p':'Cast a hexagram by the I Ching\'s six lines to mirror the situation you\'re asking about — the primary hexagram shows the now, moving lines and the changing hexagram show where it tends. A way to read timing, not a fixed ending.',
     'aside.steps.t':'How to use','aside.s1':'Settle the one thing you want to ask in your mind, then write it down.','aside.s2':'Tap Cast to simulate three coins over six throws — set the primary hexagram and moving lines.','aside.s3':'Ask for a reading to turn the image into plain words about this moment and its timing.',
-    'aside.cross.t':'Cross-reference','cross.tianming':'Tian Ming · read your force','cross.tianming.d':'BaZi four pillars — tendencies and rhythm','cross.diyun':'Di Yun · tune your space','cross.diyun.d':'Eight Mansions — set your home to the side that helps you',
+    'aside.cross.t':'Cross-reference','cross.tianming':'Tian Ming · read your force','cross.tianming.d':'BaZi four pillars — tendencies and rhythm','cross.diyun':'Di Yun · tune your space','cross.diyun.d':'Eight Mansions — set your home to the side that helps you','cross.hehun':'He Hun · a mirror to each other','cross.hehun.d':'Match two BaZi life-path portraits — a mirror to see each other clearly',
   },
 };
 let LANG = localStorage.getItem('lang') || 'zh';
