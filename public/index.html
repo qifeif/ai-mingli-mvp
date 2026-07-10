@@ -117,12 +117,6 @@
   /* 弹窗内表单微调(form 布局沿用,padding 由弹窗骨架接管) */
   .ml-modal form#f { padding:0 26px 24px; border-radius:0; }
   .ml-modal form#f .form-cap { display:none; } /* 标题走弹窗头 */
-  /* 城市 + 地图占位 */
-  .ml-city-wrap { display:flex; gap:10px; align-items:stretch; }
-  .ml-city-wrap input { flex:1; min-width:0; }
-  .ml-map-stub { flex:none; width:120px; display:flex; align-items:center; justify-content:center; text-align:center;
-    border:1px dashed var(--line); border-radius:11px; background:var(--bg-2); color:var(--faint);
-    font-size:10.5px; line-height:1.4; padding:6px; }
   /* 标签多选 chip */
   .ml-tagpick { display:flex; flex-wrap:wrap; gap:8px; }
   .ml-tagpick .tg { font:inherit; font-size:13px; color:var(--muted); background:var(--bg-2);
@@ -142,7 +136,6 @@
   .btn-cancel:focus-visible { outline:2px solid var(--cinnabar); outline-offset:2px; }
   @media (max-width:560px) {
     .ml-modal { padding:20px 12px; }
-    .ml-city-wrap { flex-direction:column; } .ml-map-stub { width:100%; padding:10px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .ml-backdrop, .ml-dialog { animation:none; }
@@ -647,9 +640,9 @@
         </div>
         <div>
           <label for="f-place" data-i18n="ml.city">出生城市</label>
-          <div class="ml-city-wrap">
-            <input id="f-place" class="inkline" name="place" value="杭州" data-i18n-ph="ml.city_ph" placeholder="输入城市…" />
-            <div class="ml-map-stub" data-i18n="ml.map_soon" aria-hidden="true">点击地图选择(即将上线)</div>
+          <div class="xy-city-field">
+            <input id="f-place" class="inkline" name="place" value="杭州" data-city-picker data-i18n-ph="ml.city_ph" placeholder="输入城市…" />
+            <button type="button" class="xy-city-btn" data-city-target="f-place" data-i18n="ml.city_pick">选择</button>
           </div>
         </div>
       </div>
@@ -793,6 +786,8 @@
 
 <!-- 农历⇄公历换算(UMD,全局挂 window.Solar / window.Lunar / window.LunarYear);须在下方模块脚本之前同步加载 -->
 <script src="/lunar.js"></script>
+<script src="/profile-pickers.js"></script>
+<script src="/plans.js"></script>
 <script>
 const I18N = {
   zh: {
@@ -802,10 +797,10 @@ const I18N = {
     'form.cap':'命盘信息','form.capsub':'出生四要素 + 此刻所问',
     'ml.title':'我的命例','ml.add':'开始排盘','ml.empty':'还没有命例 · 排一次盘即可存入','ml.search':'搜索命例…',
     'ml.main':'主命','ml.del_confirm':'删除这条命例?','ml.restore_note':'已还原上次解读',
-    'ml.cap_hit':'免费版最多存 3 个命例。升级会员可存 10 个。','ml.cap_hit_member':'已达上限(10 个),请先删除部分命例。',
+    'ml.cap_hit':'当前档位命例库已达上限。免费 3 个，9.9 档 10 个，29.9 档 30 个，99.9 档 100 个。',
     'ml.new_t':'新建八字','ml.new_sub':'为家人或朋友创建八字记录','ml.close':'关闭','ml.cancel':'取消','ml.confirm':'确认',
-    'ml.name':'名称','ml.name_ph':'如:父亲、母亲、好友','ml.city':'出生城市','ml.city_ph':'输入城市…',
-    'ml.map_soon':'点击地图选择(即将上线)','ml.tz':'时区','ml.tags':'标签','ml.tag_add':'+ 添加自定义','ml.no_result':'没有匹配的命例',
+    'ml.name':'名称','ml.name_ph':'如:父亲、母亲、好友','ml.city':'出生城市','ml.city_ph':'输入城市或点选择','ml.city_pick':'选择',
+    'ml.tz':'时区','ml.tags':'标签','ml.tag_add':'+ 添加自定义','ml.no_result':'没有匹配的命例',
     'f.gender':'性别','f.female':'女','f.male':'男','f.place':'出生地','f.place_ph':'如 杭州',
     'f.date':'出生日期','f.time':'出生时间','f.datetime':'出生日期时间','f.q':'此刻的纠结','f.q_ph':'把你正在纠结的事说出来,越具体越好…',
     'f.unit_y':'年','f.unit_mo':'月','f.unit_d':'日','f.unit_h':'时','f.unit_mi':'分',
@@ -833,10 +828,10 @@ const I18N = {
     'form.cap':'Birth details','form.capsub':'Four birth inputs + your question',
     'ml.title':'My charts','ml.add':'Start reading','ml.empty':'No saved charts yet · run a reading to save one','ml.search':'Search charts…',
     'ml.main':'Main','ml.del_confirm':'Delete this saved chart?','ml.restore_note':'Restored last reading',
-    'ml.cap_hit':'Free plan stores up to 3 charts. Upgrade for 10.','ml.cap_hit_member':'Limit reached (10). Delete a chart first.',
+    'ml.cap_hit':'Chart library limit reached for this tier. Free saves 3, ¥9.9 saves 10, ¥29.9 saves 30, ¥99.9 saves 100.',
     'ml.new_t':'New chart','ml.new_sub':'Create a birth record for family or a friend','ml.close':'Close','ml.cancel':'Cancel','ml.confirm':'Confirm',
-    'ml.name':'Name','ml.name_ph':'e.g. Father, Mother, Friend','ml.city':'Birth city','ml.city_ph':'Enter a city…',
-    'ml.map_soon':'Pick on map (coming soon)','ml.tz':'Time zone','ml.tags':'Tags','ml.tag_add':'+ Add custom','ml.no_result':'No matching charts',
+    'ml.name':'Name','ml.name_ph':'e.g. Father, Mother, Friend','ml.city':'Birth city','ml.city_ph':'Type or pick a city','ml.city_pick':'Pick',
+    'ml.tz':'Time zone','ml.tags':'Tags','ml.tag_add':'+ Add custom','ml.no_result':'No matching charts',
     'f.gender':'Gender','f.female':'Female','f.male':'Male','f.place':'Birthplace','f.place_ph':'e.g. Hangzhou',
     'f.date':'Birth date','f.time':'Birth time','f.datetime':'Birth date & time','f.q':'What\'s on your mind','f.q_ph':'Describe what you\'re wrestling with, the more specific the better…',
     'f.unit_y':'Yr','f.unit_mo':'Mo','f.unit_d':'Day','f.unit_h':'Hr','f.unit_mi':'Min',
@@ -901,6 +896,7 @@ const DateWheel = (() => {
   let mode = 'solar';            // 'solar' | 'lunar'
   // year/month/day 走当前历(month<0 表示阴历闰月);hour/minute 恒为公历钟点(不随历法变)
   let sel = { year: 1996, month: 8, day: 12, hour: 14, minute: 30 };
+  let ignoreScrollUntil = 0;
 
   const en = () => LANG === 'en';
   const pad2 = (n) => String(n).padStart(2, '0');
@@ -914,7 +910,7 @@ const DateWheel = (() => {
   function monthOpts(year) {
     if (mode === 'solar') {
       const out = [];
-      for (let m = 1; m <= 12; m++) out.push({ v: m, label: en() ? String(m) : LUNAR_MONTH_CN[m] + '月' });
+      for (let m = 1; m <= 12; m++) out.push({ v: m, label: en() ? String(m) : `${m}月` });
       return out;
     }
     // 阴历:1..12,若该年有闰月则在其后插入「负月份」
@@ -984,6 +980,7 @@ const DateWheel = (() => {
 
   // ---- 全量重渲五列(年变→月列可能变;月变→日列可能变;时/分恒定) ----
   function renderAll() {
+    ignoreScrollUntil = Date.now() + 800;
     renderCol('year', yearOpts(), sel.year);
     const mOpts = monthOpts(sel.year);
     if (!mOpts.some(o => o.v === sel.month)) sel.month = mOpts[0].v;
@@ -1013,6 +1010,7 @@ const DateWheel = (() => {
 
   // ---- 从公历 YYYY-MM-DD (+可选 HH:mm) 反填当前模式(用于初始化 / 命例还原) ----
   function loadFrom(ymd, hm) {
+    ignoreScrollUntil = Date.now() + 800;
     const m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec((ymd || '').trim());
     if (m) {
       const y = +m[1], mo = +m[2], d = +m[3];
@@ -1033,6 +1031,7 @@ const DateWheel = (() => {
   // ---- 交互:滚动结束吸附 → 更新 sel + 级联重渲 ----
   const scrollTimers = {};
   function onScroll(name) {
+    if (Date.now() < ignoreScrollUntil) return;
     clearTimeout(scrollTimers[name]);
     // 实时高亮中心项
     const cur = valueAtScroll(name);
@@ -1319,10 +1318,8 @@ result.addEventListener('click', (e) => {
 // ===== 命例库(localStorage 持久化;存全文,点开即还原) =====
 const Mingli = (() => {
   const KEY = 'xinyi_mingli';
-  const FREE_CAP = 3, MEMBER_CAP = 10;
-  // 会员开关位(预留接口):真实会员判定接账号体系后改这里
-  const isMember = () => localStorage.getItem('xinyi_member') === '1';
-  const cap = () => isMember() ? MEMBER_CAP : FREE_CAP;
+  // 当前体验档位来自 public/plans.js；真实支付/账号上线后只需替换 XinyiPlans.current() 的来源。
+  const cap = () => Number(window.XinyiPlans?.cap('chartLibrary') || 3);
 
   // 天干/地支 → 五行 class(四柱染色)
   const GAN_WX = { 甲:'mu',乙:'mu',丙:'huo',丁:'huo',戊:'tu',己:'tu',庚:'jin',辛:'jin',壬:'shui',癸:'shui' };
@@ -1376,9 +1373,7 @@ const Mingli = (() => {
     const k = dedupeKey(entry);
     const existed = list.find(e => dedupeKey(e) === k);
     list = list.filter(e => dedupeKey(e) !== k);
-    if (!existed && list.length >= cap()) {
-      return { ok: false, reason: isMember() ? 'cap_hit_member' : 'cap_hit' };
-    }
+    if (!existed && list.length >= cap()) return { ok: false, reason: 'cap_hit' };
     list.unshift(entry);
     persist(list);
     render();
@@ -1498,8 +1493,10 @@ const Mingli = (() => {
 
   function atCap() { return load().length >= cap(); }
   function openModal() {
-    if (atCap()) { alert(t(isMember() ? 'ml.cap_hit_member' : 'ml.cap_hit')); return; }
+    if (atCap()) { alert(t('ml.cap_hit')); return; }
     lastFocus = document.activeElement;
+    const curDate = document.getElementById('f-date')?.value || '1996-08-12';
+    const curTime = document.getElementById('f-time')?.value || '14:30';
     // 重置为「新建」态:清空名称/标签,不动已填的出生信息默认值
     const nameEl = document.getElementById('f-name'); if (nameEl) nameEl.value = '';
     setTags([]);
@@ -1507,7 +1504,7 @@ const Mingli = (() => {
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
     // 拨轮在弹窗隐藏时初始化,滚动定位会失效;显示后重排一次让选中值回到中心行
-    setTimeout(() => { window.DateWheelRelabel?.(); document.getElementById('f-name')?.focus(); }, 30);
+    setTimeout(() => { window.DateWheelSetDateTime?.(curDate, curTime); document.getElementById('f-name')?.focus(); }, 30);
   }
   function closeModal() {
     modal.classList.remove('open');

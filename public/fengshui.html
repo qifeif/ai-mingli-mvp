@@ -50,10 +50,38 @@
   .form-cap span { font-size:12px; color:var(--faint); letter-spacing:.5px; }
   .row { display:flex; gap:16px; margin-bottom:18px; } .row>div { flex:1; min-width:0; }
   label { display:block; font-size:12px; color:var(--muted); margin-bottom:8px; letter-spacing:1px; }
+  .dy-modal label { font-size:14px; color:var(--muted); margin-bottom:12px; letter-spacing:1.5px; }
   input,select { width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:11px;
     background:var(--bg-2); color:var(--ink); font-family:inherit; font-size:15px; transition:border-color .2s,box-shadow .2s; }
   input:focus,select:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(42,38,32,.14); }
   select option { background:#fff; }
+  .seg { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--bg-2); }
+  .seg label { position:relative; margin:0; cursor:pointer; }
+  .seg input { position:absolute; inset:0; opacity:0; margin:0; cursor:pointer; }
+  .seg span { display:flex; align-items:center; justify-content:center; min-height:46px; color:var(--muted); font-family:var(--serif); font-size:15px; letter-spacing:2px; transition:background var(--dur-1) var(--ease), color var(--dur-1) var(--ease); }
+  .seg input:checked + span { background:var(--ink-strong); color:#F4F1EA; }
+  .seg span::after { content:""; position:absolute; left:50%; bottom:8px; width:30px; height:3px; border-radius:999px; background:var(--cinnabar); transform:translateX(-50%) scaleX(0); opacity:0; transition:transform var(--dur-1) var(--ease), opacity var(--dur-1) var(--ease); }
+  .seg input:checked + span::after { transform:translateX(-50%) scaleX(1); opacity:1; }
+  .datefield { display:flex; flex-direction:column; gap:10px; }
+  .datefield .seg { margin:0; }
+  .wheels { position:relative; display:grid; grid-template-columns:1.28fr 1fr 1fr .82fr .82fr; gap:0;
+    height:165px; overflow:hidden; border:1px solid var(--line); border-radius:15px; background:var(--bg-2);
+    box-shadow:inset 0 18px 32px rgba(255,255,255,.35), inset 0 -18px 32px rgba(38,52,59,.08); }
+  .wheel { position:relative; min-width:0; border-right:1px solid var(--line-soft); }
+  .wheel:last-of-type { border-right:none; }
+  .wheel-scroll { height:100%; overflow-y:auto; scroll-snap-type:y mandatory; scrollbar-width:none; padding:66px 0; }
+  .wheel-scroll::-webkit-scrollbar { display:none; }
+  .wheel-item { height:33px; display:flex; align-items:center; justify-content:center; scroll-snap-align:center;
+    font-size:17px; color:var(--faint); transition:color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+    font-variant-numeric:tabular-nums; user-select:none; cursor:pointer; }
+  .wheel-item.on { color:var(--ink); font-family:var(--serif); font-size:19px; transform:scale(1.03); }
+  .wheel .pad { height:0; }
+  .wheel-unit { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); color:var(--muted); font-size:11px; letter-spacing:1px; pointer-events:none; }
+  .wheel-mask { position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(to bottom, rgba(225,232,231,.92), rgba(225,232,231,0) 32%, rgba(225,232,231,0) 68%, rgba(225,232,231,.92)); }
+  .wheels .wheel-sel { position:absolute; left:0; right:0; top:66px; height:33px;
+    border-top:1px solid rgba(166,64,47,.42); border-bottom:1px solid rgba(166,64,47,.42); pointer-events:none; }
+  @media (max-width:560px){ .wheels { grid-template-columns:1.24fr 1fr 1fr .84fr .84fr; } .wheel-item { font-size:15px; } .wheel-item.on { font-size:17px; } }
 
   /* 上传区:虚线发丝框 + 居中图标;拖入/悬停朱砂高亮(JS 上传逻辑不动) */
   .upload { border:1px dashed var(--line); border-radius:14px; padding:28px 24px; text-align:center; cursor:pointer;
@@ -110,26 +138,48 @@
   .dy-start:hover { transform:translateY(-1px); background:#2A3841; }
   .dy-start:focus-visible { outline:2px solid var(--cinnabar); outline-offset:3px; }
   /* 弹窗(骨架/开关逻辑同天命页) */
-  .dy-modal { position:fixed; inset:0; z-index:80; display:none; align-items:flex-start; justify-content:center; padding:40px 16px; overflow:auto; }
+  .dy-modal { position:fixed; inset:0; z-index:80; display:none; align-items:flex-start; justify-content:center; padding:16px; overflow:auto; }
   .dy-modal.open { display:flex; }
   .dy-backdrop { position:fixed; inset:0; background:rgba(31,43,49,.42); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); animation:dyFade var(--dur-1) var(--ease); }
-  .dy-dialog { position:relative; z-index:1; width:100%; max-width:560px; max-height:90vh; overflow:auto; border-radius:20px; padding:0; animation:dyRise var(--dur-2) var(--ease); }
+  .dy-dialog { position:relative; z-index:1; width:min(1120px,100%); max-height:96vh; overflow:auto; border-radius:26px; padding:0; animation:dyRise var(--dur-2) var(--ease); }
   @keyframes dyFade { from { opacity:0; } }
   @keyframes dyRise { from { opacity:0; transform:translateY(14px); } }
-  .dy-dhead { display:flex; align-items:flex-start; gap:12px; padding:24px 26px 14px; }
+  .dy-dhead { display:flex; align-items:flex-start; gap:18px; padding:56px 54px 22px; }
   .dy-dhead .dt { flex:1; min-width:0; }
-  .dy-dhead h3 { font-family:"Songti SC","Noto Serif SC",serif; font-size:20px; letter-spacing:3px; color:var(--accent); margin:0; }
-  .dy-dhead .dsub { font-size:12.5px; color:var(--muted); margin-top:6px; letter-spacing:.3px; }
-  .dy-close { flex:none; width:32px; height:32px; border-radius:50%; border:1px solid var(--line); background:var(--bg-2);
-    color:var(--muted); cursor:pointer; font-size:16px; line-height:1; display:grid; place-items:center;
+  .dy-dhead h3 { font-family:"Songti SC","Noto Serif SC",serif; font-size:36px; line-height:1.25; letter-spacing:5px; color:var(--ink-strong); margin:0; font-weight:500; }
+  .dy-dhead .dsub { font-size:18px; color:var(--muted); margin-top:18px; letter-spacing:.5px; }
+  .dy-close { flex:none; width:64px; height:64px; border-radius:50%; border:1px solid var(--line); background:var(--bg-2);
+    color:var(--muted); cursor:pointer; font-size:30px; line-height:1; display:grid; place-items:center;
     transition:color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease); }
   .dy-close:hover { color:var(--cinnabar); border-color:rgba(166,64,47,.4); }
   .dy-close:focus-visible { outline:2px solid var(--cinnabar); outline-offset:2px; }
-  .dy-modal form#f { padding:0 26px 24px; }
+  .dy-modal form#f { padding:0 54px 34px; }
   .dy-modal form#f .form-cap { display:none; } /* 标题走弹窗头 */
+  .dy-form-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:44px 34px; align-items:start; }
+  .dy-field { min-width:0; margin:0; }
+  .dy-field.full { grid-column:1 / -1; }
+  .dy-modal input, .dy-modal select { min-height:94px; border-radius:18px; padding:0 34px; font-size:26px; background:var(--bg-2); }
+  .dy-modal .seg { border-radius:18px; min-height:94px; }
+  .dy-modal .seg span { min-height:88px; font-size:26px; letter-spacing:2px; }
+  .dy-modal .seg span::after { bottom:14px; width:32px; height:4px; }
+  .dy-modal .datefield { gap:20px; }
+  .dy-modal .datefield .seg { min-height:94px; }
+  .dy-modal .wheels { height:330px; border-radius:20px; box-shadow:inset 0 20px 34px rgba(255,255,255,.38), inset 0 -20px 34px rgba(38,52,59,.08), 0 18px 42px -32px rgba(38,52,59,.32); }
+  .dy-modal .wheel-scroll { padding:132px 0; }
+  .dy-modal .wheel-item { height:66px; font-size:28px; }
+  .dy-modal .wheel-item.on { font-size:31px; }
+  .dy-modal .wheel-unit { bottom:13px; font-size:18px; }
+  .dy-modal .wheels .wheel-sel { top:132px; height:66px; }
+  .dy-modal .upload { min-height:300px; display:flex; align-items:center; justify-content:center; border-radius:20px; }
+  .dy-modal .upload .big svg { width:58px; height:58px; }
+  .dy-modal .upload span { display:block; font-family:var(--serif); font-size:26px; color:var(--muted); letter-spacing:2px; }
+  .dy-modal .upload .hint { font-size:18px; margin-top:14px; }
+  .dy-modal .upload img { max-height:260px; }
   .ml-foot { display:flex; gap:12px; margin-top:6px; }
   .ml-foot .btn-cancel { flex:none; min-width:96px; }
   .ml-foot button#btn { flex:1; margin-top:0; }
+  .dy-modal .ml-foot { grid-column:1 / -1; margin-top:-10px; gap:30px; }
+  .dy-modal .ml-foot .btn-cancel, .dy-modal .ml-foot button#btn { min-height:64px; border-radius:999px; font-size:16px; }
   .btn-cancel { font:inherit; font-size:15px; letter-spacing:2px; color:var(--muted); background:var(--bg-2);
     border:1px solid var(--line); border-radius:12px; padding:0 18px; min-height:50px; cursor:pointer;
     transition:color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease); }
@@ -342,7 +392,31 @@
     .dy-workbench { grid-template-columns:1fr; }
     .res-grid { grid-template-columns:1fr; }
   }
-  @media (max-width:560px){ .dy-modal { padding:20px 12px; } }
+  @media (max-width:760px){
+    .dy-modal { padding:12px; }
+    .dy-dialog { border-radius:22px; }
+    .dy-dhead { padding:34px 26px 16px; }
+    .dy-dhead h3 { font-size:28px; letter-spacing:3px; }
+    .dy-dhead .dsub { font-size:15px; margin-top:10px; }
+    .dy-close { width:48px; height:48px; font-size:24px; }
+    .dy-modal form#f { padding:0 26px 28px; }
+    .dy-form-grid { grid-template-columns:1fr; gap:28px; }
+    .dy-field.full, .dy-modal .ml-foot { grid-column:auto; }
+    .dy-modal input, .dy-modal select { min-height:66px; border-radius:16px; padding:0 22px; font-size:20px; }
+    .dy-modal .seg { min-height:66px; }
+    .dy-modal .seg span { min-height:62px; font-size:20px; }
+    .dy-modal .wheels { height:198px; }
+    .dy-modal .wheel-scroll { padding:79px 0; }
+    .dy-modal .wheel-item { height:40px; font-size:19px; }
+    .dy-modal .wheel-item.on { font-size:21px; }
+    .dy-modal .wheels .wheel-sel { top:79px; height:40px; }
+    .dy-modal .wheel-unit { bottom:8px; font-size:12px; }
+    .dy-modal .upload { min-height:180px; }
+    .dy-modal .upload span { font-size:20px; }
+    .dy-modal .upload .hint { font-size:14px; }
+    .dy-modal .ml-foot { gap:12px; }
+  }
+  @media (max-width:560px){ .dy-modal { padding:10px; } }
   @media (max-width:900px){
     .studio { grid-template-columns:1fr; }
     .aside { position:static; }
@@ -401,18 +475,34 @@
       </div>
     <form id="f" novalidate>
       <div class="form-cap"><h2 data-i18n="form.cap">居所信息</h2><span data-i18n="form.capsub">本命卦 + 户型朝向</span></div>
-      <div class="row">
-        <div>
-          <label for="d-gender" data-i18n="f.gender">性别</label>
-          <select id="d-gender" name="gender" class="inkline"><option value="女" data-i18n="f.female">女</option><option value="男" data-i18n="f.male">男</option></select>
+      <div class="dy-form-grid">
+        <div class="dy-field">
+          <label data-i18n="f.gender">性别</label>
+          <div class="seg">
+            <label><input type="radio" name="gender" value="女" checked /><span data-i18n="f.female">女</span></label>
+            <label><input type="radio" name="gender" value="男" /><span data-i18n="f.male">男</span></label>
+          </div>
         </div>
-        <div>
-          <label for="d-date" data-i18n="f.date">出生日期(定本命卦)</label>
-          <input id="d-date" type="date" name="date" required class="inkline" />
+        <div class="dy-field">
+          <label data-i18n="f.date">出生日期时间(定本命卦)</label>
+          <div class="datefield" id="datefield-d">
+            <div class="seg" role="radiogroup" aria-label="阳历 / 阴历 · Solar / Lunar">
+              <label><input type="radio" name="caltypeD" value="solar" checked /><span data-i18n="f.solar">阳历</span></label>
+              <label><input type="radio" name="caltypeD" value="lunar" /><span data-i18n="f.lunar">阴历</span></label>
+            </div>
+            <div class="wheels" id="wheels-d">
+              <div class="wheel" data-col="year"><div class="wheel-scroll" data-col="year" tabindex="0" role="listbox" aria-label="年 · Year"></div><div class="wheel-mask" aria-hidden="true"></div><div class="wheel-unit" data-i18n="f.unit_y" aria-hidden="true">年</div></div>
+              <div class="wheel" data-col="month"><div class="wheel-scroll" data-col="month" tabindex="0" role="listbox" aria-label="月 · Month"></div><div class="wheel-mask" aria-hidden="true"></div><div class="wheel-unit" data-i18n="f.unit_mo" aria-hidden="true">月</div></div>
+              <div class="wheel" data-col="day"><div class="wheel-scroll" data-col="day" tabindex="0" role="listbox" aria-label="日 · Day"></div><div class="wheel-mask" aria-hidden="true"></div><div class="wheel-unit" data-i18n="f.unit_d" aria-hidden="true">日</div></div>
+              <div class="wheel" data-col="hour"><div class="wheel-scroll" data-col="hour" tabindex="0" role="listbox" aria-label="时 · Hour"></div><div class="wheel-mask" aria-hidden="true"></div><div class="wheel-unit" data-i18n="f.unit_h" aria-hidden="true">时</div></div>
+              <div class="wheel" data-col="minute"><div class="wheel-scroll" data-col="minute" tabindex="0" role="listbox" aria-label="分 · Minute"></div><div class="wheel-mask" aria-hidden="true"></div><div class="wheel-unit" data-i18n="f.unit_mi" aria-hidden="true">分</div></div>
+              <div class="wheel-sel" aria-hidden="true"></div>
+            </div>
+            <input type="hidden" name="date" id="d-date" value="1996-08-12" />
+            <input type="hidden" name="time" id="d-time" value="12:00" />
+          </div>
         </div>
-      </div>
-      <div class="row">
-        <div>
+        <div class="dy-field">
           <label for="d-goal" data-i18n="f.goal">身份定位 · 主要诉求</label>
           <select id="d-goal" name="goal" class="inkline">
             <option value="wealth" data-i18n="f.g_wealth">求财运 · 拼事业</option>
@@ -421,15 +511,14 @@
             <option value="stable" data-i18n="f.g_stable">求安稳 · 利学业</option>
           </select>
         </div>
-        <div>
+        <div class="dy-field">
           <label for="d-facing" data-i18n="f.facing">户型图「正上方」朝向</label>
           <select id="d-facing" name="facing" class="inkline">
             <option value="北" data-i18n="dir.N">北</option><option value="东北" data-i18n="dir.NE">东北</option><option value="东" data-i18n="dir.E">东</option><option value="东南" data-i18n="dir.SE">东南</option>
             <option value="南" data-i18n="dir.S">南</option><option value="西南" data-i18n="dir.SW">西南</option><option value="西" data-i18n="dir.W">西</option><option value="西北" data-i18n="dir.NW">西北</option>
           </select>
         </div>
-      </div>
-      <div style="margin-bottom:18px">
+      <div class="dy-field full">
         <label for="file" data-i18n="f.upload">户型图(可选 · 上传后给出逐间方位点评)</label>
         <div class="upload" id="drop">
           <div id="ph"><div class="big" aria-hidden="true"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5 9 4z"/><path d="M9 4v13M15 6.5v13"/></svg></div><span data-i18n="f.upload_cta">点此上传 / 拖入户型图</span><div class="hint" data-i18n="f.upload_hint">支持 PNG / JPG · 看不清的图建议标注指北针</div></div>
@@ -440,6 +529,7 @@
       <div class="ml-foot">
         <button type="button" class="btn-cancel" id="dy-cancel" data-i18n="ml.cancel">取消</button>
         <button type="submit" class="btn-ink go" id="btn" data-i18n="f.submit">勘 定 方 位</button>
+      </div>
       </div>
     </form>
     </div><!-- /.dy-dialog -->
@@ -510,6 +600,8 @@
   <div class="hint-foot" data-i18n="foot">本方位建议依八宅东西四命体系推算,仅供居家参考与自我调整,不构成任何确定性预测。</div>
 </div>
 
+<script src="/lunar.js"></script>
+<script src="/plans.js"></script>
 <script>
 const I18N = {
   zh: {
@@ -517,7 +609,7 @@ const I18N = {
     'hero.badge':'地运 · 东西四命 · 八宅方位','hero.kickcn':'顺势调场','hero.title':'方 位 推 荐',
     'hero.motto':'天命定其势,地运调其场。','hero.sub':'报出生与身份,上传户型图——按八宅东西四命,看你该睡哪个方位、把环境调到帮你的那一面。',
     'form.cap':'居所信息','form.capsub':'本命卦 + 户型朝向',
-    'f.gender':'性别','f.female':'女','f.male':'男','f.date':'出生日期(定本命卦)','f.goal':'身份定位 · 主要诉求',
+    'f.gender':'性别','f.female':'女','f.male':'男','f.date':'出生日期时间(定本命卦)','f.solar':'阳历','f.lunar':'阴历','f.unit_y':'年','f.unit_mo':'月','f.unit_d':'日','f.unit_h':'时','f.unit_mi':'分','f.goal':'身份定位 · 主要诉求',
     'f.g_wealth':'求财运 · 拼事业','f.g_health':'求健康 · 保平安','f.g_love':'求姻缘 · 旺人际','f.g_stable':'求安稳 · 利学业',
     'f.facing':'户型图「正上方」朝向','f.upload':'户型图(可选 · 上传后给出逐间方位点评)','f.upload_cta':'点此上传 / 拖入户型图',
     'f.upload_hint':'支持 PNG / JPG · 看不清的图建议标注指北针','f.submit':'勘 定 方 位','f.loading_btn':'勘 定 中…',
@@ -541,7 +633,7 @@ const I18N = {
     'hero.badge':'Di Yun · East-West Life · Eight Mansions','hero.kickcn':'Tune your space','hero.title':'D I R E C T I O N S',
     'hero.motto':'Tian Ming sets the force; Di Yun tunes the field.','hero.sub':'Enter your birth & role, upload a floor plan — by the Eight Mansions, see which direction to sleep in and set your space to the side that helps you.',
     'form.cap':'Home details','form.capsub':'Life-trigram + plan orientation',
-    'f.gender':'Gender','f.female':'Female','f.male':'Male','f.date':'Birth date (sets your life-trigram)','f.goal':'Role · main aim',
+    'f.gender':'Gender','f.female':'Female','f.male':'Male','f.date':'Birth date & time (sets your life-trigram)','f.solar':'Solar','f.lunar':'Lunar','f.unit_y':'Y','f.unit_mo':'M','f.unit_d':'D','f.unit_h':'H','f.unit_mi':'Min','f.goal':'Role · main aim',
     'f.g_wealth':'Wealth · career','f.g_health':'Health · safety','f.g_love':'Love · relationships','f.g_stable':'Stability · study',
     'f.facing':'Direction at the TOP of the plan','f.upload':'Floor plan (optional · per-room direction notes)','f.upload_cta':'Click / drop a floor plan here',
     'f.upload_hint':'PNG / JPG · mark a compass north if unclear','f.submit':'F I N D   D I R E C T I O N','f.loading_btn':'Surveying…',
@@ -569,23 +661,222 @@ function applyI18n(){
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.placeholder = t(el.getAttribute('data-i18n-ph')); });
   document.getElementById('langtog').textContent = LANG==='en'?'中':'EN';
 }
-document.getElementById('langtog').addEventListener('click', ()=>{ LANG = LANG==='en'?'zh':'en'; localStorage.setItem('lang',LANG); applyI18n(); });
+document.getElementById('langtog').addEventListener('click', ()=>{ LANG = LANG==='en'?'zh':'en'; localStorage.setItem('lang',LANG); applyI18n(); window.DiyunDateWheelRelabel?.(); });
 applyI18n();
 
 const f = document.getElementById('f');
 const btn = document.getElementById('btn');
 const result = document.getElementById('result');
+
+const DiyunDateWheel = (() => {
+  const SOLAR = window.Solar, LUNAR = window.Lunar, LUNARYEAR = window.LunarYear;
+  const hiddenDate = document.getElementById('d-date');
+  const hiddenTime = document.getElementById('d-time');
+  const wheelsEl = document.getElementById('wheels-d');
+  const fieldEl = document.getElementById('datefield-d');
+  const COLS = ['year', 'month', 'day', 'hour', 'minute'];
+  const cols = {};
+  COLS.forEach((name) => { cols[name] = { scroll: wheelsEl.querySelector(`.wheel-scroll[data-col="${name}"]`) }; });
+  const ITEM_H = 33;
+  const LUNAR_MONTH_CN = ['', '正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '冬', '腊'];
+  const LUNAR_DAY_CN = ['', '初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十',
+    '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
+    '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
+  const Y_MIN = 1900, Y_MAX = 2100;
+  let ready = !!(SOLAR && LUNAR && LUNARYEAR);
+  let mode = 'solar';
+  let sel = { year: 1996, month: 8, day: 12, hour: 12, minute: 0 };
+  let ignoreScrollUntil = 0;
+  const en = () => LANG === 'en';
+  const pad2 = (n) => String(n).padStart(2, '0');
+
+  function yearOpts() { const out = []; for (let y = Y_MIN; y <= Y_MAX; y++) out.push({ v: y, label: String(y) }); return out; }
+  function monthOpts(year) {
+    if (mode === 'solar') { const out = []; for (let m = 1; m <= 12; m++) out.push({ v: m, label: en() ? String(m) : `${m}月` }); return out; }
+    const leap = LUNARYEAR ? LUNARYEAR.fromYear(year).getLeapMonth() : 0;
+    const out = [];
+    for (let m = 1; m <= 12; m++) {
+      out.push({ v: m, label: en() ? String(m) : LUNAR_MONTH_CN[m] + '月' });
+      if (leap && m === leap) out.push({ v: -m, label: en() ? 'L' + m : '闰' + LUNAR_MONTH_CN[m] + '月' });
+    }
+    return out;
+  }
+  function dayCountOf(year, month) {
+    if (mode === 'solar') return new Date(year, month, 0).getDate();
+    if (!LUNARYEAR) return 30;
+    const lm = LUNARYEAR.fromYear(year).getMonth(month);
+    return lm ? lm.getDayCount() : 30;
+  }
+  function dayOpts(year, month) { const out = []; for (let d = 1, n = dayCountOf(year, month); d <= n; d++) out.push({ v: d, label: mode === 'lunar' && !en() ? LUNAR_DAY_CN[d] : String(d) }); return out; }
+  function hourOpts() { const out = []; for (let h = 0; h <= 23; h++) out.push({ v: h, label: pad2(h) }); return out; }
+  function minuteOpts() { const out = []; for (let mi = 0; mi <= 59; mi++) out.push({ v: mi, label: pad2(mi) }); return out; }
+
+  function renderCol(name, opts, value) {
+    const { scroll } = cols[name];
+    scroll.innerHTML = '<div class="pad"></div>' + opts.map(o => `<div class="wheel-item" role="option" data-v="${o.v}">${o.label}</div>`).join('') + '<div class="pad"></div>';
+    setColValue(name, value, false);
+  }
+  function itemsOf(name) { return cols[name].scroll.querySelectorAll('.wheel-item'); }
+  function indexOfValue(name, value) {
+    const items = itemsOf(name);
+    for (let i = 0; i < items.length; i++) if (Number(items[i].dataset.v) === Number(value)) return i;
+    return 0;
+  }
+  function setColValue(name, value, smooth) {
+    const { scroll } = cols[name];
+    const idx = indexOfValue(name, value);
+    itemsOf(name).forEach((el, i) => el.classList.toggle('on', i === idx));
+    const prev = scroll.style.scrollBehavior;
+    if (!smooth) scroll.style.scrollBehavior = 'auto';
+    scroll.scrollTop = idx * ITEM_H;
+    if (!smooth) scroll.style.scrollBehavior = prev || '';
+  }
+  function valueAtScroll(name) {
+    const { scroll } = cols[name];
+    const items = itemsOf(name);
+    if (!items.length) return null;
+    let idx = Math.round(scroll.scrollTop / ITEM_H);
+    idx = Math.max(0, Math.min(items.length - 1, idx));
+    return { idx, v: Number(items[idx].dataset.v) };
+  }
+  function renderAll() {
+    ignoreScrollUntil = Date.now() + 800;
+    renderCol('year', yearOpts(), sel.year);
+    const mOpts = monthOpts(sel.year);
+    if (!mOpts.some(o => o.v === sel.month)) sel.month = mOpts[0].v;
+    renderCol('month', mOpts, sel.month);
+    const dMax = dayCountOf(sel.year, sel.month);
+    if (sel.day > dMax) sel.day = dMax;
+    renderCol('day', dayOpts(sel.year, sel.month), sel.day);
+    renderCol('hour', hourOpts(), sel.hour);
+    renderCol('minute', minuteOpts(), sel.minute);
+    commit();
+  }
+  function toSolarYmd() {
+    if (!ready) return hiddenDate.value || '1996-08-12';
+    try {
+      if (mode === 'solar') return SOLAR.fromYmd(sel.year, sel.month, sel.day).toYmd();
+      return LUNAR.fromYmd(sel.year, sel.month, sel.day).getSolar().toYmd();
+    } catch { return hiddenDate.value || '1996-08-12'; }
+  }
+  function commit() { hiddenDate.value = toSolarYmd(); hiddenTime.value = `${pad2(sel.hour)}:${pad2(sel.minute)}`; }
+  const scrollTimers = {};
+  function onScroll(name) {
+    if (Date.now() < ignoreScrollUntil) return;
+    clearTimeout(scrollTimers[name]);
+    const cur = valueAtScroll(name);
+    if (cur) itemsOf(name).forEach((el, i) => el.classList.toggle('on', i === cur.idx));
+    scrollTimers[name] = setTimeout(() => {
+      const r = valueAtScroll(name);
+      if (!r) return;
+      applySel(name, r.v);
+      setColValue(name, r.v, true);
+    }, 110);
+  }
+  function onItemClick(name, e) {
+    const item = e.target.closest('.wheel-item');
+    if (!item) return;
+    applySel(name, Number(item.dataset.v));
+    setColValue(name, Number(item.dataset.v), true);
+  }
+  function onKey(name, e) {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    const items = itemsOf(name);
+    let idx = indexOfValue(name, sel[name]);
+    idx += e.key === 'ArrowDown' ? 1 : -1;
+    idx = Math.max(0, Math.min(items.length - 1, idx));
+    const v = Number(items[idx].dataset.v);
+    applySel(name, v);
+    setColValue(name, v, true);
+  }
+  function applySel(name, v) {
+    if (name === 'year') { sel.year = v; renderAll(); }
+    else if (name === 'month') { sel.month = v; const dMax = dayCountOf(sel.year, sel.month); if (sel.day > dMax) sel.day = dMax; renderCol('day', dayOpts(sel.year, sel.month), sel.day); commit(); }
+    else if (name === 'day') { sel.day = v; commit(); }
+    else if (name === 'hour') { sel.hour = v; commit(); }
+    else if (name === 'minute') { sel.minute = v; commit(); }
+  }
+  function switchMode(next) {
+    if (next === mode) return;
+    const curSolar = toSolarYmd();
+    const curTime = hiddenTime.value;
+    mode = next;
+    loadFrom(curSolar, curTime);
+  }
+  function loadFrom(ymd, hm) {
+    ignoreScrollUntil = Date.now() + 800;
+    const m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec((ymd || '').trim());
+    if (m) {
+      const y = +m[1], mo = +m[2], d = +m[3];
+      if (mode === 'solar') { sel.year = y; sel.month = mo; sel.day = d; }
+      else if (ready) { const lu = SOLAR.fromYmd(y, mo, d).getLunar(); sel.year = lu.getYear(); sel.month = lu.getMonth(); sel.day = lu.getDay(); }
+    }
+    const tm = /^(\d{1,2}):(\d{1,2})/.exec((hm || '').trim());
+    if (tm) { sel.hour = Math.max(0, Math.min(23, +tm[1])); sel.minute = Math.max(0, Math.min(59, +tm[2])); }
+    renderAll();
+  }
+  function bind() {
+    COLS.forEach((name) => {
+      const sc = cols[name].scroll;
+      sc.addEventListener('scroll', () => onScroll(name), { passive: true });
+      sc.addEventListener('click', (e) => onItemClick(name, e));
+      sc.addEventListener('keydown', (e) => onKey(name, e));
+    });
+    fieldEl.querySelectorAll('input[name="caltypeD"]').forEach((r) => r.addEventListener('change', () => { if (r.checked) switchMode(r.value); }));
+  }
+  function init() {
+    if (!ready) {
+      wheelsEl.style.display = 'none';
+      fieldEl.querySelectorAll('input[name="caltypeD"]').forEach((r) => { if (r.value === 'lunar') r.disabled = true; });
+      const fb = document.createElement('input');
+      fb.type = 'datetime-local';
+      fb.value = `${hiddenDate.value || '1996-08-12'}T${hiddenTime.value || '12:00'}`;
+      fb.addEventListener('change', () => { const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/.exec(fb.value); if (m) { hiddenDate.value = m[1]; hiddenTime.value = m[2]; } });
+      fieldEl.appendChild(fb);
+      return;
+    }
+    loadFrom(hiddenDate.value || '1996-08-12', hiddenTime.value || '12:00');
+    bind();
+  }
+  return {
+    init,
+    relabel: () => { if (ready) renderAll(); },
+    getDateTime: () => `${hiddenDate.value} ${hiddenTime.value}`,
+  };
+})();
+DiyunDateWheel.init();
+window.DiyunDateWheelRelabel = DiyunDateWheel.relabel;
+
 const fileInput = document.getElementById('file');
 const drop = document.getElementById('drop');
 const preview = document.getElementById('preview');
 const ph = document.getElementById('ph');
 let imageDataUrl = '';
 
-drop.addEventListener('click', () => fileInput.click());
+function floorplanAllowed() {
+  return !!window.XinyiPlans?.canUse('floorplanMonthly');
+}
+function floorplanUpsell() {
+  const lim = window.XinyiPlans?.limit('floorplanMonthly');
+  if (lim === 1) {
+    alert(LANG === 'en'
+      ? 'The free floor-plan trial has been used this month. Switch to ¥9.9 Light Ask to keep using floor-plan notes.'
+      : '免费版本月 1 次户型图体验已用完。切换到 ¥9.9 轻问档即可继续使用户型图。');
+    return;
+  }
+  alert(LANG === 'en'
+    ? 'Floor-plan upload notes are available in your current tier after switching plans.'
+    : '切换到包含户型图的档位后即可继续使用。');
+}
+drop.addEventListener('click', () => { if (floorplanAllowed()) fileInput.click(); else floorplanUpsell(); });
 fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
 ['dragover','dragenter'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.style.borderColor = 'var(--cinnabar)'; }));
 ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.style.borderColor = ''; }));
-drop.addEventListener('drop', e => { if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+drop.addEventListener('drop', e => {
+  if (!floorplanAllowed()) { floorplanUpsell(); return; }
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
 
 // 上传前压缩:长边超 1568px 等比缩到 1568px,输出 JPEG(0.85);小图不放大;失败回退原图
 const MAX_IMAGE_EDGE = 1568;
@@ -616,6 +907,7 @@ function compressDataUrl(dataUrl) {
 }
 
 function handleFile(file) {
+  if (!floorplanAllowed()) { floorplanUpsell(); return; }
   if (!file || !file.type.startsWith('image/')) return;
   const reader = new FileReader();
   reader.onload = async () => {
@@ -632,7 +924,7 @@ function dyOpen() {
   dyLastFocus = document.activeElement;
   dyModal.classList.add('open'); dyModal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
-  setTimeout(() => document.getElementById('d-gender')?.focus(), 30);
+  setTimeout(() => document.querySelector('input[name="gender"]')?.focus(), 30);
 }
 function dyClose() {
   dyModal.classList.remove('open'); dyModal.setAttribute('aria-hidden', 'true');
@@ -730,7 +1022,7 @@ document.getElementById('dy-right').addEventListener('click', (e) => {
 document.getElementById('dy-mid').addEventListener('click', (e) => {
   if (e.target.closest('#dy-eg-cta')) {
     dyOpen();
-    setTimeout(() => document.getElementById('d-date')?.focus(), 40);
+    setTimeout(() => document.querySelector('#wheels-d .wheel-scroll')?.focus(), 40);
     return;
   }
   // 方盘格子点/触:就地展开该方位白话(手机 touch 也灵,替代点不出的 title 悬浮)(审计#4)
@@ -787,12 +1079,14 @@ f.addEventListener('submit', async (e) => {
   if (!d.date) {
     const de = document.getElementById('d-date');
     dyShowFieldErr(de, t('v.needdate'));
-    de?.focus();
+    document.querySelector('#wheels-d .wheel-scroll')?.focus();
     return;
   }
   hasSubmitted = true; // 用户已自行排盘,示例不再覆盖
-  const payload = { gender: d.gender, datetime: `${d.date} 12:00`, goal: d.goal, facing: d.facing, lang: LANG };
-  if (imageDataUrl) payload.image = imageDataUrl;
+  const payload = { gender: d.gender, datetime: `${d.date} ${d.time || '12:00'}`, goal: d.goal, facing: d.facing, lang: LANG };
+  const useFloorplan = !!imageDataUrl;
+  if (useFloorplan && !floorplanAllowed()) { floorplanUpsell(); return; }
+  if (useFloorplan) payload.image = imageDataUrl;
 
   const midPanel = document.getElementById('dy-mid');
   const rightPanel = document.getElementById('dy-right');
@@ -807,6 +1101,7 @@ f.addEventListener('submit', async (e) => {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || '请求失败');
+    if (useFloorplan) window.XinyiPlans?.consume('floorplanMonthly');
     lastData = data; lastPayload = payload;  // 存下供跨页接力(进对话追问)
     // 三栏工作台:中栏能量方盘 / 右栏调场建议 / 下方 命卦+八方位详解+户型点评
     midPanel.innerHTML = renderPlate(data);

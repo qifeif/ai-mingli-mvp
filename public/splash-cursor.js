@@ -43,6 +43,8 @@
       COLOR: '#B8C1C8',
       // 染料强度:#B8C1C8 明度偏亮,强度压到 0.24,避免加色混合叠出发白。
       INK_INTENSITY: 0.24,
+      // 点击喷溅独立于鼠标移动流体,页面可按需关闭。
+      CLICK_SPLAT: true,
     };
     const config = Object.assign({}, defaults, userOpts || {});
 
@@ -706,7 +708,7 @@
       let posX = scaleByPixelRatio(e.clientX);
       let posY = scaleByPixelRatio(e.clientY);
       updatePointerDownData(pointer, -1, posX, posY);
-      clickSplat(pointer);
+      if (config.CLICK_SPLAT) clickSplat(pointer);
     }
     let firstMouseMoveHandled = false;
     function handleMouseMove(e) {

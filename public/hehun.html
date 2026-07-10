@@ -350,7 +350,10 @@
           </div>
           <div>
             <label for="fa-place" data-i18n="f.place">出生地</label>
-            <input id="fa-place" name="placeA" class="inkline" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
+            <div class="xy-city-field">
+              <input id="fa-place" name="placeA" class="inkline" data-city-picker data-i18n-ph="f.place_ph" placeholder="如 杭州" />
+              <button type="button" class="xy-city-btn" data-city-target="fa-place" data-i18n="f.city_pick">选择</button>
+            </div>
           </div>
         </div>
         <div style="margin-bottom:0">
@@ -406,7 +409,10 @@
           </div>
           <div>
             <label for="fb-place" data-i18n="f.place">出生地</label>
-            <input id="fb-place" name="placeB" class="inkline" data-i18n-ph="f.place_ph" placeholder="如 杭州" />
+            <div class="xy-city-field">
+              <input id="fb-place" name="placeB" class="inkline" data-city-picker data-i18n-ph="f.place_ph" placeholder="如 杭州" />
+              <button type="button" class="xy-city-btn" data-city-target="fb-place" data-i18n="f.city_pick">选择</button>
+            </div>
           </div>
         </div>
         <div style="margin-bottom:0">
@@ -509,6 +515,8 @@
 </div>
 
 <script src="/lunar.js"></script>
+<script src="/profile-pickers.js"></script>
+<script src="/plans.js"></script>
 <script>
 const I18N = {
   zh: {
@@ -518,7 +526,7 @@ const I18N = {
     'form.cap':'两盘信息','form.capsub':'两人出生信息 + 此刻所问',
     'f.rel':'合参类型','f.rel_love':'婚恋合参','f.rel_partner':'合伙合参',
     'f.pa':'甲 · 第一人','f.pb':'乙 · 第二人',
-    'f.gender':'性别','f.female':'女','f.male':'男','f.place':'出生地','f.place_ph':'如 杭州',
+    'f.gender':'性别','f.female':'女','f.male':'男','f.place':'出生城市','f.place_ph':'输入城市或点选择','f.city_pick':'选择',
     'f.date':'出生日期','f.time':'出生时间','f.datetime':'出生日期时间',
     'f.solar':'阳历','f.lunar':'阴历','f.unit_y':'年','f.unit_mo':'月','f.unit_d':'日','f.unit_h':'时','f.unit_mi':'分',
     'f.q':'想一起看清的事(可选)','f.q_ph':'比如:合伙做生意会不会挣钱?越具体越好…',
@@ -550,7 +558,7 @@ const I18N = {
     'form.cap':'Two charts','form.capsub':'Both birth details + your question',
     'f.rel':'Reading type','f.rel_love':'Love','f.rel_partner':'Business partnership',
     'f.pa':'Person A · first chart','f.pb':'Person B · second chart',
-    'f.gender':'Gender','f.female':'Female','f.male':'Male','f.place':'Birthplace','f.place_ph':'e.g. Hangzhou',
+    'f.gender':'Gender','f.female':'Female','f.male':'Male','f.place':'Birth city','f.place_ph':'Type or pick a city','f.city_pick':'Pick',
     'f.date':'Birth date','f.time':'Birth time','f.datetime':'Birth date & time',
     'f.solar':'Solar','f.lunar':'Lunar','f.unit_y':'Y','f.unit_mo':'M','f.unit_d':'D','f.unit_h':'h','f.unit_mi':'m',
     'f.q':'What you two want to see clearly (optional)','f.q_ph':'e.g. Will our business partnership make money? The more specific, the better…',
@@ -651,6 +659,21 @@ const f = document.getElementById('f');
 const btn = document.getElementById('btn');
 const result = document.getElementById('result');
 
+function hehunAllowed() {
+  return !!window.XinyiPlans?.canUse('hehunMonthly');
+}
+function hehunUpsell() {
+  const key = window.XinyiPlans?.currentKey?.() || 'free';
+  const msg = LANG === 'en'
+    ? (key === 'free'
+      ? 'The free dual-chart trial has been used this month. Switch to ¥9.9 Light Ask for 3 monthly trials.'
+      : 'This tier has no dual-chart trials left this month. Switch to Advanced for unlimited dual-chart readings.')
+    : (key === 'free'
+      ? '免费版本月 1 次合参体验已用完。切换到 ¥9.9 轻问档可获得每月 3 次合参体验。'
+      : '当前档位本月合参次数已用完。切换到 ¥29.9 进阶档可不限次使用完整合参。');
+  alert(msg);
+}
+
 // ═══════════════════════════════════════════════════
 //  出生日期时间 五列一体拨转轮(阳历/阴历 · 与天命页 DateWheel 同款,改成可重入工厂供甲乙各建一份)
 //  - 全局 window.Solar/Lunar/LunarYear 来自 /lunar.js(UMD)
@@ -682,7 +705,7 @@ function makeDateWheel(prefix) {
 
   function yearOpts() { const out = []; for (let y = Y_MIN; y <= Y_MAX; y++) out.push({ v: y, label: String(y) }); return out; }
   function monthOpts(year) {
-    if (mode === 'solar') { const out = []; for (let m = 1; m <= 12; m++) out.push({ v: m, label: en() ? String(m) : LUNAR_MONTH_CN[m] + '月' }); return out; }
+    if (mode === 'solar') { const out = []; for (let m = 1; m <= 12; m++) out.push({ v: m, label: en() ? String(m) : `${m}月` }); return out; }
     const leap = LUNARYEAR ? LUNARYEAR.fromYear(year).getLeapMonth() : 0;
     const out = [];
     for (let m = 1; m <= 12; m++) {
@@ -872,6 +895,7 @@ window.DateWheelRelabel = () => { DateWheelA.relabel(); DateWheelB.relabel(); };
 
 f.addEventListener('submit', async (e) => {
   e.preventDefault();
+  if (!hehunAllowed()) { hehunUpsell(); return; }
   const d = Object.fromEntries(new FormData(f));
   // 合参类型不再默认预选 → 必须显式选一个(审计#2:别把用户没选的「婚恋」当成 TA 的选择)
   if (!d.relation) {
@@ -917,6 +941,7 @@ f.addEventListener('submit', async (e) => {
       result.innerHTML = `<div class="reading crisis">${esc(data.text)}</div>`;
       return;
     }
+    window.XinyiPlans?.consume('hehunMonthly');
 
     // 两盘并排 + 四维对照 + 规则版摘要恒展示;AI 深化有则附下方,无 Key 则降级提示
     let html = renderPersons(data) + renderCompare(data.compare) + renderSummary(data.summary, data.relation);

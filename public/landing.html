@@ -256,15 +256,15 @@
   .pt .ptx p { color: var(--muted); font-size: 14px; margin: 0; }
 
   /* 定价 */
-  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; align-items: stretch; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; align-items: stretch; }
   .tier { background: rgba(247,249,246,.93); border: 1px solid var(--line); border-radius: 16px; padding: 34px 28px;
     display: flex; flex-direction: column; position: relative; box-shadow: var(--shadow); }
   .tier.popular { border-color: var(--gold); box-shadow: 0 0 0 1px rgba(156,123,63,.3), 0 30px 70px -40px rgba(59,42,30,.5); }
   .tier .tag-pop { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--walnut);
     color: #F3F6F4; font-size: 12px; letter-spacing: 2px; padding: 5px 16px; border-radius: 999px; font-family: var(--serif); }
-  .tier .tname { font-family: var(--serif); font-size: 22px; letter-spacing: 3px; color: var(--walnut); margin-bottom: 6px; font-weight: 700; }
+  .tier .tname { font-family: var(--serif); font-size: 21px; letter-spacing: 3px; color: var(--walnut); margin-bottom: 6px; font-weight: 700; }
   .tier .tdesc { color: var(--faint); font-size: 13px; margin-bottom: 22px; min-height: 20px; }
-  .tier .price { font-family: var(--serif); font-size: 40px; font-weight: 700; color: var(--ink); letter-spacing: -1px; }
+  .tier .price { font-family: var(--serif); font-size: 36px; font-weight: 700; color: var(--ink); letter-spacing: -1px; }
   .tier .price .unit { font-size: 15px; color: var(--muted); font-weight: 400; letter-spacing: 0; }
   .tier ul { list-style: none; padding: 0; margin: 22px 0 26px; flex: 1; }
   .tier li { font-size: 14px; color: var(--muted); padding: 9px 0 9px 24px; position: relative; border-top: 1px solid var(--line-soft); }
@@ -825,55 +825,66 @@
     <div class="sec-head reveal">
       <div class="deco"><span class="ln"></span><span class="dia">◆</span><span class="ln r"></span></div>
       <h2 data-i18n="pricing.h">选 择 你 的 那 束 光</h2>
-      <p data-i18n="pricing.sub">先免费试,觉得有用再点亮更多。随时可退,不绑年费。</p>
+      <p data-i18n="pricing.sub">先免费试,再按使用深度升级。四档清楚,不卖虚拟币。</p>
     </div>
     <div class="pricing-grid reveal-group">
 
       <div class="tier">
-        <div class="tname" data-i18n="pricing.t1.name">微光</div>
-        <div class="tdesc" data-i18n="pricing.t1.desc">免费探路,三道全开</div>
+        <div class="tname" data-i18n="pricing.t1.name">基础</div>
+        <div class="tdesc" data-i18n="pricing.t1.desc">免费探路,基础可用</div>
         <div class="price" data-i18n="pricing.t1.price">免费</div>
         <ul>
-          <li data-i18n="pricing.t1.f1">三道排盘不限次(紫微 · 八宅 · 六爻)</li>
-          <li data-i18n="pricing.t1.f2">真太阳时校正,贴合真实天象</li>
-          <li data-i18n="pricing.t1.f3">规则版解读 · 无需联网模型</li>
-          <li data-i18n="pricing.t1.f4">危机前置守护 · 全程护航</li>
+          <li data-i18n="pricing.t1.f1">天命 / 地运 / 人间道基础排盘</li>
+          <li data-i18n="pricing.t1.f2">每日 5 次 AI 随问追问</li>
+          <li data-i18n="pricing.t1.f3">命例库保存 3 个</li>
+          <li data-i18n="pricing.t1.f4">户型图 / 合参各 1 次体验</li>
         </ul>
-        <a href="/app" class="btn btn-ghost btn-paper" data-i18n="pricing.t1.cta">开启微光</a>
+        <a href="/app" class="btn btn-ghost btn-paper" data-plan-choice="free" data-i18n="pricing.t1.cta">开启免费版</a>
+      </div>
+
+      <div class="tier">
+        <div class="tname" data-i18n="pricing.t2.name">轻问</div>
+        <div class="tdesc" data-i18n="pricing.t2.desc">低价体验,适合偶尔问</div>
+        <div class="price">¥9.9<span class="unit" data-i18n="pricing.t2.unit"> / 月</span></div>
+        <ul>
+          <li data-i18n="pricing.t2.f1">含「基础」全部能力</li>
+          <li data-i18n="pricing.t2.f2">每日 30 次 AI 对话 / 追问</li>
+          <li data-i18n="pricing.t2.f3">命例库保存 10 个</li>
+          <li data-i18n="pricing.t2.f4">户型图可用 + 合参 3 次体验</li>
+        </ul>
+        <a href="/chat" class="btn btn-ghost btn-paper" data-plan-choice="light" data-i18n="pricing.t2.cta">选择轻问</a>
       </div>
 
       <div class="tier popular">
         <div class="tag-pop" data-i18n="pricing.popular">最受欢迎</div>
-        <div class="tname" data-i18n="pricing.t2.name">点灯</div>
-        <div class="tdesc" data-i18n="pricing.t2.desc">单次付费,想深读时再点亮</div>
-        <div class="price">¥19.9<span class="unit" data-i18n="pricing.t2.unit"> / 次</span></div>
+        <div class="tname" data-i18n="pricing.t3.name">进阶</div>
+        <div class="tdesc" data-i18n="pricing.t3.desc">高频使用,功能完整</div>
+        <div class="price">¥29.9<span class="unit" data-i18n="pricing.t3.unit"> / 月</span></div>
         <ul>
-          <li data-i18n="pricing.t2.f1">含「微光」全部免费能力</li>
-          <li data-i18n="pricing.t2.f2">AI 深读 ¥19.9 / 次 · 天命 / 地运 / 人间道任一道</li>
-          <li data-i18n="pricing.t2.f3">合参 · 双人合盘 ¥29.9 / 次 · 婚恋合参 / 合伙合参</li>
+          <li data-i18n="pricing.t3.f1">每日 100 次 AI 深读 / 追问</li>
+          <li data-i18n="pricing.t3.f2">命例库保存 30 个</li>
+          <li data-i18n="pricing.t3.f3">完整合参:婚恋 / 合伙都可用</li>
+          <li data-i18n="pricing.t3.f4">地运户型图上传点评</li>
         </ul>
-        <p class="fine" data-i18n="pricing.t2.fine1">真人合婚 / 合盘行情约 ¥200–800 / 次</p>
-        <p class="fine" data-i18n="pricing.t2.fine2">内测期间免费体验,正式上线按此定价</p>
-        <a href="/app" class="btn btn-primary btn-ink" data-i18n="pricing.t2.cta">AI 深读 · 立即点灯</a>
-        <a href="/hehun" class="btn btn-ghost btn-paper" data-i18n="pricing.t2.cta2">双人合参 · 去合盘</a>
+        <a href="/hehun" class="btn btn-primary btn-ink" data-plan-choice="standard" data-i18n="pricing.t3.cta">选择进阶</a>
       </div>
 
       <div class="tier">
-        <div class="tname" data-i18n="pricing.t3.name">烛照</div>
-        <div class="tdesc" data-i18n="pricing.t3.desc">订阅制 · 即将上线</div>
-        <div class="price">¥39<span class="unit" data-i18n="pricing.t3.unit"> / 月 起</span></div>
+        <div class="tname" data-i18n="pricing.t4.name">专业</div>
+        <div class="tdesc" data-i18n="pricing.t4.desc">重度用户 / 咨询师</div>
+        <div class="price">¥99.9<span class="unit" data-i18n="pricing.t4.unit"> / 月</span></div>
         <ul>
-          <li data-i18n="pricing.t3.f1">每月 100 次 AI 深读</li>
-          <li data-i18n="pricing.t3.f2">无限历史档案</li>
-          <li data-i18n="pricing.t3.f3">大限 / 流年深读</li>
-          <li data-i18n="pricing.t3.f4">朋友版 / 专业版双解读风格</li>
-          <li data-i18n="pricing.t3.f5">进阶「洞见」¥99 / 月:300 次 / 月 · 多命盘对照(合参不限次)· 新功能优先</li>
+          <li data-i18n="pricing.t4.f1">每日 500 次 AI 深读 / 追问</li>
+          <li data-i18n="pricing.t4.f2">命例库保存 100 个</li>
+          <li data-i18n="pricing.t4.f3">专业版解读风格</li>
+          <li data-i18n="pricing.t4.f4">合参高频使用 + 新功能优先</li>
+          <li data-i18n="pricing.t4.f5">适合持续复盘、多对象管理</li>
         </ul>
-        <span class="btn btn-ghost btn-paper disabled" aria-disabled="true" data-i18n="pricing.t3.cta">即将上线 · 敬请期待</span>
+        <a href="/chat" class="btn btn-ghost btn-paper" data-plan-choice="pro" data-i18n="pricing.t4.cta">选择专业</a>
       </div>
 
     </div>
-    <p class="pricing-foot" data-i18n="pricing.foot">单项一口价 · 无虚拟币 · 订阅续费价格上线前公示 · 随时退</p>
+    <p class="pricing-foot" data-i18n="pricing.foot">内测期点击套餐只切换本机体验档位 · 正式支付上线前不扣费 · 不卖虚拟币</p>
   </div>
 </section>
 
@@ -930,6 +941,7 @@
   </div>
 </footer>
 
+<script src="/plans.js"></script>
 <script>
 const I18N = {
   zh: {
@@ -943,21 +955,21 @@ const I18N = {
     'footer.disc':'心易输出仅供参考与自我思考,不构成任何预测、医疗、法律或投资建议。命运的笔,始终握在你手里。',
     'footer.copy':'© 2026 心易 · 由易入理,三才合一',
     'pricing.h':'选 择 你 的 那 束 光',
-    'pricing.sub':'排盘免费随便用,想深读再单次点灯。内测期不设强制订阅,单项一口价。',
+    'pricing.sub':'先免费试,再按使用深度升级。四档清楚,不卖虚拟币。',
     'pricing.popular':'最受欢迎',
-    'pricing.t1.name':'微光','pricing.t1.desc':'免费探路,三道全开','pricing.t1.price':'免费',
-    'pricing.t1.f1':'三道排盘不限次(紫微 · 八宅 · 六爻)','pricing.t1.f2':'真太阳时校正,贴合真实天象',
-    'pricing.t1.f3':'规则版解读 · 无需联网模型','pricing.t1.f4':'危机前置守护 · 全程护航','pricing.t1.cta':'开启微光',
-    'pricing.t2.name':'点灯','pricing.t2.desc':'单次付费,想深读时再点亮','pricing.t2.unit':' / 次',
-    'pricing.t2.f1':'含「微光」全部免费能力','pricing.t2.f2':'AI 深读 ¥19.9 / 次 · 天命 / 地运 / 人间道任一道',
-    'pricing.t2.f3':'合参 · 双人合盘 ¥29.9 / 次 · 婚恋合参 / 合伙合参',
-    'pricing.t2.fine1':'真人合婚 / 合盘行情约 ¥200–800 / 次','pricing.t2.fine2':'内测期间免费体验,正式上线按此定价',
-    'pricing.t2.cta':'AI 深读 · 立即点灯','pricing.t2.cta2':'双人合参 · 去合盘',
-    'pricing.t3.name':'烛照','pricing.t3.desc':'订阅制 · 即将上线','pricing.t3.unit':' / 月 起',
-    'pricing.t3.f1':'每月 100 次 AI 深读','pricing.t3.f2':'无限历史档案','pricing.t3.f3':'大限 / 流年深读',
-    'pricing.t3.f4':'朋友版 / 专业版双解读风格','pricing.t3.f5':'进阶「洞见」¥99 / 月:300 次 / 月 · 多命盘对照(合参不限次)· 新功能优先',
-    'pricing.t3.cta':'即将上线 · 敬请期待',
-    'pricing.foot':'单项一口价 · 无虚拟币 · 订阅续费价格上线前公示 · 随时退',
+    'pricing.t1.name':'基础','pricing.t1.desc':'免费探路,基础可用','pricing.t1.price':'免费',
+    'pricing.t1.f1':'天命 / 地运 / 人间道基础排盘','pricing.t1.f2':'每日 5 次 AI 随问追问',
+    'pricing.t1.f3':'命例库保存 3 个','pricing.t1.f4':'户型图 / 合参各 1 次体验','pricing.t1.cta':'开启免费版',
+    'pricing.t2.name':'轻问','pricing.t2.desc':'低价体验,适合偶尔问','pricing.t2.unit':' / 月',
+    'pricing.t2.f1':'含「基础」全部能力','pricing.t2.f2':'每日 30 次 AI 对话 / 追问',
+    'pricing.t2.f3':'命例库保存 10 个','pricing.t2.f4':'户型图可用 + 合参 3 次体验','pricing.t2.cta':'选择轻问',
+    'pricing.t3.name':'进阶','pricing.t3.desc':'高频使用,功能完整','pricing.t3.unit':' / 月',
+    'pricing.t3.f1':'每日 100 次 AI 深读 / 追问','pricing.t3.f2':'命例库保存 30 个',
+    'pricing.t3.f3':'完整合参:婚恋 / 合伙都可用','pricing.t3.f4':'地运户型图上传点评','pricing.t3.cta':'选择进阶',
+    'pricing.t4.name':'专业','pricing.t4.desc':'重度用户 / 咨询师','pricing.t4.unit':' / 月',
+    'pricing.t4.f1':'每日 500 次 AI 深读 / 追问','pricing.t4.f2':'命例库保存 100 个','pricing.t4.f3':'专业版解读风格',
+    'pricing.t4.f4':'合参高频使用 + 新功能优先','pricing.t4.f5':'适合持续复盘、多对象管理','pricing.t4.cta':'选择专业',
+    'pricing.foot':'内测期点击套餐只切换本机体验档位 · 正式支付上线前不扣费 · 不卖虚拟币',
     'faq.h':'你 可 能 想 问',
     'faq.q1':'心易会"算命"、预测我的未来吗?',
     'faq.a1':'不会。心易的设计原则就是不下定论、不预测确定事件。它把命盘当成一面镜子,帮你换个角度看清处境与选项,决定权永远交回你自己手里。',
@@ -980,21 +992,21 @@ const I18N = {
     'footer.disc':'Output is for reflection only — not a prediction, medical, legal, or investment advice. The pen of fate stays in your hand.',
     'footer.copy':'© 2026 Xin Yi · By the Yi into insight, Three Powers as one',
     'pricing.h':'Choose Your Light',
-    'pricing.sub':'Chart for free as much as you like; pay per reading only when you want to go deeper. No forced subscription during beta — flat one-time pricing.',
+    'pricing.sub':'Start free, then upgrade by usage depth. Four clear tiers, no virtual coins.',
     'pricing.popular':'Most Popular',
-    'pricing.t1.name':'Glimmer','pricing.t1.desc':'Free to explore, all three paths open','pricing.t1.price':'Free',
-    'pricing.t1.f1':'Unlimited charting · Zi Wei / Eight Mansions / Liu Yao','pricing.t1.f2':'True solar time correction on every chart',
-    'pricing.t1.f3':'Rule-based reading · no AI model needed','pricing.t1.f4':'Crisis pre-check · full-session guard','pricing.t1.cta':'Start with Glimmer',
-    'pricing.t2.name':'Lantern','pricing.t2.desc':'Pay per reading, light up when you need it','pricing.t2.unit':' / reading',
-    'pricing.t2.f1':'Everything in Glimmer','pricing.t2.f2':'AI deep reading ¥19.9 per reading · any one path (Tian Ming / Di Yun / Ren Jian Dao)',
-    'pricing.t2.f3':'Dual-Chart Reading ¥29.9 per reading · romance or partnership',
-    'pricing.t2.fine1':'In-person dual-chart sessions typically run ¥200–800 each','pricing.t2.fine2':'Free during beta — this pricing takes effect at launch',
-    'pricing.t2.cta':'AI deep reading · Light the lantern','pricing.t2.cta2':'Dual-Chart Reading',
-    'pricing.t3.name':'Candlelight','pricing.t3.desc':'Subscription · coming soon','pricing.t3.unit':' / mo and up',
-    'pricing.t3.f1':'100 AI deep readings / month','pricing.t3.f2':'Unlimited chart history','pricing.t3.f3':'Decade & annual cycle deep readings',
-    'pricing.t3.f4':'Friendly / professional reading styles','pricing.t3.f5':'Insight tier ¥99 / mo: 300 readings + multi-chart comparison (unlimited dual-chart) + early access to new features',
-    'pricing.t3.cta':'Coming soon · Stay tuned',
-    'pricing.foot':'Flat one-time pricing · No virtual coins · Renewal prices published before subscriptions launch · Cancel anytime',
+    'pricing.t1.name':'Basic','pricing.t1.desc':'Free entry, core experience','pricing.t1.price':'Free',
+    'pricing.t1.f1':'Basic Tian Ming / Di Yun / Ren Jian Dao charts','pricing.t1.f2':'5 AI chat follow-ups per day',
+    'pricing.t1.f3':'Save 3 charts','pricing.t1.f4':'1 floor-plan + 1 dual-chart trial','pricing.t1.cta':'Start free',
+    'pricing.t2.name':'Light Ask','pricing.t2.desc':'Low-cost trial for occasional use','pricing.t2.unit':' / mo',
+    'pricing.t2.f1':'Everything in Basic','pricing.t2.f2':'30 AI chats / follow-ups per day',
+    'pricing.t2.f3':'Save 10 charts','pricing.t2.f4':'Floor-plan enabled + 3 dual-chart trials','pricing.t2.cta':'Choose Light Ask',
+    'pricing.t3.name':'Advanced','pricing.t3.desc':'Frequent use, full feature set','pricing.t3.unit':' / mo',
+    'pricing.t3.f1':'100 AI deep readings / follow-ups per day','pricing.t3.f2':'Save 30 charts',
+    'pricing.t3.f3':'Full dual-chart reading for romance / partnership','pricing.t3.f4':'Floor-plan upload notes in Di Yun','pricing.t3.cta':'Choose Advanced',
+    'pricing.t4.name':'Pro','pricing.t4.desc':'Heavy users / practitioners','pricing.t4.unit':' / mo',
+    'pricing.t4.f1':'500 AI deep readings / follow-ups per day','pricing.t4.f2':'Save 100 charts','pricing.t4.f3':'Professional reading style',
+    'pricing.t4.f4':'High-frequency dual-chart use + early access','pricing.t4.f5':'Built for ongoing reviews and multi-client records','pricing.t4.cta':'Choose Pro',
+    'pricing.foot':'During beta, tier buttons only switch local experience mode · no charge before payments launch · no virtual coins',
     'faq.h':'You Might Be Wondering',
     'faq.q1':'Will Xin Yi "tell my fortune" or predict my future?',
     'faq.a1':'No. Xin Yi is built to never make definitive claims or predict fixed events. It treats your chart as a mirror to help you see your situation and options from another angle — the decision always stays with you.',
@@ -1026,6 +1038,12 @@ function applyI18n(){
 }
 document.getElementById('langtog').addEventListener('click', ()=>{ LANG = LANG==='en'?'zh':'en'; localStorage.setItem('lang',LANG); applyI18n(); });
 applyI18n();
+
+document.querySelectorAll('[data-plan-choice]').forEach((el) => {
+  el.addEventListener('click', () => {
+    window.XinyiPlans?.set(el.getAttribute('data-plan-choice'));
+  });
+});
 
 // 悬停说明:鼠标移入 → 淡入 → 2.5s 后自动淡出(即便仍悬停);移开则立刻收起,可再次触发
 (function(){

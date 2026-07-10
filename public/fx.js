@@ -26,6 +26,7 @@
   // ---- 按钮墨晕涟漪(仅 opt-in 的三类按钮) ----
   if (!rm) {
     document.addEventListener('pointerdown', (e) => {
+      if (document.body?.dataset.disableClickEffects === 'true') return;
       const btn = e.target.closest('.btn-ink, .btn-paper, .btn-ghost2');
       if (!btn || btn.classList.contains('loading')) return;
       const r = btn.getBoundingClientRect();
