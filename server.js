@@ -24,6 +24,16 @@ import { runZiwei, streamZiwei } from './src/ziwei.js';
 import { runHehun } from './src/hehun.js';
 import { streamChat, castHexagram as castHex } from './src/chat.js';
 import { retrieveKnowledge, formatKnowledge, knowledgeStats } from './src/rag.js';
+import {
+  supabaseConfigStatus,
+  signUp,
+  signInWithPassword,
+  signOut,
+  getUser,
+  getUserData,
+  upsertUserData,
+  deleteUserData,
+} from './src/supabase.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -43,6 +53,16 @@ function readBody(req) {
 function sendJSON(res, status, obj) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(obj));
+}
+
+function bearerToken(req) {
+  const h = req.headers.authorization || '';
+  const m = /^Bearer\s+(.+)$/i.exec(h);
+  return m ? m[1].trim() : '';
+}
+
+function sendError(res, err, fallback = 500) {
+  sendJSON(res, err.status || fallback, { error: err.message || '请求失败' });
 }
 
 // 简单静态路由表(只服务 public 下的 .html,零依赖)
@@ -171,6 +191,64 @@ const server = createServer(async (req, res) => {
     // RAG 调试接口:查看资料是否被读取、某个问题能命中哪些知识片段(无需 Key)
     if (req.method === 'GET' && req.url === '/api/rag/stats') {
       return sendJSON(res, 200, await knowledgeStats());
+    }
+
+    // Supabase 配置状态(不暴露任何 key)
+    if (req.method === 'GET' && req.url === '/api/auth/status') {
+      return sendJSON(res, 200, { type: 'auth-status', supabase: supabaseConfigStatus() });
+    }
+
+    // 真实注册 / 登录 / 当前用户:服务端代理 Supabase Auth,前端只保存 Supabase 返回的 session token
+    if (req.method === 'POST' && req.url === '/api/auth/signup') {
+      try {
+        const input = JSON.parse(await readBody(req) || '{}');
+        if (!input.email || !input.password) return sendJSON(res, 400, { error: '缺少邮箱或密码' });
+        return sendJSON(res, 200, { type: 'signup', auth: await signUp(input) });
+      } catch (e) { return sendError(res, e); }
+    }
+
+    if (req.method === 'POST' && req.url === '/api/auth/login') {
+      try {
+        const input = JSON.parse(await readBody(req) || '{}');
+        if (!input.email || !input.password) return sendJSON(res, 400, { error: '缺少邮箱或密码' });
+        return sendJSON(res, 200, { type: 'login', auth: await signInWithPassword(input) });
+      } catch (e) { return sendError(res, e); }
+    }
+
+    if (req.method === 'POST' && req.url === '/api/auth/logout') {
+      try {
+        await signOut(bearerToken(req));
+        return sendJSON(res, 200, { type: 'logout', ok: true });
+      } catch (e) { return sendError(res, e); }
+    }
+
+    if (req.method === 'GET' && req.url === '/api/auth/me') {
+      try {
+        return sendJSON(res, 200, { type: 'me', user: await getUser(bearerToken(req)) });
+      } catch (e) { return sendError(res, e); }
+    }
+
+    // 用户私有数据:命例库 / 对话历史 / 生辰档案等统一存在 Supabase public.user_data
+    if (req.method === 'GET' && req.url.startsWith('/api/user-data')) {
+      try {
+        const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+        const key = url.searchParams.get('key') || '';
+        return sendJSON(res, 200, { type: 'user-data', ...(await getUserData(bearerToken(req), key)) });
+      } catch (e) { return sendError(res, e); }
+    }
+
+    if (req.method === 'POST' && req.url === '/api/user-data') {
+      try {
+        const input = JSON.parse(await readBody(req) || '{}');
+        return sendJSON(res, 200, { type: 'user-data', ...(await upsertUserData(bearerToken(req), input.key, input.value)) });
+      } catch (e) { return sendError(res, e); }
+    }
+
+    if (req.method === 'DELETE' && req.url.startsWith('/api/user-data')) {
+      try {
+        const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+        return sendJSON(res, 200, { type: 'user-data', ...(await deleteUserData(bearerToken(req), url.searchParams.get('key') || '')) });
+      } catch (e) { return sendError(res, e); }
     }
 
     if (req.method === 'POST' && req.url === '/api/rag/search') {

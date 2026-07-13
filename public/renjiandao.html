@@ -283,8 +283,9 @@
     .coin { opacity:1; transform:none; }
   }
 </style>
+<link rel="stylesheet" href="/site-render.css" />
 </head>
-<body>
+<body class="xy-site-render xy-cloud-preview">
 <div class="aurora" aria-hidden="true"></div>
 <div class="shell">
   <div class="top nav-frost">
@@ -785,5 +786,6 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','
 <!-- 鼠标流体特效(深墨黑水墨,全站铺;取代旧 ink.js 墨迹;reduced-motion 自动不启动) -->
 <script src="/splash-cursor.js"></script>
 <script>window.initSplashCursor && window.initSplashCursor();</script>
+<script src="/site-render.js" defer></script>
 </body>
 </html>

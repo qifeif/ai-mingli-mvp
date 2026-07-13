@@ -145,12 +145,12 @@ body.chat-on .top-mode-row{display:flex;}
 .deep-btn:hover,.deep-experience:focus-within .deep-btn{color:var(--ink-strong);border-color:rgba(38,52,59,.3);background:rgba(38,52,59,.06);box-shadow:var(--shs);}
 .deep-glyph{width:7px;height:7px;border-radius:50%;background:var(--cinnabar);box-shadow:0 0 0 3px rgba(166,64,47,.14);flex:none;}
 .deep-chevron{font-size:12px;transition:transform var(--dur-1) var(--ease);}
-.deep-experience:hover .deep-chevron,.deep-experience:focus-within .deep-chevron{transform:rotate(180deg);}
+.deep-experience:hover .deep-chevron,.deep-experience:focus-within .deep-chevron,.deep-experience.deep-hold .deep-chevron{transform:rotate(180deg);}
 .deep-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:30;display:grid;gap:5px;min-width:150px;padding:7px;
   border:1px solid var(--line);border-radius:14px;background:rgba(250,251,249,.96);box-shadow:0 14px 32px -16px rgba(31,43,49,.38);
   opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-5px) scale(.98);transform-origin:top right;
   transition:opacity var(--dur-1) var(--ease),transform var(--dur-1) var(--ease),visibility var(--dur-1) var(--ease);}
-.deep-experience:hover .deep-menu,.deep-experience:focus-within .deep-menu{opacity:1;visibility:visible;pointer-events:auto;transform:none;}
+.deep-experience:hover .deep-menu,.deep-experience:focus-within .deep-menu,.deep-experience.deep-hold .deep-menu{opacity:1;visibility:visible;pointer-events:auto;transform:none;}
 .deep-menu a{display:flex;align-items:center;gap:8px;min-height:38px;padding:0 11px;border-radius:9px;color:var(--muted);font-size:13px;text-decoration:none;white-space:nowrap;}
 .deep-menu a::before{content:"";width:6px;height:6px;border-radius:50%;background:rgba(38,52,59,.18);flex:none;}
 .deep-menu a:hover,.deep-menu a:focus-visible{background:rgba(38,52,59,.07);color:var(--ink-strong);}
@@ -294,8 +294,9 @@ body.chat-on .top-mode-row{display:flex;}
 .msg.ai{align-items:flex-start;}
 .bub{padding:12px 17px;max-width:88%;font-size:15px;line-height:1.78;overflow-wrap:break-word;}
 /* 用户气泡:柔和宣纸灰(吸收 MetaSight 的轻气泡,去深墨压迫感) */
-.msg.usr .bub{background:rgba(38,52,59,.055);color:var(--ink-strong);border:1px solid var(--line-soft);
-  border-radius:16px 16px 4px 16px;box-shadow:0 2px 8px -6px rgba(31,43,49,.3);}
+.msg.usr .bub{background:rgba(250,251,249,.88);color:var(--ink-strong);border:1px solid rgba(38,52,59,.18);
+  border-radius:16px 16px 4px 16px;box-shadow:0 10px 26px -18px rgba(31,43,49,.34);
+  -webkit-backdrop-filter:blur(10px) saturate(1.04);backdrop-filter:blur(10px) saturate(1.04);}
 .msg.ai .bub{background:var(--glass);
   -webkit-backdrop-filter:blur(14px) saturate(1.05);backdrop-filter:blur(14px) saturate(1.05);
   border:1px solid var(--line);color:var(--ink);border-radius:16px 16px 16px 4px;box-shadow:var(--shs);}
@@ -527,8 +528,9 @@ body:not(.chat-on) .ctxt{min-height:52px;font-size:15.5px;}
   .btn-ink:hover,.send:hover{transform:none;}
 }
 </style>
+<link rel="stylesheet" href="/site-render.css" />
 </head>
-<body data-disable-click-effects="true">
+<body class="xy-site-render xy-cloud-preview" data-disable-click-effects="true">
 <div class="shell">
 
   <!-- 侧栏 -->
@@ -748,13 +750,22 @@ body:not(.chat-on) .ctxt{min-height:52px;font-size:15.5px;}
 <script src="/lunar.js"></script>
 <script src="/profile-pickers.js"></script>
 <script src="/plans.js"></script>
+<script src="/auth-data.js"></script>
 <script>
 // ═══════════════════════════════════════════════════
 //  工具
 // ═══════════════════════════════════════════════════
 const $  = id => document.getElementById(id);
-const ls = { get: k => { try { return JSON.parse(localStorage.getItem(k)) } catch { return null } },
-              set: (k,v) => localStorage.setItem(k, JSON.stringify(v)) };
+const CLOUD_KEYS = new Set(['xy_profile', 'xy_sessions']);
+const ls = {
+  get: k => { try { return JSON.parse(localStorage.getItem(k)) } catch { return null } },
+  set: (k,v) => {
+    localStorage.setItem(k, JSON.stringify(v));
+    if (CLOUD_KEYS.has(k)) {
+      window.XinyiAuth?.saveData?.(k, v)?.catch?.((e) => console.warn(`${k} 云端同步失败:`, e.message));
+    }
+  },
+};
 
 // ═══════════════════════════════════════════════════
 //  i18n
@@ -891,6 +902,8 @@ const modeCopy = (prefix, fallback) => {
   return val === key ? t(fallback) : val;
 };
 init();
+syncCloudState();
+window.addEventListener('xy-auth-changed', () => syncCloudState());
 
 function safeCall(label, fn) {
   try { return fn(); }
@@ -908,6 +921,34 @@ function init() {
   // 跨页接力:天命/地运/人间道 点「进对话追问 / 合参」带解读进来,
   // 优先走 sessionStorage(带解读全文,续接续答);无则退回旧 URL 参数(只预填)。
   if (!safeCall('handoff', applyHandoff)) safeCall('entry-params', applyEntryParams);
+}
+
+async function syncCloudState() {
+  if (!window.XinyiAuth?.isSignedIn?.()) return;
+  try {
+    const [remoteProfile, remoteSessions] = await Promise.all([
+      window.XinyiAuth.loadData('xy_profile', null),
+      window.XinyiAuth.loadData('xy_sessions', null),
+    ]);
+    if (!profile && remoteProfile && typeof remoteProfile === 'object') {
+      profile = remoteProfile;
+      localStorage.setItem('xy_profile', JSON.stringify(profile));
+      safeCall('profile-button', updateProfBtn);
+    }
+    if (Array.isArray(remoteSessions)) {
+      const map = new Map();
+      [...remoteSessions, ...sessions]
+        .filter(s => s && typeof s === 'object' && s.id)
+        .sort((a, b) => Number(b.ts || 0) - Number(a.ts || 0))
+        .forEach((s) => { if (!map.has(s.id)) map.set(s.id, s); });
+      sessions = Array.from(map.values());
+      localStorage.setItem('xy_sessions', JSON.stringify(sessions));
+      safeCall('sidebar', renderSidebar);
+      await window.XinyiAuth.saveData('xy_sessions', sessions);
+    }
+  } catch (e) {
+    console.warn('对话数据云端读取失败:', e.message);
+  }
 }
 
 // 跨页接力主路径:读 sessionStorage.xy_handoff = {from,mode,question,reading,profile,hexagram?,ts}
@@ -965,7 +1006,7 @@ function applyHandoff() {
   return true;
 }
 
-// 旧路径(兼容):从 URL 参数 ?mode=&q=&profile= 进来,只预填不自动发送。
+// 旧路径(兼容):从 URL 参数 ?mode=&q=&profile= 进来; 首页提交会带 autostart=1 并自动发送。
 function applyEntryParams() {
   let p; try { p = new URLSearchParams(location.search); } catch { return; }
   const mode = p.get('mode');
@@ -983,10 +1024,14 @@ function applyEntryParams() {
     const el = $('cTxt');
     el.value = q;
     el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 160) + 'px';
-    setTimeout(() => el.focus(), 40);
+    if (p.get('autostart') === '1') {
+      setTimeout(() => send(q.trim()), 80);
+    } else {
+      setTimeout(() => el.focus(), 40);
+    }
   }
   // 清掉 URL 参数,刷新/分享不再重复预填
-  if (mode || prof || q) { try { history.replaceState(null, '', location.pathname); } catch {} }
+  if (mode || prof || q || p.get('autostart')) { try { history.replaceState(null, '', location.pathname); } catch {} }
 }
 
 function applyI18n() {
@@ -1006,6 +1051,7 @@ function applyI18n() {
 
 function bindCoreEvents() {
   $('newBtn').onclick = newSession;
+  bindDeepExperienceMenu();
   document.querySelectorAll('.mode-row').forEach(row => {
     row.onclick = e => {
       const b = e.target.closest('.mt');
@@ -1020,6 +1066,33 @@ function bindCoreEvents() {
     $('cTxt').style.height = 'auto';
     $('cTxt').style.height = Math.min($('cTxt').scrollHeight, 160) + 'px';
   };
+}
+
+function bindDeepExperienceMenu() {
+  const root = document.querySelector('.deep-experience');
+  if (!root || root.dataset.bound === '1') return;
+  root.dataset.bound = '1';
+  let hideTimer = null;
+  const hold = () => {
+    clearTimeout(hideTimer);
+    root.classList.add('deep-hold');
+  };
+  const release = () => {
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => root.classList.remove('deep-hold'), 2000);
+  };
+  root.addEventListener('mouseenter', hold);
+  root.addEventListener('focusin', hold);
+  root.addEventListener('mouseleave', release);
+  root.addEventListener('focusout', () => {
+    if (!root.contains(document.activeElement)) release();
+  });
+  root.querySelectorAll('a').forEach((a) => {
+    a.addEventListener('click', () => {
+      clearTimeout(hideTimer);
+      root.classList.remove('deep-hold');
+    });
+  });
 }
 
 function bindEvents() {
@@ -1981,5 +2054,6 @@ function scrollBottom() { const cv=$('chatView'); if(cv) setTimeout(()=>{ cv.scr
 <!-- 鼠标流体特效(深墨黑水墨,全站铺;reduced-motion 自动不启动) -->
 <script src="/splash-cursor.js"></script>
 <script>window.initSplashCursor && window.initSplashCursor({ CLICK_SPLAT: false });</script>
+<script src="/site-render.js" defer></script>
 </body>
 </html>

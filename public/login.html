@@ -19,9 +19,10 @@
   --dur-1:.2s; --dur-2:.34s; --ease:cubic-bezier(.4,0,.2,1);
 }
 *{box-sizing:border-box;}
-html,body{margin:0;height:100%;}
+html,body{margin:0;min-height:100%;}
 body{background:var(--bg);color:var(--ink);font-family:var(--serif);
-  display:grid;place-items:center;padding:28px;position:relative;overflow:hidden;}
+  display:grid;place-items:center;align-content:safe center;min-height:100svh;padding:28px;position:relative;
+  overflow-x:hidden;overflow-y:auto;}
 /* 宣纸柔光背景(水墨微晕,静态) */
 .aurora{position:fixed;inset:0;z-index:0;pointer-events:none;
   background:
@@ -32,12 +33,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--serif);
   background:linear-gradient(to top,rgba(38,52,59,.06),transparent);}
 
 .wrap{position:relative;z-index:1;width:100%;max-width:440px;}
-.brand{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:26px;}
-.seal{display:grid;place-items:center;width:52px;height:52px;border-radius:11px;
-  background:linear-gradient(150deg,#B24936 8%,#9A3826 92%);color:#F7F3EA;
-  font-family:var(--kai);font-size:24px;
-  box-shadow:inset 0 0 0 2px rgba(247,243,234,.34),inset 0 0 16px rgba(96,22,10,.42),
-    0 12px 26px -14px rgba(122,32,18,.6);transform:rotate(3deg);}
+.brand{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:18px;}
 .brand-t{font-family:var(--kai);font-size:26px;letter-spacing:6px;color:var(--ink-strong);}
 .brand-s{font-size:12.5px;letter-spacing:2px;color:var(--faint);}
 
@@ -130,7 +126,20 @@ form{padding:26px 28px 28px;}
   transition:opacity var(--dur-2) var(--ease),transform var(--dur-2) var(--ease);}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-@media(max-width:480px){ form{padding:22px 20px 24px;} .brand-t{font-size:23px;} }
+@media(max-width:480px){ body{padding:18px 14px;} form{padding:22px 20px 24px;} .brand-t{font-size:23px;} }
+@media(max-height:860px){
+  body{padding:16px;align-content:start;}
+  .brand{margin:0 0 12px;}
+  .brand-s{display:none;}
+  .tab{padding:15px 0 12px;}
+  form{padding:18px 24px 20px;}
+  .fl{margin-bottom:12px;}
+  .verify{margin:14px 0 2px;padding:11px 13px;}
+  .submit{margin-top:16px;min-height:48px;}
+  .guest{padding:0 24px 18px;}
+  .guest-div{margin:12px 0;}
+  .foot{margin-top:12px;}
+}
 @media(prefers-reduced-motion:reduce){ .card,.tab-ink,.vbox .spin{animation:none;transition:none;} }
 @media (prefers-color-scheme:dark){
   :root{--bg:#1a2228;--bg-2:#20292f;--card:rgba(30,39,45,.9);--ink:#dce4e6;--ink-strong:#eef3f4;
@@ -141,13 +150,13 @@ form{padding:26px 28px 28px;}
   --muted:#9fb0b7;--faint:#83949b;--line:rgba(220,228,230,.16);--line-soft:rgba(220,228,230,.08);}
 :root[data-theme=light]{--bg:#EDF1EF;--bg-2:#E1E8E7;--ink:#26343B;--ink-strong:#1F2B31;--muted:#526872;--faint:#697B82;}
 </style>
+<link rel="stylesheet" href="/site-render.css" />
 </head>
-<body>
+<body class="xy-site-render xy-cloud-preview">
 <div class="aurora" aria-hidden="true"></div>
 
 <div class="wrap">
   <div class="brand">
-    <div class="seal">易</div>
     <div class="brand-t">心 易</div>
     <div class="brand-s">易理为答 · 心有所问</div>
   </div>
@@ -210,6 +219,7 @@ form{padding:26px 28px 28px;}
 
 <div class="toast" id="toast"></div>
 
+<script src="/auth-data.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 let mode = 'login';        // 'login' | 'register'
@@ -256,8 +266,8 @@ function showErr(inp, msg) {
 }
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
 
-// ── 提交(前端占位:存 localStorage.xy_account,后期接真后端) ──
-$('form').addEventListener('submit', (e) => {
+// ── 提交:真实接入 Supabase Auth(由服务端 /api/auth/* 代理) ──
+$('form').addEventListener('submit', async (e) => {
   e.preventDefault();
   clearErrs();
   const email = $('f-email').value.trim();
@@ -272,28 +282,49 @@ $('form').addEventListener('submit', (e) => {
   if (bad) { bad.focus(); return; }
   if (!verified) return;
 
-  // 前端占位:仅存本机,标记已「登录」。后期替换为真实 /api/auth 请求。
-  try {
-    const acct = { email, name: ($('f-name').value.trim() || email.split('@')[0]), ts: Date.now() };
-    localStorage.setItem('xy_account', JSON.stringify(acct));
-  } catch (_) {}
-  toast(mode === 'login' ? '登录成功(占位)' : '注册成功(占位)');
   $('submit').disabled = true;
-  setTimeout(() => { location.href = '/chat'; }, 900);
+  $('submit').textContent = mode === 'login' ? '登 录 中' : '注 册 中';
+  try {
+    if (mode === 'login') {
+      await window.XinyiAuth.login(email, pass);
+      toast('登录成功');
+      setTimeout(() => { location.href = '/chat'; }, 650);
+    } else {
+      const name = $('f-name').value.trim() || email.split('@')[0];
+      const payload = await window.XinyiAuth.signup(email, pass, name);
+      if (payload?.auth?.access_token) {
+        toast('注册成功，正在进入');
+        setTimeout(() => { location.href = '/chat'; }, 650);
+      } else {
+        toast('注册成功，请先查收邮箱完成确认');
+        setMode('login');
+      }
+    }
+  } catch (err) {
+    toast(err.message || '登录失败');
+  } finally {
+    $('submit').disabled = false;
+    $('submit').textContent = mode === 'login' ? '登 录' : '注 册';
+  }
 });
 
 // GUEST-LOGIN start · 临时游客入口逻辑,后期随 HTML/CSS 一起删
 $('guest-btn').onclick = () => {
-  // 免注册/免验证:存游客占位账号(带 guest 标记,便于后期识别清理)后直接进对话
+  // 免注册/免验证:存游客占位账号,从首页开始体验完整产品路径
   try { localStorage.setItem('xy_account', JSON.stringify({ guest: true, name: '游客', ts: Date.now() })); } catch (_) {}
   toast('以游客身份进入');
   $('guest-btn').disabled = true;
-  setTimeout(() => { location.href = '/chat'; }, 600);
+  setTimeout(() => { location.href = '/'; }, 600);
 };
 // GUEST-LOGIN end
 
 // URL ?tab=register 直达注册
 if (/[?&]tab=register/.test(location.search)) setMode('register');
+if (window.XinyiAuth?.isSignedIn?.()) {
+  toast('你已登录，正在进入');
+  setTimeout(() => { location.href = '/chat'; }, 500);
+}
 </script>
+<script src="/site-render.js" defer></script>
 </body>
 </html>

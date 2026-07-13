@@ -41,6 +41,23 @@ LLM_VISION_MODEL=qwen-vl-max        # 地运户型图视觉(注意:别用 -lates
 
 > `.env` 已被 `.gitignore`,密钥不会进仓库。Anthropic 用户改填 `ANTHROPIC_API_KEY=sk-ant-...` 即可。
 
+### 配置登录与数据存储(Supabase)
+
+注册 / 登录由 Supabase Auth 承载;命例库、对话历史、生辰档案统一保存到 `public.user_data`。未登录时仍保留本机 `localStorage` 体验,登录后会自动同步本机数据到云端。
+
+1. 在 Supabase 创建项目,到 **Project Settings → API** 复制 `Project URL` 和 `anon public key`。
+2. 在 Supabase **SQL Editor** 执行 [`supabase/schema.sql`](supabase/schema.sql),创建 `user_data` 表与 RLS 策略。
+3. 在 `.env` 加入:
+
+```ini
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-public-key
+# 可选:服务端强代理写库时使用;不要放到前端
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+前端登录页 `/login` 会调用服务端 `/api/auth/signup`、`/api/auth/login`;用户数据通过 `/api/user-data` 读写,不会把 service role key 暴露给浏览器。
+
 ## 架构
 
 ```
@@ -56,10 +73,12 @@ src/
   prompts.js      解读体系 + 危机话术常量
   chat.js         对话引擎(把命盘/卦象/本命卦注入 system,流式多轮;跨页续接注入 priorReading)
   hehun.js        合参 · 双人八字对照(日主/十神/地支/五行互补)
+  supabase.js     Supabase Auth + user_data 读写代理(注册登录/云端同步)
   stream.js       共享流式层 streamLLM(双 provider · chat 与天命深化共用)
 server.js         零依赖 HTTP:页面路由 + /api/ziwei[/stream]、/api/fengshui、/api/liuyao、/api/renjiandao、/api/hehun、/api/chat 等
-public/           前端页面(新中式 · 山水留白,共用 theme.css;中英双语 i18n)
+public/           前端页面(新中式 · 山水留白,共用 theme.css;中英双语 i18n;auth-data.js 负责登录态/数据同步)
 tests/            ziwei / bazi / liuyao 回归测试(npm test)
+supabase/         数据库建表 SQL
 versions/         各设计版本快照(回滚 / 对照)
 WORKLOG.md        每日进展日志(倒序)
 ```

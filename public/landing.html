@@ -102,12 +102,12 @@
     padding: 0 16px; border-radius: 999px; transition: background .18s, color .18s;
   }
   .nav-links a:hover { background: rgba(38, 52, 59, .06); }
-  /* 导航悬停说明气泡:实线浅灰框 + 透明底 + 轻灰字(悬停淡入、2.5s 后 JS 自动淡出) */
+  /* 导航悬停说明气泡:实线浅灰框 + 透明底 + 白字(悬停淡入、2.5s 后 JS 自动淡出) */
   .nav-links a[data-tip] { position: relative; }
   .nav-tip {
     position: absolute; top: calc(100% + 9px); left: 50%; transform: translateX(-50%) translateY(-4px);
     white-space: nowrap; font-size: 12.5px; font-weight: 400; letter-spacing: .3px; line-height: 1.5;
-    color: rgba(38, 52, 59, .5); background: transparent; border: 1px solid rgba(38, 52, 59, .1);
+    color: rgba(255, 255, 255, .92); background: transparent; border: 1px solid rgba(255, 255, 255, .18);
     border-radius: 9px; padding: 6px 13px;
     opacity: 0; pointer-events: none; z-index: 60; transition: opacity .22s ease, transform .22s ease;
   }
@@ -596,8 +596,9 @@
     .hero .triad a b, .nav-links a, .nav-login, .langtog { transition: none; }
   }
 </style>
+<link rel="stylesheet" href="/site-render.css" />
 </head>
-<body>
+<body class="xy-site-render xy-yang-preview xy-home-taiji">
 
 <nav class="nav-frost">
   <div class="container">
@@ -606,13 +607,11 @@
       <a href="/app" data-i18n="nav.tianming" data-tip="tip.tianming">天命</a>
       <a href="/diyun" data-i18n="nav.diyun" data-tip="tip.diyun">地运</a>
       <a href="/renjiandao" data-i18n="nav.renjiandao" data-tip="tip.renjiandao">人间道</a>
-      <a href="/chat" data-i18n="nav.chat" data-tip="tip.chat">对话</a>
       <a href="#pricing" data-i18n="nav.pricing">定价</a>
     </div>
     <div class="nav-actions">
-      <a href="/chat" class="nav-login" data-i18n="nav.login">登录</a>
-      <a href="/chat" class="nav-cta btn-ink" data-i18n="nav.cta">开启对话</a>
       <button class="langtog" id="langtog" type="button" aria-label="切换中英文 / Switch language">EN</button>
+      <a href="/login" class="nav-cta btn-ink" data-i18n="nav.cta">登录</a>
     </div>
   </div>
 </nav>
@@ -658,18 +657,21 @@
   </div>
   <div class="container">
     <div class="hero-copy">
-      <div class="kicker"><span class="cn" data-i18n="hero.kicker">东方易理 · 现代决策</span></div>
-      <div class="tagline" data-i18n="hero.tagline">由易入理 · 三才合一</div>
-      <p class="lead" data-i18n="hero.intro">承周易之体，演 AI 之用。把「算命」重做成陪你想清楚的决策工具：<br>天命看势，地运调场，人间道问时机。</p>
-      <div class="triad">
-        <a href="/app" title="天命 · 紫微斗数"><b data-i18n="triad.t">天命</b></a><i></i>
-        <a href="/diyun" title="地运 · 八宅方位"><b data-i18n="triad.d">地运</b></a><i></i>
-        <a href="/renjiandao" title="人间道 · 六爻"><b data-i18n="triad.r">人间道</b></a><i></i>
-        <a href="/chat" title="AI 易理对话"><b data-i18n="triad.c">对话</b></a>
-      </div>
+      <div class="kicker"><span class="cn" data-i18n="hero.kicker">天 命 · 地 运 · 人 间 道</span></div>
+      <h1 class="home-title" data-i18n="hero.title">心 易</h1>
+      <p class="lead" data-i18n="hero.intro">把纠结说给它听，它陪你把选择想清楚。</p>
+      <form class="home-askbar" action="/chat" method="get">
+        <input type="hidden" name="mode" value="suiwen" />
+        <input type="hidden" name="autostart" value="1" />
+        <input name="q" maxlength="160" autocomplete="off" data-i18n-ph="hero.ask.ph" placeholder="输入你正在纠结的选择" aria-label="输入你正在纠结的选择" />
+        <button class="home-submit" type="submit" aria-label="开始提问">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+      <p class="home-note" data-i18n="hero.note">命盘见性格倾向与能量节奏，是依据，不是判决。天命看势，地运调场，人间道问时机。</p>
       <div class="hero-cta">
-        <a href="/chat" class="btn btn-primary btn-ink" data-i18n="hero.cta1">每日易问</a>
-        <a href="/app" class="btn btn-ghost btn-paper" data-i18n="hero.cta2">开启心盘</a>
+        <a href="/app" class="btn btn-primary btn-ink" data-i18n="hero.cta1">开始排盘</a>
+        <a href="/renjiandao" class="btn btn-ghost btn-paper" data-i18n="hero.cta2">问一卦</a>
       </div>
     </div>
   </div>
@@ -742,31 +744,24 @@
   </div>
 </section>
 
-<!-- V2 · AI 易理对话 -->
+<!-- AI 易理对话 -->
 <section id="chat-feat" class="chat-feat">
   <div class="container">
     <div class="cf-inner reveal-group">
       <div class="cf-left">
-        <div class="cf-badge">V 2 · 全新功能</div>
-        <h2 class="cf-h">AI 易理对话</h2>
-        <p class="cf-p">易理观人生，心诚则有应。不填表、不起卦，直接开口问。AI 从易理角度帮你看清处境、想明白选择——有命盘时结合你的星盘作答，无命盘同样能聊。</p>
+        <h2 class="cf-h">把命盘装进一场对话</h2>
+        <p class="cf-p">不用先懂术语。直接说你在纠结什么，它调出你的天命、地运、人间道三张盘，用你听得懂的话，陪你把这件事想清楚。</p>
         <div class="cf-modes">
-          <span>◎ 随问</span><span>✦ 天命</span><span>☰ 人间道</span><span>⌂ 地运</span>
+          <a href="/chat?mode=suiwen">◎ 随问</a><a href="/chat?mode=tianming">✦ 天命</a><a href="/chat?mode=renjiandao">☰ 人间道</a><a href="/chat?mode=diyun">⌂ 地运</a>
         </div>
-        <a href="/chat" class="btn btn-primary btn-ink cf-cta">开启对话</a>
       </div>
       <div class="cf-right" aria-hidden="true">
         <div class="cf-mock">
-          <div class="cf-mock-bar"><span class="cf-dot r"></span><span class="cf-dot y"></span><span class="cf-dot g"></span><span style="flex:1;text-align:center;font-size:12px;color:var(--faint);font-family:var(--serif)">心易 · 对话</span></div>
           <div class="cf-mock-body">
-            <div class="cf-bubble ai">易理观人生，心诚则有应。<br>有什么困惑或想看清的，直接说。</div>
-            <div class="cf-bubble ai chip-row">
-              <span class="cf-ck">最近为什么诸事不顺</span>
-              <span class="cf-ck">感情上该怎么取舍</span>
-              <span class="cf-ck">今年运势如何</span>
-            </div>
-            <div class="cf-bubble usr">最近换工作的时机到了吗？</div>
-            <div class="cf-bubble ai typing"><i></i><i></i><i></i></div>
+            <div class="cf-bubble usr">该不该接这个 offer?</div>
+            <div class="cf-bubble ai">先不急着定。你今年大运走的是「驿马动」，利变不利守——但你八字里印星弱，换环境前得先看这家能不能给你托底的人……</div>
+            <div class="cf-bubble usr">那时机呢?</div>
+            <div class="cf-bubble ai">摇了一卦，得「泽火革」——革者，去故也。爻象宜动，但提示你别裸辞，谈妥再走。</div>
           </div>
         </div>
       </div>
@@ -945,13 +940,16 @@
 <script>
 const I18N = {
   zh: {
-    'nav.tianming':'天命','nav.diyun':'地运','nav.renjiandao':'人间道','nav.hehun':'合参','nav.chat':'对话','nav.pricing':'定价','nav.login':'登录','nav.cta':'开启对话',
+    'nav.tianming':'天命','nav.diyun':'地运','nav.renjiandao':'人间道','nav.hehun':'合参','nav.chat':'对话','nav.pricing':'定价','nav.login':'登录','nav.cta':'登录',
     'tip.tianming':'紫微排盘','tip.diyun':'住房选位','tip.renjiandao':'六爻问卜 + 合八字','tip.chat':'易理顾问 · 随问随答',
-    'hero.kicker':'东方易理 · 现代决策',
+    'hero.kicker':'天 命 · 地 运 · 人 间 道',
+    'hero.title':'心 易',
     'hero.tagline':'由易入理 · 三才合一',
-    'hero.intro':'承周易之体，演 AI 之用。把「算命」重做成陪你想清楚的决策工具：<br>天命看势，地运调场，人间道问时机。',
+    'hero.intro':'把纠结说给它听，它陪你把选择想清楚。',
+    'hero.ask.ph':'输入你正在纠结的选择',
+    'hero.note':'命盘见性格倾向与能量节奏，是依据，不是判决。天命看势，地运调场，人间道问时机。',
     'triad.t':'天命','triad.d':'地运','triad.r':'人间道','triad.c':'对话',
-    'hero.cta1':'每日易问','hero.cta2':'开启心盘',
+    'hero.cta1':'开始排盘','hero.cta2':'问一卦',
     'footer.disc':'心易输出仅供参考与自我思考,不构成任何预测、医疗、法律或投资建议。命运的笔,始终握在你手里。',
     'footer.copy':'© 2026 心易 · 由易入理,三才合一',
     'pricing.h':'选 择 你 的 那 束 光',
@@ -982,13 +980,16 @@ const I18N = {
     'cta.h':'把这次纠结,说给它听','cta.sub':'三分钟,点亮一束属于你的光。','cta.btn':'立即体验 · 免费开始',
   },
   en: {
-    'nav.tianming':'Tian Ming','nav.diyun':'Di Yun','nav.renjiandao':'Ren Jian Dao','nav.hehun':'Dual Chart','nav.chat':'Chat','nav.pricing':'Pricing','nav.login':'Log in','nav.cta':'Start chat',
+    'nav.tianming':'Tian Ming','nav.diyun':'Di Yun','nav.renjiandao':'Ren Jian Dao','nav.hehun':'Dual Chart','nav.chat':'Chat','nav.pricing':'Pricing','nav.login':'Log in','nav.cta':'Log in',
     'tip.tianming':'Zi Wei chart','tip.diyun':'Home direction siting','tip.renjiandao':'I Ching divination + BaZi matching','tip.chat':'I Ching advisor · ask anything',
-    'hero.kicker':'Eastern Yi · Modern Decision',
+    'hero.kicker':'Tian Ming · Di Yun · Ren Jian Dao',
+    'hero.title':'Xin Yi',
     'hero.tagline':'By the Yi into insight · Heaven, Earth & Human as one',
-    'hero.intro':'Rooted in the I Ching, expressed through AI — we remade "fortune-telling" into a tool that helps you think a decision through. Life is shaped in three equal parts: Destiny ⅓, Environment ⅓, Effort ⅓.',
+    'hero.intro':'Tell it what you are weighing. It helps you make the choice clear.',
+    'hero.ask.ph':'Enter the choice you are weighing',
+    'hero.note':'Charts reveal tendencies and rhythms: a basis, not a verdict. Tian Ming reads momentum, Di Yun tunes the field, Ren Jian Dao asks timing.',
     'triad.t':'Tian Ming','triad.d':'Di Yun','triad.r':'Ren Jian Dao','triad.c':'Chat',
-    'hero.cta1':'Daily Yi Ask','hero.cta2':'Open my chart',
+    'hero.cta1':'Start Chart','hero.cta2':'Ask an Oracle',
     'footer.disc':'Output is for reflection only — not a prediction, medical, legal, or investment advice. The pen of fate stays in your hand.',
     'footer.copy':'© 2026 Xin Yi · By the Yi into insight, Three Powers as one',
     'pricing.h':'Choose Your Light',
@@ -1027,6 +1028,9 @@ function applyI18n(){
     const key = el.getAttribute('data-i18n');
     if (key === 'hero.intro') el.innerHTML = t(key);
     else el.textContent = t(key);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    el.placeholder = t(el.getAttribute('data-i18n-ph'));
   });
   document.getElementById('langtog').textContent = LANG==='en'?'中':'EN';
   // 导航悬停说明气泡:确保每个 data-tip 链接有一个 .nav-tip 子元素,并按当前语言填文案
@@ -1069,5 +1073,6 @@ document.querySelectorAll('[data-plan-choice]').forEach((el) => {
 <!-- 鼠标流体特效(深墨黑水墨,全站铺;取代旧 ink.js 墨迹;reduced-motion 自动不启动) -->
 <script src="/splash-cursor.js"></script>
 <script>window.initSplashCursor && window.initSplashCursor();</script>
+<script src="/site-render.js" defer></script>
 </body>
 </html>

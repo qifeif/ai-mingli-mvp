@@ -586,8 +586,9 @@
     .seg span::after, .zw-cell::after, .lead .dao-ring { transition:none; }
   }
 </style>
+<link rel="stylesheet" href="/site-render.css" />
 </head>
-<body>
+<body class="xy-site-render xy-cloud-preview">
 <div class="aurora" aria-hidden="true"></div>
 <div class="shell">
   <div class="top nav-frost">
@@ -788,6 +789,7 @@
 <script src="/lunar.js"></script>
 <script src="/profile-pickers.js"></script>
 <script src="/plans.js"></script>
+<script src="/auth-data.js"></script>
 <script>
 const I18N = {
   zh: {
@@ -1326,7 +1328,10 @@ const Mingli = (() => {
   const ZHI_WX = { 寅:'mu',卯:'mu',巳:'huo',午:'huo',辰:'tu',丑:'tu',戌:'tu',未:'tu',申:'jin',酉:'jin',子:'shui',亥:'shui' };
 
   function load() { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } }
-  function persist(list) { try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) { console.warn('命例库存储失败(可能超额)', e); } }
+  function persist(list) {
+    try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) { console.warn('命例库存储失败(可能超额)', e); }
+    window.XinyiAuth?.saveData?.(KEY, list)?.catch?.((e) => console.warn('命例库云端同步失败:', e.message));
+  }
 
   // 命例卡标题:别再 slice(0,6) 硬切中文问句(必断半词如「工作三年了很」)。
   // 优先级:称呼 → 首个标签 → 问句切到首个标点(过长补「…」)→ 生肖 → 命例。(速赢·审计#速赢2)
@@ -1467,6 +1472,29 @@ const Mingli = (() => {
   }
   function setQuery(q) { query = q || ''; render(); }
 
+  async function syncFromCloud() {
+    if (!window.XinyiAuth?.isSignedIn?.()) return;
+    try {
+      const remote = await window.XinyiAuth.loadData(KEY, null);
+      if (!Array.isArray(remote)) return;
+      const local = load();
+      const map = new Map();
+      [...remote, ...local]
+        .filter(e => e && typeof e === 'object')
+        .sort((a, b) => Number(b.savedAt || 0) - Number(a.savedAt || 0))
+        .forEach((e) => {
+          const k = dedupeKey(e) || e.id;
+          if (k && !map.has(k)) map.set(k, e);
+        });
+      const merged = Array.from(map.values()).slice(0, cap());
+      localStorage.setItem(KEY, JSON.stringify(merged));
+      render();
+      await window.XinyiAuth.saveData(KEY, merged);
+    } catch (e) {
+      console.warn('命例库云端读取失败:', e.message);
+    }
+  }
+
   // ---- 新建八字 弹窗:开/关 + 标签多选 + 焦点管理 ----
   const modal = document.getElementById('ml-modal');
   const tagpick = document.getElementById('f-tagpick');
@@ -1515,7 +1543,7 @@ const Mingli = (() => {
   function isOpen() { return modal.classList.contains('open'); }
 
   return {
-    save, remove, restore, render, setQuery, cap, load,
+    save, remove, restore, render, setQuery, cap, load, syncFromCloud,
     openModal, closeModal, isOpen, selTags, setTags,
     get activeId() { return activeId; }, set activeId(v) { activeId = v; },
     __titleFrom: titleFrom,  // 供回归测试直接验证标题逻辑(不改行为)
@@ -1558,6 +1586,8 @@ document.getElementById('f-tagpick').addEventListener('click', (e) => {
   Mingli.setTags(cur.includes(name) ? cur.filter(x => x !== name) : [...cur, name]);
 });
 Mingli.render();
+Mingli.syncFromCloud?.();
+window.addEventListener('xy-auth-changed', () => Mingli.syncFromCloud?.());
 
 // 格局标签点选:展开/收起该格局的白话释义(纯前端,事件委托)
 result.addEventListener('click', (e) => {
@@ -2064,5 +2094,6 @@ function mdRender(src) {
 <!-- 鼠标流体特效(深墨黑水墨,全站铺;取代旧 ink.js 墨迹;reduced-motion 自动不启动) -->
 <script src="/splash-cursor.js"></script>
 <script>window.initSplashCursor && window.initSplashCursor();</script>
+<script src="/site-render.js" defer></script>
 </body>
 </html>
