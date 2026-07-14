@@ -67,17 +67,18 @@
   .wheels { position:relative; display:grid; grid-template-columns:1.28fr 1fr 1fr .82fr .82fr; gap:0;
     height:165px; overflow:hidden; border:1px solid var(--line); border-radius:15px; background:var(--bg-2);
     box-shadow:inset 0 18px 32px rgba(255,255,255,.35), inset 0 -18px 32px rgba(38,52,59,.08); }
-  .wheel { position:relative; min-width:0; border-right:1px solid var(--line-soft); }
+  .wheel { position:relative; min-width:0; height:100%; overflow:hidden; text-align:center; touch-action:pan-y; border-right:1px solid var(--line-soft); }
   .wheel:last-of-type { border-right:none; }
-  .wheel-scroll { height:100%; overflow-y:auto; scroll-snap-type:y mandatory; scrollbar-width:none; padding:66px 0; }
+  .wheel-scroll { position:absolute; left:0; right:0; top:0; bottom:22px; overflow-y:auto; scroll-snap-type:y mandatory; scrollbar-width:none;
+    -webkit-overflow-scrolling:touch; }
   .wheel-scroll::-webkit-scrollbar { display:none; }
+  .wheel-scroll .pad { height:66px; }
   .wheel-item { height:33px; display:flex; align-items:center; justify-content:center; scroll-snap-align:center;
     font-size:17px; color:var(--faint); transition:color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
     font-variant-numeric:tabular-nums; user-select:none; cursor:pointer; }
   .wheel-item.on { color:var(--ink); font-family:var(--serif); font-size:19px; transform:scale(1.03); }
-  .wheel .pad { height:0; }
-  .wheel-unit { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); color:var(--muted); font-size:11px; letter-spacing:1px; pointer-events:none; }
-  .wheel-mask { position:absolute; inset:0; pointer-events:none;
+  .wheel-unit { position:absolute; left:0; right:0; bottom:0; height:22px; line-height:22px; color:var(--muted); font-size:11px; letter-spacing:1px; pointer-events:none; }
+  .wheel-mask { position:absolute; left:0; right:0; top:0; bottom:22px; pointer-events:none; z-index:2;
     background:linear-gradient(to bottom, rgba(225,232,231,.92), rgba(225,232,231,0) 32%, rgba(225,232,231,0) 68%, rgba(225,232,231,.92)); }
   .wheels .wheel-sel { position:absolute; left:0; right:0; top:66px; height:33px;
     border-top:1px solid rgba(166,64,47,.42); border-bottom:1px solid rgba(166,64,47,.42); pointer-events:none; }
@@ -138,48 +139,53 @@
   .dy-start:hover { transform:translateY(-1px); background:#2A3841; }
   .dy-start:focus-visible { outline:2px solid var(--cinnabar); outline-offset:3px; }
   /* 弹窗(骨架/开关逻辑同天命页) */
-  .dy-modal { position:fixed; inset:0; z-index:80; display:none; align-items:flex-start; justify-content:center; padding:16px; overflow:auto; }
+  .dy-modal { position:fixed; inset:0; z-index:80; display:none; align-items:flex-start; justify-content:center; padding:40px 16px; overflow:auto; }
   .dy-modal.open { display:flex; }
   .dy-backdrop { position:fixed; inset:0; background:rgba(31,43,49,.42); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); animation:dyFade var(--dur-1) var(--ease); }
-  .dy-dialog { position:relative; z-index:1; width:min(1120px,100%); max-height:96vh; overflow:auto; border-radius:26px; padding:0; animation:dyRise var(--dur-2) var(--ease); }
+  .dy-dialog { position:relative; z-index:1; width:100%; max-width:560px; max-height:90vh; overflow:auto; border-radius:22px; padding:0; animation:dyRise var(--dur-2) var(--ease); }
   @keyframes dyFade { from { opacity:0; } }
   @keyframes dyRise { from { opacity:0; transform:translateY(14px); } }
-  .dy-dhead { display:flex; align-items:flex-start; gap:18px; padding:56px 54px 22px; }
+  .dy-dhead { display:flex; align-items:flex-start; gap:14px; padding:28px 26px 14px; }
   .dy-dhead .dt { flex:1; min-width:0; }
-  .dy-dhead h3 { font-family:"Songti SC","Noto Serif SC",serif; font-size:36px; line-height:1.25; letter-spacing:5px; color:var(--ink-strong); margin:0; font-weight:500; }
-  .dy-dhead .dsub { font-size:18px; color:var(--muted); margin-top:18px; letter-spacing:.5px; }
-  .dy-close { flex:none; width:64px; height:64px; border-radius:50%; border:1px solid var(--line); background:var(--bg-2);
-    color:var(--muted); cursor:pointer; font-size:30px; line-height:1; display:grid; place-items:center;
+  .dy-dhead h3 { font-family:"Songti SC","Noto Serif SC",serif; font-size:28px; line-height:1.25; letter-spacing:4px; color:var(--ink-strong); margin:0; font-weight:500; }
+  .dy-dhead .dsub { font-size:14px; color:var(--muted); margin-top:10px; letter-spacing:.5px; }
+  .dy-close { flex:none; width:44px; height:44px; border-radius:50%; border:1px solid var(--line); background:var(--bg-2);
+    color:var(--muted); cursor:pointer; font-size:24px; line-height:1; display:grid; place-items:center;
     transition:color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease); }
   .dy-close:hover { color:var(--cinnabar); border-color:rgba(166,64,47,.4); }
   .dy-close:focus-visible { outline:2px solid var(--cinnabar); outline-offset:2px; }
-  .dy-modal form#f { padding:0 54px 34px; }
+  .dy-modal form#f { padding:0 26px 24px; }
   .dy-modal form#f .form-cap { display:none; } /* 标题走弹窗头 */
-  .dy-form-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:44px 34px; align-items:start; }
-  .dy-field { min-width:0; margin:0; }
-  .dy-field.full { grid-column:1 / -1; }
-  .dy-modal input, .dy-modal select { min-height:94px; border-radius:18px; padding:0 34px; font-size:26px; background:var(--bg-2); }
-  .dy-modal .seg { border-radius:18px; min-height:94px; }
-  .dy-modal .seg span { min-height:88px; font-size:26px; letter-spacing:2px; }
-  .dy-modal .seg span::after { bottom:14px; width:32px; height:4px; }
-  .dy-modal .datefield { gap:20px; }
-  .dy-modal .datefield .seg { min-height:94px; }
-  .dy-modal .wheels { height:330px; border-radius:20px; box-shadow:inset 0 20px 34px rgba(255,255,255,.38), inset 0 -20px 34px rgba(38,52,59,.08), 0 18px 42px -32px rgba(38,52,59,.32); }
-  .dy-modal .wheel-scroll { padding:132px 0; }
-  .dy-modal .wheel-item { height:66px; font-size:28px; }
-  .dy-modal .wheel-item.on { font-size:31px; }
-  .dy-modal .wheel-unit { bottom:13px; font-size:18px; }
-  .dy-modal .wheels .wheel-sel { top:132px; height:66px; }
-  .dy-modal .upload { min-height:300px; display:flex; align-items:center; justify-content:center; border-radius:20px; }
-  .dy-modal .upload .big svg { width:58px; height:58px; }
-  .dy-modal .upload span { display:block; font-family:var(--serif); font-size:26px; color:var(--muted); letter-spacing:2px; }
-  .dy-modal .upload .hint { font-size:18px; margin-top:14px; }
-  .dy-modal .upload img { max-height:260px; }
+  .dy-form-grid { display:block; }
+  .dy-field { min-width:0; margin:0 0 18px; }
+  .dy-field.full { grid-column:auto; }
+  .dy-modal label { font-size:12px; margin-bottom:8px; letter-spacing:1px; }
+  .dy-modal .row { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px 18px; align-items:start; margin-bottom:18px; }
+  .dy-modal .row .dy-field { margin-bottom:0; }
+  .dy-modal input, .dy-modal select { min-height:46px; border-radius:11px; padding:0 14px; font-size:15px; background:var(--bg-2); }
+  .dy-modal .xy-city-btn { min-height:46px; }
+  .dy-modal .xy-city-btn.has-city { font-size:16px; }
+  .dy-modal .seg { border-radius:12px; min-height:0; }
+  .dy-modal .seg span { min-height:46px; font-size:15px; letter-spacing:1px; }
+  .dy-modal .seg span::after { bottom:7px; width:28px; height:3px; }
+  .dy-modal .datefield { gap:10px; }
+  .dy-modal .datefield .seg { min-height:0; }
+  .dy-modal .wheels { height:176px; border-radius:14px; box-shadow:inset 0 14px 24px rgba(255,255,255,.34), inset 0 -14px 24px rgba(38,52,59,.07), 0 14px 34px -28px rgba(38,52,59,.28); }
+  .dy-modal .wheel-scroll { padding:0; }
+  .dy-modal .wheel-item { height:33px; font-size:15px; }
+  .dy-modal .wheel-item.on { font-size:16px; transform:scale(1.03); }
+  .dy-modal .wheel-unit { bottom:8px; font-size:11px; }
+  .dy-modal .wheels .wheel-sel { top:66px; height:33px; }
+  .dy-modal .upload { min-height:170px; display:flex; align-items:center; justify-content:center; border-radius:14px; padding:22px; }
+  .dy-modal .upload .big svg { width:32px; height:32px; }
+  .dy-modal .upload span { display:block; font-family:var(--serif); font-size:16px; color:var(--muted); letter-spacing:1px; }
+  .dy-modal .upload .hint { font-size:12px; margin-top:6px; }
+  .dy-modal .upload img { max-height:180px; }
   .ml-foot { display:flex; gap:12px; margin-top:6px; }
   .ml-foot .btn-cancel { flex:none; min-width:96px; }
   .ml-foot button#btn { flex:1; margin-top:0; }
-  .dy-modal .ml-foot { grid-column:1 / -1; margin-top:-10px; gap:30px; }
-  .dy-modal .ml-foot .btn-cancel, .dy-modal .ml-foot button#btn { min-height:64px; border-radius:999px; font-size:16px; }
+  .dy-modal .ml-foot { grid-column:auto; margin-top:4px; gap:12px; }
+  .dy-modal .ml-foot .btn-cancel, .dy-modal .ml-foot button#btn { min-height:50px; border-radius:999px; font-size:15px; }
   .btn-cancel { font:inherit; font-size:15px; letter-spacing:2px; color:var(--muted); background:var(--bg-2);
     border:1px solid var(--line); border-radius:12px; padding:0 18px; min-height:50px; cursor:pointer;
     transition:color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease); }
@@ -393,27 +399,28 @@
     .res-grid { grid-template-columns:1fr; }
   }
   @media (max-width:760px){
-    .dy-modal { padding:12px; }
+    .dy-modal { padding:20px 12px; }
     .dy-dialog { border-radius:22px; }
-    .dy-dhead { padding:34px 26px 16px; }
+    .dy-dhead { padding:24px 20px 12px; }
     .dy-dhead h3 { font-size:28px; letter-spacing:3px; }
     .dy-dhead .dsub { font-size:15px; margin-top:10px; }
-    .dy-close { width:48px; height:48px; font-size:24px; }
-    .dy-modal form#f { padding:0 26px 28px; }
-    .dy-form-grid { grid-template-columns:1fr; gap:28px; }
+    .dy-close { width:42px; height:42px; font-size:23px; }
+    .dy-modal form#f { padding:0 20px 22px; }
+    .dy-form-grid { display:block; }
     .dy-field.full, .dy-modal .ml-foot { grid-column:auto; }
-    .dy-modal input, .dy-modal select { min-height:66px; border-radius:16px; padding:0 22px; font-size:20px; }
-    .dy-modal .seg { min-height:66px; }
-    .dy-modal .seg span { min-height:62px; font-size:20px; }
-    .dy-modal .wheels { height:198px; }
-    .dy-modal .wheel-scroll { padding:79px 0; }
-    .dy-modal .wheel-item { height:40px; font-size:19px; }
-    .dy-modal .wheel-item.on { font-size:21px; }
-    .dy-modal .wheels .wheel-sel { top:79px; height:40px; }
+    .dy-modal .row { grid-template-columns:1fr; gap:16px; }
+    .dy-modal input, .dy-modal select { min-height:46px; border-radius:11px; padding:0 14px; font-size:15px; }
+    .dy-modal .seg { min-height:0; }
+    .dy-modal .seg span { min-height:46px; font-size:15px; }
+    .dy-modal .wheels { height:176px; }
+    .dy-modal .wheel-scroll { padding:0; }
+    .dy-modal .wheel-item { height:33px; font-size:15px; }
+    .dy-modal .wheel-item.on { font-size:16px; }
+    .dy-modal .wheels .wheel-sel { top:66px; height:33px; }
     .dy-modal .wheel-unit { bottom:8px; font-size:12px; }
-    .dy-modal .upload { min-height:180px; }
-    .dy-modal .upload span { font-size:20px; }
-    .dy-modal .upload .hint { font-size:14px; }
+    .dy-modal .upload { min-height:160px; }
+    .dy-modal .upload span { font-size:16px; }
+    .dy-modal .upload .hint { font-size:12px; }
     .dy-modal .ml-foot { gap:12px; }
   }
   @media (max-width:560px){ .dy-modal { padding:10px; } }
@@ -477,11 +484,20 @@
     <form id="f" novalidate>
       <div class="form-cap"><h2 data-i18n="form.cap">居所信息</h2><span data-i18n="form.capsub">本命卦 + 户型朝向</span></div>
       <div class="dy-form-grid">
-        <div class="dy-field">
-          <label data-i18n="f.gender">性别</label>
-          <div class="seg">
-            <label><input type="radio" name="gender" value="女" checked /><span data-i18n="f.female">女</span></label>
-            <label><input type="radio" name="gender" value="男" /><span data-i18n="f.male">男</span></label>
+        <div class="row">
+          <div class="dy-field">
+            <label data-i18n="f.gender">性别</label>
+            <div class="seg">
+              <label><input type="radio" name="gender" value="女" checked /><span data-i18n="f.female">女</span></label>
+              <label><input type="radio" name="gender" value="男" /><span data-i18n="f.male">男</span></label>
+            </div>
+          </div>
+          <div class="dy-field">
+            <label for="d-city" data-i18n="f.city">居住城市</label>
+            <div class="xy-city-field">
+              <input id="d-city" name="city" value="杭州" data-city-picker data-i18n-ph="f.city_ph" placeholder="请选择或输入城市" />
+              <button type="button" class="xy-city-btn" data-city-target="d-city" data-i18n="f.city_pick">选择</button>
+            </div>
           </div>
         </div>
         <div class="dy-field">
@@ -504,20 +520,29 @@
           </div>
         </div>
         <div class="dy-field">
-          <label for="d-goal" data-i18n="f.goal">身份定位 · 主要诉求</label>
-          <select id="d-goal" name="goal" class="inkline">
-            <option value="wealth" data-i18n="f.g_wealth">求财运 · 拼事业</option>
-            <option value="health" data-i18n="f.g_health">求健康 · 保平安</option>
-            <option value="love" data-i18n="f.g_love">求姻缘 · 旺人际</option>
-            <option value="stable" data-i18n="f.g_stable">求安稳 · 利学业</option>
-          </select>
+          <label data-i18n="f.marital">婚姻状况</label>
+          <div class="seg">
+            <label><input type="radio" name="marital" value="未婚" checked /><span data-i18n="f.single">未婚</span></label>
+            <label><input type="radio" name="marital" value="已婚" /><span data-i18n="f.married">已婚</span></label>
+          </div>
         </div>
-        <div class="dy-field">
-          <label for="d-facing" data-i18n="f.facing">户型图「正上方」朝向</label>
-          <select id="d-facing" name="facing" class="inkline">
-            <option value="北" data-i18n="dir.N">北</option><option value="东北" data-i18n="dir.NE">东北</option><option value="东" data-i18n="dir.E">东</option><option value="东南" data-i18n="dir.SE">东南</option>
-            <option value="南" data-i18n="dir.S">南</option><option value="西南" data-i18n="dir.SW">西南</option><option value="西" data-i18n="dir.W">西</option><option value="西北" data-i18n="dir.NW">西北</option>
-          </select>
+        <div class="row">
+          <div class="dy-field">
+            <label for="d-goal" data-i18n="f.goal">身份定位 · 主要诉求</label>
+            <select id="d-goal" name="goal" class="inkline">
+              <option value="wealth" data-i18n="f.g_wealth">求财运 · 拼事业</option>
+              <option value="health" data-i18n="f.g_health">求健康 · 保平安</option>
+              <option value="love" data-i18n="f.g_love">求姻缘 · 旺人际</option>
+              <option value="stable" data-i18n="f.g_stable">求安稳 · 利学业</option>
+            </select>
+          </div>
+          <div class="dy-field">
+            <label for="d-facing" data-i18n-html="f.facing">户型图「<strong>正上方</strong>」朝向</label>
+            <select id="d-facing" name="facing" class="inkline">
+              <option value="北" data-i18n="dir.N">北</option><option value="东北" data-i18n="dir.NE">东北</option><option value="东" data-i18n="dir.E">东</option><option value="东南" data-i18n="dir.SE">东南</option>
+              <option value="南" data-i18n="dir.S">南</option><option value="西南" data-i18n="dir.SW">西南</option><option value="西" data-i18n="dir.W">西</option><option value="西北" data-i18n="dir.NW">西北</option>
+            </select>
+          </div>
         </div>
       <div class="dy-field full">
         <label for="file" data-i18n="f.upload">户型图(可选 · 上传后给出逐间方位点评)</label>
@@ -603,6 +628,7 @@
 
 <script src="/lunar.js"></script>
 <script src="/plans.js"></script>
+<script src="/profile-pickers.js"></script>
 <script>
 const I18N = {
   zh: {
@@ -610,9 +636,9 @@ const I18N = {
     'hero.badge':'地运 · 东西四命 · 八宅方位','hero.kickcn':'顺势调场','hero.title':'方 位 推 荐',
     'hero.motto':'天命定其势,地运调其场。','hero.sub':'报出生与身份,上传户型图——按八宅东西四命,看你该睡哪个方位、把环境调到帮你的那一面。',
     'form.cap':'居所信息','form.capsub':'本命卦 + 户型朝向',
-    'f.gender':'性别','f.female':'女','f.male':'男','f.date':'出生日期时间(定本命卦)','f.solar':'阳历','f.lunar':'阴历','f.unit_y':'年','f.unit_mo':'月','f.unit_d':'日','f.unit_h':'时','f.unit_mi':'分','f.goal':'身份定位 · 主要诉求',
+    'f.gender':'性别','f.female':'女','f.male':'男','f.city':'居住城市','f.city_ph':'请选择或输入城市','f.city_pick':'选择','f.marital':'婚姻状况','f.single':'未婚','f.married':'已婚','f.date':'出生日期时间(定本命卦)','f.solar':'阳历','f.lunar':'阴历','f.unit_y':'年','f.unit_mo':'月','f.unit_d':'日','f.unit_h':'时','f.unit_mi':'分','f.goal':'身份定位 · 主要诉求',
     'f.g_wealth':'求财运 · 拼事业','f.g_health':'求健康 · 保平安','f.g_love':'求姻缘 · 旺人际','f.g_stable':'求安稳 · 利学业',
-    'f.facing':'户型图「正上方」朝向','f.upload':'户型图(可选 · 上传后给出逐间方位点评)','f.upload_cta':'点此上传 / 拖入户型图',
+    'f.facing':'户型图「<strong>正上方</strong>」朝向','f.upload':'户型图(可选 · 上传后给出逐间方位点评)','f.upload_cta':'点此上传 / 拖入户型图',
     'f.upload_hint':'支持 PNG / JPG · 看不清的图建议标注指北针','f.submit':'勘 定 方 位','f.loading_btn':'勘 定 中…',
     'dir.N':'北','dir.NE':'东北','dir.E':'东','dir.SE':'东南','dir.S':'南','dir.SW':'西南','dir.W':'西','dir.NW':'西北',
     'loading':'正在为你勘定地脉方位…','err':'出错了：','foot':'本方位建议依八宅东西四命体系推算,仅供居家参考与自我调整,不构成任何确定性预测。',
@@ -634,9 +660,9 @@ const I18N = {
     'hero.badge':'Di Yun · East-West Life · Eight Mansions','hero.kickcn':'Tune your space','hero.title':'D I R E C T I O N S',
     'hero.motto':'Tian Ming sets the force; Di Yun tunes the field.','hero.sub':'Enter your birth & role, upload a floor plan — by the Eight Mansions, see which direction to sleep in and set your space to the side that helps you.',
     'form.cap':'Home details','form.capsub':'Life-trigram + plan orientation',
-    'f.gender':'Gender','f.female':'Female','f.male':'Male','f.date':'Birth date & time (sets your life-trigram)','f.solar':'Solar','f.lunar':'Lunar','f.unit_y':'Y','f.unit_mo':'M','f.unit_d':'D','f.unit_h':'H','f.unit_mi':'Min','f.goal':'Role · main aim',
+    'f.gender':'Gender','f.female':'Female','f.male':'Male','f.city':'Living city','f.city_ph':'Pick or type a city','f.city_pick':'Pick','f.marital':'Marital status','f.single':'Single','f.married':'Married','f.date':'Birth date & time (sets your life-trigram)','f.solar':'Solar','f.lunar':'Lunar','f.unit_y':'Y','f.unit_mo':'M','f.unit_d':'D','f.unit_h':'H','f.unit_mi':'Min','f.goal':'Role · main aim',
     'f.g_wealth':'Wealth · career','f.g_health':'Health · safety','f.g_love':'Love · relationships','f.g_stable':'Stability · study',
-    'f.facing':'Direction at the TOP of the plan','f.upload':'Floor plan (optional · per-room direction notes)','f.upload_cta':'Click / drop a floor plan here',
+    'f.facing':'Direction at the <strong>TOP</strong> of the plan','f.upload':'Floor plan (optional · per-room direction notes)','f.upload_cta':'Click / drop a floor plan here',
     'f.upload_hint':'PNG / JPG · mark a compass north if unclear','f.submit':'F I N D   D I R E C T I O N','f.loading_btn':'Surveying…',
     'dir.N':'N','dir.NE':'NE','dir.E':'E','dir.SE':'SE','dir.S':'S','dir.SW':'SW','dir.W':'W','dir.NW':'NW',
     'loading':'Surveying your eight directions…','err':'Error: ','foot':'Directions are derived from the Eight Mansions / East-West Life system — for home reference and self-adjustment only, not a definite prediction.',
@@ -659,6 +685,7 @@ function t(k){ return (I18N[LANG]&&I18N[LANG][k]) || (I18N.zh[k]||k); }
 function applyI18n(){
   document.documentElement.lang = LANG==='en'?'en':'zh-CN';
   document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{ el.innerHTML = t(el.getAttribute('data-i18n-html')); });
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.placeholder = t(el.getAttribute('data-i18n-ph')); });
   document.getElementById('langtog').textContent = LANG==='en'?'中':'EN';
 }
@@ -1084,7 +1111,7 @@ f.addEventListener('submit', async (e) => {
     return;
   }
   hasSubmitted = true; // 用户已自行排盘,示例不再覆盖
-  const payload = { gender: d.gender, datetime: `${d.date} ${d.time || '12:00'}`, goal: d.goal, facing: d.facing, lang: LANG };
+  const payload = { gender: d.gender, city: d.city || '', marital: d.marital || '', datetime: `${d.date} ${d.time || '12:00'}`, goal: d.goal, facing: d.facing, lang: LANG };
   const useFloorplan = !!imageDataUrl;
   if (useFloorplan && !floorplanAllowed()) { floorplanUpsell(); return; }
   if (useFloorplan) payload.image = imageDataUrl;
