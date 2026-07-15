@@ -1,129 +1,82 @@
 # 心易 V2 · AI 命理决策助手
 
-> 承周易之体,演 AI 之用。把「算命」重做成**陪你想清楚的决策 / 自我认知工具**——给视角不给定论,决定权始终交回用户。
+一个可部署的 Node.js Web 服务，把传统术数拆成天命、地运、人间道与合参四个体验入口。排盘层为本地纯计算，AI 解读层通过环境变量接入 Anthropic 或 OpenAI-compatible 模型。
 
-> **V2 基线**:在 V1「三道可用」之上,按 5 画像 UX 审计把四个各自能跑却没缝成产品的页面**缝成连贯体验**——跨页上下文接力、示例防误提交、AI 等待流式化、术语墙白话化、命盘英文化。详见 [本轮 V2 改进](#本轮-v2-ux-审计五项全清)。
+## 线上入口
 
-## GitHub 展示
+`server.js` 会提供以下页面和接口：
 
-- [项目介绍文档](docs/PROJECT_INTRO.md)
-- [GitHub Pages 展示页](index.html)
-- [面试 / 作品集材料](docs/interview/README.md)
+- `/`：落地页
+- `/app`：天命 · 紫微斗数
+- `/diyun`：地运 · 八宅与户型图
+- `/renjiandao`：人间道 · 六爻
+- `/hehun`：双人八字合参
+- `/chat`：多轮对话
+- `/login`：登录/注册页
+- `/api/*`：排盘、AI 解读、对话、Supabase 数据同步接口
 
-「心易」把传统术数拆成**三道**,一套问答、三面镜子互参;人生影响,天命占 1/3,地运占 1/3,人事占 1/3。每一道的排盘都是**纯计算**(无需任何 API Key 即可看盘),解读层再叠加大模型。**危机信号前置拦截**,优先级高于一切命理流程。
-
-## 三道
-
-| 道 | 路由 | 体系 | 排盘(纯计算) | 解读(需模型) |
-|---|---|---|---|---|
-| **天命** | `/app` | 紫微斗数(`iztro`)| 真太阳时校正 → 十二宫命盘(主星/亮度/四化/大限)+ **三方四正** | 以三方四正为主轴的 AI 深化 |
-| **地运** | `/diyun` | 八宅 · 东西四命 | 本命卦 + 八方位吉凶罗盘 + 诉求方位推荐 | 上传户型图 → 视觉模型逐间方位点评 |
-| **人间道** | `/renjiandao` | 周易六爻 | 模拟三铜钱摇卦 → 本卦/动爻/变卦 | 卦图象解读(观象悟辞) |
-
-另有两个衍生页:**合参** `/hehun`(双人八字对照 · 婚恋与合伙)与 **对话** `/chat`(易理顾问多轮问答,四道结果都能「进对话追问」续接)。落地页 `/` 为营销首页(山水 hero + 三道合一 + 定价)。
-
-## 快速开始
+## 本地运行
 
 ```bash
-npm install
-npm test          # 排盘引擎回归测试(无需 Key,43 用例)
-npm run web       # 启动 → http://localhost:3000(自动加载 .env)
+npm ci
+npm run web
 ```
 
-排盘接口(`/api/ziwei`、`/api/fengshui`、`/api/liuyao`)**纯计算、无需 Key**即可用;AI 解读需在 `.env` 配置模型。
+打开 `http://localhost:3000`。
 
-### 配置模型(`.env`)
+## 部署
 
-支持 Anthropic 原生,或任意 OpenAI 兼容平台(DeepSeek / 通义千问 / 豆包 / GLM…)。示例(通义千问 · 阿里云 DashScope):
+适合部署到 Render、Railway 等支持 Node.js Web Service 的平台。
+
+推荐配置：
+
+```bash
+Build Command: npm ci
+Start Command: npm start
+```
+
+项目会读取平台注入的 `PORT`；本地未设置时默认使用 `3000`。
+
+## 环境变量
+
+AI 解读需要配置模型。未配置时，纯排盘接口仍可运行，但模型解读会报错。
 
 ```ini
 LLM_PROVIDER=openai-compatible
-LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+LLM_BASE_URL=https://your-provider.example/v1
 LLM_API_KEY=sk-...
-LLM_TEXT_MODEL=qwen-plus            # 主解读
-LLM_CLASSIFY_MODEL=qwen-turbo       # 危机检测 / 场景分类(小模型即可)
-LLM_VISION_MODEL=qwen-vl-max        # 地运户型图视觉(注意:别用 -latest 别名,部分账号无权限)
+LLM_TEXT_MODEL=your-text-model
+LLM_CLASSIFY_MODEL=your-fast-model
+LLM_VISION_MODEL=your-vision-model
+LLM_JSON_MODE=off
 ```
 
-> `.env` 已被 `.gitignore`,密钥不会进仓库。Anthropic 用户改填 `ANTHROPIC_API_KEY=sk-ant-...` 即可。
+也支持 Anthropic：
 
-### 配置登录与数据存储(Supabase)
+```ini
+ANTHROPIC_API_KEY=sk-ant-...
+```
 
-注册 / 登录由 Supabase Auth 承载;命例库、对话历史、生辰档案统一保存到 `public.user_data`。未登录时仍保留本机 `localStorage` 体验,登录后会自动同步本机数据到云端。
-
-1. 在 Supabase 创建项目,到 **Project Settings → API** 复制 `Project URL` 和 `anon public key`。
-2. 在 Supabase **SQL Editor** 执行 [`supabase/schema.sql`](supabase/schema.sql),创建 `user_data` 表与 RLS 策略。
-3. 在 `.env` 加入:
+登录与云端用户数据使用 Supabase：
 
 ```ini
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-anon-public-key
-# 可选:服务端强代理写库时使用;不要放到前端
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-前端登录页 `/login` 会调用服务端 `/api/auth/signup`、`/api/auth/login`;用户数据通过 `/api/user-data` 读写,不会把 service role key 暴露给浏览器。
+在 Supabase SQL Editor 执行 `supabase/schema.sql` 创建 `user_data` 表和 RLS 策略。
 
-## 架构
+## 目录
 
-```
-src/
-  ziwei.js        天命 · 紫微斗数引擎(iztro 安星 + 真太阳时 + 三方四正 + 规则版/AI 解读)
-  bazhai.js       地运 · 八宅本命卦 + 八方位吉凶(纯函数)
-  fengshui.js     地运 · 户型图视觉逐间点评
-  liuyao.js       人间道 · 六爻起卦(纯函数,64 卦查表)
-  renjiandao.js   人间道 · 卦图象解读管线
-  trueSolarTime.js真太阳时校正(经度时差 + 均时差)——排盘准确率命门
-  cities.js       出生地经度查表
-  pipeline.js     危机检测 / 场景分类 / 八字管线(detectCrisis 被各道复用)
-  prompts.js      解读体系 + 危机话术常量
-  chat.js         对话引擎(把命盘/卦象/本命卦注入 system,流式多轮;跨页续接注入 priorReading)
-  hehun.js        合参 · 双人八字对照(日主/十神/地支/五行互补)
-  supabase.js     Supabase Auth + user_data 读写代理(注册登录/云端同步)
-  stream.js       共享流式层 streamLLM(双 provider · chat 与天命深化共用)
-server.js         零依赖 HTTP:页面路由 + /api/ziwei[/stream]、/api/fengshui、/api/liuyao、/api/renjiandao、/api/hehun、/api/chat 等
-public/           前端页面(新中式 · 山水留白,共用 theme.css;中英双语 i18n;auth-data.js 负责登录态/数据同步)
-tests/            ziwei / bazi / liuyao 回归测试(npm test)
-supabase/         数据库建表 SQL
-versions/         各设计版本快照(回滚 / 对照)
-WORKLOG.md        每日进展日志(倒序)
+```text
+server.js      Node HTTP 服务、页面路由、API 路由
+public/        前端页面与静态资源
+src/           排盘、AI 解读、RAG、Supabase 代理逻辑
+knowledge/     本地 RAG 知识库
+supabase/      数据库 schema 与邮件模板
 ```
 
-接口契约(改 UI 勿动):`/api/ziwei` body `{gender, place, datetime, question?, style?, lang?}` →
-`{type:'ziwei', chart, sanfang, text?}` 或危机时 `{type:'crisis', text}`。
+## 免责声明
 
-**天命排盘 V2 起走两段式流式**:`/api/ziwei/stream`(SSE)先吐 `{type:'chart',...}`(命盘骨架,纯计算秒出)再逐字 `{type:'delta',text}` 吐 AI 深化,末 `{type:'done'}`/`{type:'error'}`;`/api/ziwei`(一次性)保留供命例还原与降级。流式层 `src/stream.js` 的 `streamLLM` 双 provider,被 `/chat` 与天命深化共用。
-
-## 设计原则
-
-1. **不下定论**——只说「倾向 / 这个阶段」,不预测确定事件,不替你做决定。
-2. **三道互参**——天命看势、地运调场、人间道问时机,一题三面镜子交叉印证。
-3. **说人话**——命理术语当场翻译成生活语言(靠排盘的「白话 / 三方四正」字段托底)。
-4. **危机前置**——每句话先过安全检测,命中即转温柔陪伴 + 求助资源,绝不把脆弱时刻丢进命理流程。
-
-## 本轮 V2 · UX 审计五项全清
-
-V1 打通了「三道排盘 + AI 解读 + 危机前置」,但 5 画像全流程审计判定为**「工程稳、体验漏」**——四页各自能跑却没缝成产品。V2 按「留存影响 × 成本」排序,把五项流失级/体验损伤问题连同 6 个速赢逐一闭环:
-
-| # | 问题 | 做法 |
-|---|---|---|
-| **#1 跨页丢上下文** | 天命→追问、人间道→合参、地运→追问 跳转即「重开一局」,刚生成的解读凭空消失 | 统一 `sessionStorage(xy_handoff)` 带解读/卦象摘要;目标页把它作**首条 AI 气泡**续接,服务端注入 `priorReading` 让 AI **在既有结论上续答不重排**;有原问题则自动续问,无则给续接提示 + 建议 chips |
-| **速赢 ×6** | 命例标题断半词、loading 死等、决定权埋底部、报错吐技术串… | 标题切标点补「…」;loading 加「通常需 X 秒」+ 实时计时;决定权提到解读区顶部;报错换人话 + 「重新填写」;EN 追问按钮不残留中文;合参提交 `scrollIntoView` |
-| **#2 示例/预填误提交** | 默认填陌生人生日、示例盘可被静默提交成「别人的真结果」 | 生日/时辰去默认值 + `required` + 空提交当场拦;示例盘视觉降级(降透 + 斜纹)+ 顶部横幅 +「填我的生日→」;合参类型不预选 |
-| **#3 AI 等待死等** | 天命深化 11–22s 整页憋着,无进度、无兜底 | 拆两段式流式:**命盘骨架 0.1s 秒出** + 易学解读**逐字流入**(SSE,复用 `/chat` 通路)+ 超时兜底 + 一次性接口降级 |
-| **#4 术语墙 + 移动端** | 「巨门陷地/绝命」黑话劝退;地运方盘白话塞在 `title` 里手机点不出 | 地运方盘格子**改可点**(touch/键盘就地展白话)+ 白话 TL;DR 前置;天命解读**结论前置一句白话** + 术语首现加括注(prompt 级,同步 chat) |
-| **#5 英文半成品** | 命盘宫名/星名/四化硬中文,AI 正文「Earth劫」中英混拼 | 命盘宫名/星名/五行局/生肖 EN 映射(对齐引擎 `STAR_EN` 防**同星两名**);EN system prompt **禁夹 CJK** + 统一罗马音 |
-
-**验证**:108 项 Playwright 真实浏览器程序化断言全绿、4 页 0 控制台报错;含真排盘(骨架 0.1s 出、解读逐字)+ 真 AI 续答/英文化(EN 解读 0 CJK 字符)实测。
-
-后续候选:合参四维卡术语墙加白话、地运/合参也上流式、紫微三方四正逐宫独立生成。
-
-## 设计原则(续)
-
-在上面 4 条基础上,V2 强化:**结论前置**(解读先给一句能懂的白话再展开术语)、**上下文不丢**(读完能无缝续问,而非被逼重开)、**新用户不踩坑**(示例/预填绝不冒充「你的真结果」)。
-
-## 状态
-
-**V2 为审计闭环后的稳定基线**:三道排盘 + AI 解读 + 危机前置 + 跨页接力 + 流式化 + 中英双语命盘,均已 Playwright 实测跑通(通义千问 qwen-plus)。
-
-> 心易输出仅供参考与自我思考,不构成任何预测、医疗、法律或投资建议。
+心易输出仅供参考与自我思考，不构成任何预测、医疗、法律或投资建议。

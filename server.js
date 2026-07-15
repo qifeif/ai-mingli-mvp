@@ -90,47 +90,6 @@ const PAGES = {
   // 合参(双人八字对比)
   '/hehun': 'hehun.html',
   '/hehun.html': 'hehun.html',
-  // 新中式风格预览(临时,定稿前不动 landing)
-  '/preview': 'preview.html',
-  '/preview.html': 'preview.html',
-  // 全屏太极 + 光圈扩散预览(临时,转正前不动 landing)
-  '/preview-taiji': 'preview-taiji.html',
-  '/preview-taiji.html': 'preview-taiji.html',
-  // 液态玻璃全流程预览(临时,转正前不动现役页)
-  '/preview-app': 'preview-app.html',
-  '/preview-app.html': 'preview-app.html',
-  '/preview-diyun': 'preview-diyun.html',
-  '/preview-diyun.html': 'preview-diyun.html',
-  '/preview-renjiandao': 'preview-renjiandao.html',
-  '/preview-renjiandao.html': 'preview-renjiandao.html',
-  '/preview-chat': 'preview-chat.html',
-  '/preview-chat.html': 'preview-chat.html',
-  '/preview-hehun': 'preview-hehun.html',
-  '/preview-hehun.html': 'preview-hehun.html',
-  // 摇卦龟甲动效(800x800,3秒循环,白描黑底)
-  '/preview-yaogua': 'preview-yaogua.html',
-  '/preview-yaogua.html': 'preview-yaogua.html',
-  // 星云太极流转(WebGL,中轴不动·星云内流,天然无缝循环)
-  '/preview-nebula': 'preview-nebula.html',
-  '/preview-nebula.html': 'preview-nebula.html',
-  // 录制版:固定尺寸+外部逐帧驱动,用于导出无缝 mp4
-  '/preview-nebula-record': 'preview-nebula-record.html',
-  '/preview-nebula-record.html': 'preview-nebula-record.html',
-  // 竖版长条背景(阴/阳两变体,9:16,WebGL 实时)
-  '/preview-strip': 'preview-strip.html',
-  '/preview-strip.html': 'preview-strip.html',
-  // 星云太极滚动首页(阴/阳两版,?tone=yin|yang,固定背景+液态玻璃长页)
-  '/preview-scroll': 'preview-scroll.html',
-  '/preview-scroll.html': 'preview-scroll.html',
-  // 竖版长条阴/阳对照页(现配置 vs 加强版,审查产出)
-  '/preview-strip-compare': 'preview-strip-compare.html',
-  '/preview-strip-compare.html': 'preview-strip-compare.html',
-  // 预览索引页(汇总所有 preview-* 的导航入口)
-  '/previews': 'previews-index.html',
-  '/previews.html': 'previews-index.html',
-  // anime.js 风格三道卡片动效(stagger 入场/spring 弹性/网格波纹/SVG 描边)
-  '/preview-anime': 'preview-anime.html',
-  '/preview-anime.html': 'preview-anime.html',
 };
 
 const server = createServer(async (req, res) => {
