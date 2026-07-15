@@ -799,7 +799,7 @@ const I18N = {
     'cbar.hint.diyun':'以方位调场 · 让居所顺你的势',
     'disclaimer':'易理因人而异，仅供参考，请勿盲从',
     'copied':'已复制','think': s => `思考了 ${s} 秒`,
-    'modal.title':'修改生辰档案','modal.hint':'数据仅存于本机 localStorage',
+    'modal.title':'设置生辰档案','modal.hint':'保存一次后，天命、地运与对话都会自动复用',
     'modal.dob':'出生日期 & 时间 *','modal.gender':'性别 *','modal.male':'男','modal.female':'女',
     'modal.name':'称呼','modal.name.ph':'可选','modal.city':'出生城市','modal.city.ph':'可选，可手输或点选择','modal.city.pick':'选择',
     'modal.solar':'阳历','modal.lunar':'阴历',
@@ -851,7 +851,7 @@ const I18N = {
     'cbar.hint.diyun':'Align direction and place — let the home support your path',
     'disclaimer':'Readings vary by person; for reference only, don\'t follow blindly',
     'copied':'Copied','think': s => `Thought for ${s}s`,
-    'modal.title':'Edit birth info','modal.hint':'Stored locally in this browser only',
+    'modal.title':'Set birth info','modal.hint':'Save once and reuse it across all product flows',
     'modal.dob':'Date & time of birth *','modal.gender':'Gender *','modal.male':'Male','modal.female':'Female',
     'modal.name':'Name','modal.name.ph':'Optional','modal.city':'Birth city','modal.city.ph':'Optional, type or pick','modal.city.pick':'Pick',
     'modal.solar':'Solar','modal.lunar':'Lunar',
@@ -882,7 +882,7 @@ const t = k => (I18N[LANG] && I18N[LANG][k]) ?? (I18N.zh[k] ?? k);
 // ═══════════════════════════════════════════════════
 //  状态
 // ═══════════════════════════════════════════════════
-let profile   = ls.get('xy_profile');        // {datetime,gender,name?,location?}
+let profile   = window.XinyiAuth?.getProfile?.() || ls.get('xy_profile');        // {datetime,gender,name?,location?}
 const savedSessions = ls.get('xy_sessions');
 let sessions  = Array.isArray(savedSessions) ? savedSessions.filter(s => s && typeof s === 'object') : []; // [{id,title,mode,msgs,extras,ts}]
 let curSid    = null;
@@ -921,6 +921,7 @@ function init() {
   // 跨页接力:天命/地运/人间道 点「进对话追问 / 合参」带解读进来,
   // 优先走 sessionStorage(带解读全文,续接续答);无则退回旧 URL 参数(只预填)。
   if (!safeCall('handoff', applyHandoff)) safeCall('entry-params', applyEntryParams);
+  safeCall('profile-required', () => ensureProfileRequired({ defer: true }));
 }
 
 async function syncCloudState() {
@@ -934,6 +935,7 @@ async function syncCloudState() {
       profile = remoteProfile;
       localStorage.setItem('xy_profile', JSON.stringify(profile));
       safeCall('profile-button', updateProfBtn);
+      safeCall('welcome', () => renderWelcome());
     }
     if (Array.isArray(remoteSessions)) {
       const map = new Map();
@@ -1040,8 +1042,10 @@ function applyI18n() {
   document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.getAttribute('data-i18n-ph')); });
   $('langtog').textContent = LANG === 'en' ? '中' : 'EN';
   updateProfBtn();
-  updatePlanBtn();
-  if ($('planOv')?.style.display !== 'none') renderPlanGrid();
+  try {
+    updatePlanBtn();
+    if ($('planOv')?.style.display !== 'none') renderPlanGrid();
+  } catch {}
   updateSidebarLabels();
   updateModeCopy();
   syncModeButtons();
@@ -1123,9 +1127,9 @@ function bindEvents() {
   $('planOv').addEventListener('click', e => { if (e.target === $('planOv')) closePlanModal(); });
   window.addEventListener('xinyi:planchange', () => { updatePlanBtn(); renderPlanGrid(); });
   $('profBtn').onclick = openProfileModal;
-  $('ovCancel').onclick = () => $('ov').style.display = 'none';
+  $('ovCancel').onclick = closeProfileModal;
   $('ovOk').onclick = saveProfileFromModal;
-  $('ov').addEventListener('click', e => { if (e.target === $('ov')) $('ov').style.display = 'none'; });
+  $('ov').addEventListener('click', e => { if (e.target === $('ov')) closeProfileModal(); });
 
   // 分享卡片
   bindShareCard();
@@ -1134,7 +1138,7 @@ function bindEvents() {
     if (e.key !== 'Escape') return;
     if ($('sv').style.display !== 'none') closeShareCard();
     else if ($('planOv').style.display !== 'none') closePlanModal();
-    else if ($('ov').style.display !== 'none') $('ov').style.display = 'none';
+    else if ($('ov').style.display !== 'none') closeProfileModal();
   });
 
   // (旧 setupScreen 按钮已移除)
@@ -1285,6 +1289,18 @@ function updateProfBtn() {
     $('profDot').className = 'prof-dot empty';
     $('profLabel').textContent = t('prof.setup');
   }
+}
+
+function hasUsableProfile() {
+  return Boolean(profile?.datetime && profile?.gender);
+}
+
+function ensureProfileRequired(opts = {}) {
+  if (hasUsableProfile()) return true;
+  const open = () => openProfileModal({ required: true });
+  if (opts.defer) setTimeout(open, 120);
+  else open();
+  return false;
 }
 
 // ── 出生日期时间 五列一体拨转轮(阳历/阴历 · 移植自天命页 DateWheel,改读弹窗内 ID) ──
@@ -1438,7 +1454,9 @@ const ProfWheel = (() => {
 })();
 window.ProfWheelRelabel = ProfWheel.relabel;
 
-function openProfileModal() {
+function openProfileModal(opts = {}) {
+  const required = opts === true || opts?.required === true;
+  $('ov').dataset.required = required ? '1' : '0';
   // 反填:datetime 'YYYY-MM-DDTHH:mm' 拆成公历日期 + 时刻喂拨轮
   let ymd = '1996-08-12', hm = '14:30';
   if (profile) {
@@ -1454,7 +1472,13 @@ function openProfileModal() {
   ProfWheel.setDateTime(ymd, hm);
 }
 
-function saveProfileFromModal() {
+function closeProfileModal() {
+  if ($('ov').dataset.required === '1' && !hasUsableProfile()) return;
+  $('ov').style.display = 'none';
+  $('ov').dataset.required = '0';
+}
+
+async function saveProfileFromModal() {
   const dt = ProfWheel.getDateTime(); // 拨轮恒有合法值,无需校验空
   profile = {
     datetime: dt,
@@ -1463,8 +1487,11 @@ function saveProfileFromModal() {
     location: $('oCity').value.trim(),
   };
   ls.set('xy_profile', profile);
+  window.XinyiAuth?.saveProfile?.(profile);
   updateProfBtn();
+  renderWelcome();
   $('ov').style.display = 'none';
+  $('ov').dataset.required = '0';
 }
 
 // ═══════════════════════════════════════════════════
@@ -1589,6 +1616,7 @@ function ensureHeroChips() {
 
 async function send(q, opts = {}) {
   if (!q || streaming) return;
+  if (!ensureProfileRequired()) return;
 
   enterChat();                        // 首屏 → 对话态(幂等)
   streaming = true;

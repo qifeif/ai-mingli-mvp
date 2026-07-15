@@ -1,6 +1,7 @@
 (function () {
   const SESSION_KEY = 'xy_auth_session';
   const ACCOUNT_KEY = 'xy_account';
+  const PROFILE_KEY = 'xy_profile';
 
   const json = {
     get(key, fallback = null) {
@@ -101,6 +102,24 @@
     });
   }
 
+  function getProfile() {
+    return json.get(PROFILE_KEY);
+  }
+
+  async function saveProfile(profile) {
+    if (!profile || !profile.datetime || !profile.gender) return { ok: false, reason: 'missing_profile' };
+    const clean = {
+      datetime: String(profile.datetime).replace('T', ' '),
+      gender: profile.gender,
+      name: profile.name || '',
+      location: profile.location || profile.place || profile.city || '',
+    };
+    json.set(PROFILE_KEY, clean);
+    window.dispatchEvent(new CustomEvent('xy-profile-changed', { detail: { profile: clean } }));
+    try { await saveData(PROFILE_KEY, clean); } catch (err) { console.warn('[心易] 生辰档案云端同步失败:', err.message); }
+    return { ok: true, profile: clean };
+  }
+
   async function migrateLocalData() {
     if (!token()) return;
     const keys = ['xinyi_mingli', 'xy_sessions', 'xy_profile'];
@@ -122,6 +141,8 @@
     logout,
     loadData,
     saveData,
+    getProfile,
+    saveProfile,
     migrateLocalData,
   };
 })();

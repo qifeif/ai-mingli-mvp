@@ -1139,6 +1139,40 @@ let lastZiweiData = null;
 let lastQuestion = '';
 let lastPayload = null; // 最近一次提交的出生信息(不含 viewYear),供切换查看年重新排盘复用
 
+function readSharedProfile() {
+  try { return window.XinyiAuth?.getProfile?.() || JSON.parse(localStorage.getItem('xy_profile') || 'null'); }
+  catch { return null; }
+}
+
+function writeSharedProfile(payload) {
+  const profile = {
+    datetime: payload.datetime,
+    gender: payload.gender,
+    name: payload.name || '',
+    location: payload.place || '',
+  };
+  try { localStorage.setItem('xy_profile', JSON.stringify(profile)); } catch {}
+  window.XinyiAuth?.saveProfile?.(profile);
+}
+
+function prefillSharedProfile() {
+  const p = readSharedProfile();
+  if (!p?.datetime || !p?.gender) return;
+  const dm = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})/.exec(p.datetime || '');
+  if (dm) window.DateWheelSetDateTime?.(dm[1], dm[2]);
+  const g = f.querySelector(`input[name="gender"][value="${p.gender}"]`);
+  if (g) g.checked = true;
+  const place = f.querySelector('#f-place');
+  if (place && (p.location || p.place)) {
+    place.value = p.location || p.place;
+    place.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  const name = f.querySelector('#f-name');
+  if (name && p.name && !name.value) name.value = p.name;
+}
+
+prefillSharedProfile();
+
 f.addEventListener('submit', async (e) => {
   e.preventDefault();
   const d = Object.fromEntries(new FormData(f));
@@ -1155,6 +1189,7 @@ f.addEventListener('submit', async (e) => {
     timezone: d.timezone || '',
     lang: LANG,
   };
+  writeSharedProfile(payload);
   lastPayload = payload;
   btn.disabled = true; btn.textContent = t('f.loading_btn'); btn.classList.add('loading');
   // loading 加「预期秒数 + 已等秒数」,压住「以为卡死」的焦虑(速赢·审计#速赢3)

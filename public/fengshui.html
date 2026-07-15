@@ -870,11 +870,13 @@ const DiyunDateWheel = (() => {
   return {
     init,
     relabel: () => { if (ready) renderAll(); },
+    setDateTime: (ymd, hm) => { if (ready) loadFrom(ymd, hm); else { if (ymd) hiddenDate.value = ymd; if (hm) hiddenTime.value = hm; } },
     getDateTime: () => `${hiddenDate.value} ${hiddenTime.value}`,
   };
 })();
 DiyunDateWheel.init();
 window.DiyunDateWheelRelabel = DiyunDateWheel.relabel;
+window.DiyunDateWheelSetDateTime = DiyunDateWheel.setDateTime;
 
 const fileInput = document.getElementById('file');
 const drop = document.getElementById('drop');
@@ -1083,6 +1085,40 @@ function showCellDetail(cell) {
 // 用户一旦自己提交(hasSubmitted=true),示例不再覆盖。
 let hasSubmitted = false;
 let lastData = null, lastPayload = null; // 最近一次真实排盘结果 + 提交信息,供「进对话追问」跨页接力
+
+function readSharedProfile() {
+  try { return window.XinyiAuth?.getProfile?.() || JSON.parse(localStorage.getItem('xy_profile') || 'null'); }
+  catch { return null; }
+}
+
+function writeSharedProfile(payload) {
+  const profile = {
+    datetime: payload.datetime,
+    gender: payload.gender === '男' ? 'male' : payload.gender === '女' ? 'female' : payload.gender,
+    name: '',
+    location: payload.city || '',
+  };
+  try { localStorage.setItem('xy_profile', JSON.stringify(profile)); } catch {}
+  window.XinyiAuth?.saveProfile?.(profile);
+}
+
+function prefillSharedProfile() {
+  const p = readSharedProfile();
+  if (!p?.datetime || !p?.gender) return;
+  const dm = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})/.exec(p.datetime || '');
+  if (dm) window.DiyunDateWheelSetDateTime?.(dm[1], dm[2]);
+  const zhGender = p.gender === 'male' ? '男' : p.gender === 'female' ? '女' : p.gender;
+  const g = f.querySelector(`input[name="gender"][value="${zhGender}"]`);
+  if (g) g.checked = true;
+  const city = f.querySelector('#d-city');
+  if (city && (p.location || p.place || p.city)) {
+    city.value = p.location || p.place || p.city;
+    city.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+}
+
+prefillSharedProfile();
+
 async function loadExample() {
   const midPanel = document.getElementById('dy-mid');
   const rightPanel = document.getElementById('dy-right');
@@ -1112,6 +1148,7 @@ f.addEventListener('submit', async (e) => {
   }
   hasSubmitted = true; // 用户已自行排盘,示例不再覆盖
   const payload = { gender: d.gender, city: d.city || '', marital: d.marital || '', datetime: `${d.date} ${d.time || '12:00'}`, goal: d.goal, facing: d.facing, lang: LANG };
+  writeSharedProfile(payload);
   const useFloorplan = !!imageDataUrl;
   if (useFloorplan && !floorplanAllowed()) { floorplanUpsell(); return; }
   if (useFloorplan) payload.image = imageDataUrl;

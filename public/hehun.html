@@ -518,6 +518,7 @@
 <script src="/lunar.js"></script>
 <script src="/profile-pickers.js"></script>
 <script src="/plans.js"></script>
+<script src="/auth-data.js"></script>
 <script>
 const I18N = {
   zh: {
@@ -893,6 +894,28 @@ const DateWheelB = makeDateWheel('fb');
 DateWheelA.init();
 DateWheelB.init();
 window.DateWheelRelabel = () => { DateWheelA.relabel(); DateWheelB.relabel(); };
+
+function readSharedProfile() {
+  try { return window.XinyiAuth?.getProfile?.() || JSON.parse(localStorage.getItem('xy_profile') || 'null'); }
+  catch { return null; }
+}
+
+function prefillSharedProfileA() {
+  const p = readSharedProfile();
+  if (!p?.datetime || !p?.gender) return;
+  const dm = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})/.exec(p.datetime || '');
+  if (dm) DateWheelA.setDateTime(dm[1], dm[2]);
+  const zhGender = p.gender === 'male' ? '男' : p.gender === 'female' ? '女' : p.gender;
+  const g = f.querySelector(`input[name="genderA"][value="${zhGender}"]`);
+  if (g) g.checked = true;
+  const place = f.querySelector('#fa-place');
+  if (place && (p.location || p.place || p.city)) {
+    place.value = p.location || p.place || p.city;
+    place.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+}
+
+prefillSharedProfileA();
 
 f.addEventListener('submit', async (e) => {
   e.preventDefault();

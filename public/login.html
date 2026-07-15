@@ -288,13 +288,13 @@ $('form').addEventListener('submit', async (e) => {
     if (mode === 'login') {
       await window.XinyiAuth.login(email, pass);
       toast('登录成功');
-      setTimeout(() => { location.href = '/chat'; }, 650);
+      setTimeout(() => { location.href = '/'; }, 650);
     } else {
       const name = $('f-name').value.trim() || email.split('@')[0];
       const payload = await window.XinyiAuth.signup(email, pass, name);
       if (payload?.auth?.access_token) {
         toast('注册成功，正在进入');
-        setTimeout(() => { location.href = '/chat'; }, 650);
+        setTimeout(() => { location.href = '/'; }, 650);
       } else {
         toast('注册成功，请先查收邮箱完成确认');
         setMode('login');
@@ -322,7 +322,7 @@ $('guest-btn').onclick = () => {
 if (/[?&]tab=register/.test(location.search)) setMode('register');
 if (window.XinyiAuth?.isSignedIn?.()) {
   toast('你已登录，正在进入');
-  setTimeout(() => { location.href = '/chat'; }, 500);
+  setTimeout(() => { location.href = '/'; }, 500);
 }
 </script>
 <script src="/site-render.js" defer></script>
