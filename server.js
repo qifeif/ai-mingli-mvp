@@ -94,11 +94,21 @@ const PAGES = {
 
 const server = createServer(async (req, res) => {
   try {
+    if (req.method === 'GET' && req.url === '/api/health') {
+      return sendJSON(res, 200, {
+        ok: true,
+        service: 'xinyi',
+        supabase: supabaseConfigStatus(),
+        llm: { enabled: Boolean(client) },
+      });
+    }
+
     // 页面路由匹配时剥掉查询串(?mode=&q=… 由前端读取),否则 /chat?x=y 不命中 PAGES['/chat']
     const pathOnly = req.url.split('?')[0];
-    if (req.method === 'GET' && PAGES[pathOnly]) {
+    if ((req.method === 'GET' || req.method === 'HEAD') && PAGES[pathOnly]) {
       const html = await readFile(join(__dirname, 'public', PAGES[pathOnly]));
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      if (req.method === 'HEAD') return res.end();
       return res.end(html);
     }
 
