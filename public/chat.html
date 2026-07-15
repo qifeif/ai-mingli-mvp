@@ -4,6 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>心易 · 对话</title>
+<link rel="icon" href="/favicon.png" type="image/png"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet"/>
@@ -76,10 +78,13 @@ body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
   display:flex;flex-direction:column;overflow:hidden;transition:transform var(--dur-2) var(--ease);}
 .sb-hd{padding:14px 12px 12px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;gap:9px;}
 .logo-lk{display:flex;align-items:center;gap:9px;text-decoration:none;flex:1;min-width:0;}
+.logo-lk .brand-mark{width:30px;height:30px;display:block;flex:none;border-radius:50%;overflow:hidden;filter:drop-shadow(0 5px 10px rgba(31,43,49,.18));}
 .seal{width:28px;height:28px;border-radius:7px;background:var(--cinnabar);color:#F4F1EA;
   font-family:var(--serif);font-size:15px;font-weight:700;display:grid;place-items:center;
   box-shadow:0 2px 8px -2px rgba(166,64,47,.4);flex:none;}
 .logo-t{font-family:var(--serif);font-size:18px;font-weight:700;letter-spacing:4px;color:var(--ink-strong);}
+.seal.brand-inline{background:transparent;box-shadow:none;border-radius:50%;overflow:hidden;}
+.seal.brand-inline img{width:100%;height:100%;display:block;border-radius:50%;}
 .ic-btn{position:relative;width:32px;height:32px;border:1px solid var(--line);border-radius:8px;background:rgba(250,251,249,.8);
   color:var(--muted);cursor:pointer;display:grid;place-items:center;flex:none;
   transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease);}
@@ -445,14 +450,8 @@ body:not(.chat-on) .ctxt{min-height:52px;font-size:15.5px;}
 .sv-card::before{content:"";position:absolute;left:36px;right:36px;top:0;height:2px;border-radius:0 0 3px 3px;
   background:linear-gradient(90deg,transparent,var(--cinnabar) 30%,var(--cinnabar) 70%,transparent);opacity:.55;}
 .sv-top{display:flex;align-items:flex-start;gap:16px;margin-bottom:22px;}
-.sv-qr{flex:none;width:92px;height:92px;border-radius:12px;overflow:hidden;}
-/* 二维码占位:墨点纹(非纯黑,用墨褐)+ 中心朱砂印 */
-.sv-qr-ph{width:100%;height:100%;display:grid;place-items:center;border-radius:12px;position:relative;
-  background-color:#ECEFEC;
-  background-image:radial-gradient(rgba(38,52,59,.9) 1.2px, transparent 1.3px);
-  background-size:7px 7px;background-position:2px 2px;
-  box-shadow:inset 0 0 0 1px rgba(38,52,59,.1);}
-.sv-qr-ph .seal{position:relative;z-index:1;box-shadow:0 0 0 5px #ECEFEC;}
+.sv-qr{flex:none;width:92px;height:92px;border-radius:12px;overflow:hidden;background:#fff;box-shadow:inset 0 0 0 1px rgba(38,52,59,.1);}
+.sv-qr-img{width:100%;height:100%;display:block;object-fit:cover;}
 .sv-quote{flex:1;min-width:0;text-align:right;font-family:var(--serif);font-size:16px;color:var(--muted);
   line-height:1.7;padding-top:8px;letter-spacing:.5px;}
 .sv-quote::before{content:"\201C";margin-right:1px;color:var(--cinnabar);opacity:.7;font-size:20px;vertical-align:-3px;}
@@ -479,8 +478,21 @@ body:not(.chat-on) .ctxt{min-height:52px;font-size:15.5px;}
 .sv-tog input:checked::after{transform:translateX(14px);}
 .sv-actions{margin-left:auto;display:flex;gap:9px;}
 @media(max-width:680px){
-  .sv-grad{padding:24px;}.sv-card{padding:24px 22px 18px;}
-  .sv-bar{gap:12px;}.sv-actions{margin-left:0;width:100%;justify-content:flex-end;}
+  .sv{padding:12px;place-items:center;align-content:center;}
+  .sv-stage{max-width:420px;}
+  .sv-grad{padding:28px 24px;border-radius:18px 18px 0 0;}
+  .sv-card{padding:26px 24px 20px;border-radius:14px;}
+  .sv-card::before{left:24px;right:24px;}
+  .sv-top{gap:14px;margin-bottom:20px;}
+  .sv-qr{width:86px;height:86px;border-radius:11px;}
+  .sv-quote{font-size:15px;line-height:1.65;padding-top:4px;}
+  .sv-body{font-size:15px;line-height:1.92;letter-spacing:.2px;}
+  .sv-foot{margin-top:20px;padding-top:13px;}
+  .sv-bar{gap:12px;padding:14px 16px 16px;border-radius:0 0 18px 18px;}
+  .sv-sizes{flex:none;}
+  .sv-tog{font-size:13px;}
+  .sv-actions{margin-left:0;width:100%;display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:10px;}
+  .sv-actions .btn-c,.sv-actions .btn-ok{width:100%;min-height:46px;padding:0 14px;white-space:normal;line-height:1.2;}
 }
 @media (prefers-reduced-motion:reduce){ .sv,.sv-stage{animation:none;} }
 
@@ -536,7 +548,7 @@ body:not(.chat-on) .ctxt{min-height:52px;font-size:15.5px;}
   <!-- 侧栏 -->
   <aside class="sb" id="sb">
     <div class="sb-hd">
-      <a class="logo-lk" href="/"><span class="seal">易</span><span class="logo-t">心易</span></a>
+      <a class="logo-lk" href="/"><img class="brand-mark" src="/brand-mark.png" alt="" aria-hidden="true"><span class="logo-t">心易</span></a>
       <button class="ic-btn" id="newBtn" title="新对话">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
       </button>
@@ -629,7 +641,7 @@ body:not(.chat-on) .ctxt{min-height:52px;font-size:15.5px;}
 <div class="ov" id="ov" style="display:none;">
   <div class="ov-card">
     <div class="ov-hd">
-      <span class="seal seal-pulse" style="width:32px;height:32px;font-size:16px;">易</span>
+      <span class="seal brand-inline seal-pulse" style="width:32px;height:32px;"><img src="/brand-mark.png" alt="" aria-hidden="true"></span>
       <div><h3 data-i18n="modal.title">修改生辰档案</h3><p data-i18n="modal.hint">数据仅存于本机 localStorage</p></div>
     </div>
     <div class="ov-body">
@@ -711,21 +723,20 @@ body:not(.chat-on) .ctxt{min-height:52px;font-size:15.5px;}
   </div>
 </div>
 
-<!-- 分享卡片弹窗(吸收 MetaSight):渐变外框 + 白卡(引文/正文/二维码占位/页脚)+ 保存/复制图片 -->
+<!-- 分享卡片弹窗(吸收 MetaSight):渐变外框 + 白卡(引文/正文/二维码/页脚)+ 保存/复制图片 -->
 <div class="sv" id="sv" style="display:none;">
   <div class="sv-stage">
     <div class="sv-grad">
       <div class="sv-card" id="sv-card">
         <div class="sv-top">
-          <div class="sv-qr" id="sv-qr" aria-label="二维码(即将上线)">
-            <!-- 二维码占位:后期替换为真实跳转二维码 -->
-            <div class="sv-qr-ph"><span class="seal" style="width:26px;height:26px;font-size:13px;">易</span></div>
+          <div class="sv-qr" id="sv-qr" aria-label="心易二维码">
+            <img class="sv-qr-img" src="/share-qr.png" alt="心易二维码">
           </div>
           <div class="sv-quote" id="sv-quote"></div>
         </div>
         <div class="sv-body" id="sv-body"></div>
         <div class="sv-foot">
-          <span class="sv-brand"><span class="seal" style="width:20px;height:20px;font-size:11px;">易</span>xinyi</span>
+          <span class="sv-brand"><span class="seal brand-inline" style="width:20px;height:20px;"><img src="/brand-mark.png" alt="" aria-hidden="true"></span>xinyi</span>
           <span class="sv-meta" id="sv-meta"></span>
         </div>
       </div>
@@ -1900,9 +1911,10 @@ function regenerate(msgEl) {
 }
 
 // ═══════════════════════════════════════════════════
-//  分享卡片(吸收 MetaSight:白卡 + 二维码占位 + 保存/复制图片)
+//  分享卡片(吸收 MetaSight:白卡 + 二维码 + 保存/复制图片)
 // ═══════════════════════════════════════════════════
 let shareText = '';
+const SHARE_QR_SRC = '/share-qr.png';
 function lastUserQuestion() {
   const sess = sessions.find((s) => s.id === curSid);
   if (!sess) return '';
@@ -1911,7 +1923,7 @@ function lastUserQuestion() {
 }
 function openShareCard(text) {
   shareText = text || '';
-  $('sv-body').textContent = shareText;
+  $('sv-body').textContent = extractShareSummary(shareText);
   const q = lastUserQuestion();
   $('sv-quote').textContent = q ? q.slice(0, 40) : '';
   $('sv-quote').style.display = (q && $('sv-tog-q').checked) ? '' : 'none';
@@ -1929,16 +1941,64 @@ function applyShareSize(sz) {
   body.style.fontSize = fs;
   document.querySelectorAll('#sv .sv-sz').forEach((b) => b.classList.toggle('on', b.dataset.sz === sz));
 }
+function cleanShareText(text) {
+  return String(text || '')
+    .replace(/\[[^\]]*\]\([^)]+\)/g, '')
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^#{1,6}\s*/gm, '')
+    .replace(/^\s*[-*+]\s+/gm, '')
+    .replace(/^\s*\d+[.)、]\s+/gm, '')
+    .replace(/免责声明|仅供参考|不构成.*?(建议|意见)|请勿盲从/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function splitShareSentences(text) {
+  const src = cleanShareText(text);
+  if (!src) return [];
+  return src
+    .split(/(?<=[。！？!?；;])\s*/)
+    .map((s) => s.trim())
+    .filter((s) => s.length >= 8 && !/^[:：，,。.、；;]+$/.test(s));
+}
+function trimShareSentence(s, max = 72) {
+  const txt = String(s || '').replace(/\s+/g, ' ').trim();
+  if (txt.length <= max) return txt;
+  const cut = txt.slice(0, max);
+  const idx = Math.max(cut.lastIndexOf('，'), cut.lastIndexOf(','), cut.lastIndexOf('、'));
+  return `${(idx > 28 ? cut.slice(0, idx) : cut).trim()}…`;
+}
+function extractShareSummary(text) {
+  const sentences = splitShareSentences(text);
+  if (!sentences.length) return cleanShareText(text).slice(0, 120);
+  const preferred = sentences.filter((s) => /(结论|核心|适合|建议|方向|关键|提醒|落点|可以|需要|更适合|不是.*而是|答案|重点)/.test(s));
+  const picked = [];
+  for (const s of [...preferred, ...sentences]) {
+    const line = trimShareSentence(s);
+    if (line && !picked.includes(line)) picked.push(line);
+    if (picked.length >= 2) break;
+  }
+  return picked.join('\n\n');
+}
+function loadShareImage(src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
 // 直接用 canvas 2D 手绘分享卡片(无外部库、无 foreignObject → 不会 taint,toDataURL/复制稳)。
-// 布局与弹窗白卡一致:渐变外框 + 白卡(二维码占位 + 引文 + 正文 + 页脚)。
-function renderShareCanvas() {
+// 布局与弹窗白卡一致:渐变外框 + 白卡(二维码 + 引文 + 正文 + 页脚)。
+async function renderShareCanvas() {
+  const showQR = $('sv-tog-qr').checked;
+  const qrImg = showQR ? await loadShareImage(SHARE_QR_SRC) : null;
   return new Promise((resolve) => {
     const scale = 2;
     const W = 640;                        // 逻辑宽(外框)
     const pad = 44;                        // 外框内边距
     const cardX = pad, cardW = W - pad * 2;
     const cardPad = 32;
-    const showQR = $('sv-tog-qr').checked;
     const quote = ($('sv-tog-q').checked ? ($('sv-quote').textContent || '') : '');
     const body = $('sv-body').textContent || '';
     const meta = $('sv-meta').textContent || '';
@@ -1996,19 +2056,12 @@ function renderShareCanvas() {
     let y = pad + cardPad;
     const tx = cardX + cardPad;
 
-    // 二维码占位(墨点纹 + 中心朱砂印)+ 引文(右对齐)
+    // 二维码 + 引文(右对齐)
     if (showQR) {
-      ctx.fillStyle = '#ECEFEC'; rr(tx, y, qrSize, qrSize, 12); ctx.fill();
+      ctx.fillStyle = '#fff'; rr(tx, y, qrSize, qrSize, 12); ctx.fill();
       ctx.save(); rr(tx, y, qrSize, qrSize, 12); ctx.clip();
-      ctx.fillStyle = 'rgba(38,52,59,.9)';
-      for (let i = 2; i < qrSize; i += 7) for (let j = 2; j < qrSize; j += 7) { ctx.beginPath(); ctx.arc(tx + i, y + j, 1.2, 0, 7); ctx.fill(); }
+      if (qrImg) ctx.drawImage(qrImg, tx, y, qrSize, qrSize);
       ctx.restore();
-      // 中心朱砂印(留白边)
-      const c = qrSize/2;
-      ctx.fillStyle = '#ECEFEC'; rr(tx + c - 20, y + c - 20, 40, 40, 10); ctx.fill();
-      ctx.fillStyle = '#A6402F'; rr(tx + c - 15, y + c - 15, 30, 30, 7); ctx.fill();
-      ctx.fillStyle = '#F7F9F6'; ctx.font = `15px ${serif}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('易', tx + c, y + c + 1);
     }
     if (quote) {
       ctx.fillStyle = '#526872'; ctx.font = `16px ${serif}`; ctx.textAlign = 'right'; ctx.textBaseline = 'top';

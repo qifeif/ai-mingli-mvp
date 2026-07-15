@@ -327,11 +327,22 @@ body.xy-home-taiji .logo {
   gap: 12px;
 }
 
+body.xy-home-taiji .logo .brand-mark {
+  width: 30px;
+  height: 30px;
+  display: block;
+  flex: none;
+  border-radius: 50%;
+  overflow: hidden;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, .45));
+}
+
 body.xy-home-taiji .logo .seal-mini {
   width: 30px;
   height: 30px;
-  border-radius: 8px;
+  border-radius: 50%;
   font-size: 16px;
+  overflow: hidden;
 }
 
 body.xy-home-taiji .logo .lt {
@@ -400,12 +411,21 @@ body.xy-home-taiji .nav-cta:hover {
 }
 
 body.xy-home-taiji .hero {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: clamp(132px, 16vh, 168px) 24px 48px;
   transform: none;
+}
+
+body.xy-home-taiji .hero::before {
+  display: none !important;
+}
+
+body.xy-home-taiji .hero::after {
+  display: none !important;
 }
 
 body.xy-home-taiji .hero .container {
@@ -569,7 +589,29 @@ body.xy-home-taiji .hero-cta .btn-ink::after {
 }
 
 body.xy-home-taiji :where(#triad, #chat-feat, #why, #pts, #pricing, #faq, .cta-band, .band, footer) {
-  background: rgba(7, 7, 10, .18) !important;
+  background: transparent !important;
+}
+
+body.xy-home-taiji #triad {
+  position: relative;
+  z-index: 2;
+  margin-top: -88px;
+  padding-top: calc(88px + clamp(70px, 8vw, 104px)) !important;
+}
+
+body.xy-home-taiji #triad::before {
+  content: "";
+  position: absolute;
+  inset: -220px 0 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(7, 7, 10, 0) 0%, rgba(7, 7, 10, .08) 32%, rgba(7, 7, 10, .16) 58%, rgba(7, 7, 10, .20) 100%);
+}
+
+body.xy-home-taiji #triad > * {
+  position: relative;
+  z-index: 1;
 }
 
 body.xy-home-taiji #chat-feat {
@@ -797,11 +839,22 @@ body.xy-cloud-preview .shell > .top.nav-frost .logo {
   min-height: 44px;
 }
 
+body.xy-cloud-preview .shell > .top.nav-frost .logo .brand-mark {
+  width: 30px;
+  height: 30px;
+  display: block;
+  flex: none;
+  border-radius: 50%;
+  overflow: hidden;
+  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, .34));
+}
+
 body.xy-cloud-preview .shell > .top.nav-frost .logo .seal-mini {
   width: 30px;
   height: 30px;
-  border-radius: 8px;
+  border-radius: 50%;
   font-size: 16px;
+  overflow: hidden;
   box-shadow: 0 12px 28px -18px rgba(166, 64, 47, .85);
 }
 
@@ -876,11 +929,22 @@ body.xy-cloud-preview .logo-lk {
   gap: 12px;
 }
 
+body.xy-cloud-preview .logo-lk .brand-mark {
+  width: 30px;
+  height: 30px;
+  display: block;
+  flex: none;
+  border-radius: 50%;
+  overflow: hidden;
+  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, .28));
+}
+
 body.xy-cloud-preview .logo-lk .seal {
   width: 30px;
   height: 30px;
-  border-radius: 8px;
+  border-radius: 50%;
   font: 700 16px var(--xy-font-serif);
+  overflow: hidden;
   box-shadow: 0 12px 28px -18px rgba(166, 64, 47, .85);
 }
 
@@ -968,6 +1032,11 @@ body.xy-cloud-preview :where(.cardx h3, .cardx h4, .ml-card h3, .dy-card h3, .zw
     font-size: 15px;
   }
 
+  body.xy-cloud-preview .shell > .top.nav-frost .logo .brand-mark {
+    width: 30px;
+    height: 30px;
+  }
+
   body.xy-cloud-preview .shell > .top.nav-frost .logo .lt {
     font-size: 18px;
     letter-spacing: 4px;
@@ -1022,6 +1091,11 @@ body.xy-cloud-preview :where(.cardx h3, .cardx h4, .ml-card h3, .dy-card h3, .zw
     font-size: 17px;
   }
 
+  body.xy-home-taiji .logo .brand-mark {
+    width: 34px;
+    height: 34px;
+  }
+
   body.xy-home-taiji .logo .lt {
     font-size: 18px;
     letter-spacing: 3px;
@@ -1049,6 +1123,10 @@ body.xy-cloud-preview :where(.cardx h3, .cardx h4, .ml-card h3, .dy-card h3, .zw
     min-height: 100svh;
     padding: 104px 18px 48px;
     align-items: center;
+  }
+
+  body.xy-home-taiji .hero::after {
+    display: none !important;
   }
 
   body.xy-home-taiji .hero .container {
@@ -1129,7 +1207,18 @@ body.xy-cloud-preview :where(.cardx h3, .cardx h4, .ml-card h3, .dy-card h3, .zw
   }
 
   body.xy-home-taiji :where(#triad, #chat-feat, #why, #pts, #pricing, #faq, .cta-band, .band, footer) {
-    background: rgba(7, 7, 10, .26) !important;
+    background: transparent !important;
+  }
+
+  body.xy-home-taiji #triad {
+    margin-top: -58px;
+    padding-top: 102px !important;
+  }
+
+  body.xy-home-taiji #triad::before {
+    inset: -150px 0 0;
+    background:
+      linear-gradient(180deg, rgba(7, 7, 10, 0) 0%, rgba(7, 7, 10, .12) 34%, rgba(7, 7, 10, .24) 62%, rgba(7, 7, 10, .28) 100%);
   }
 
   body.xy-home-taiji section {

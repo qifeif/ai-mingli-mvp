@@ -4,7 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>心易 · 新一代 AI 命理决策助手</title>
-<link rel="icon" href="data:," />
+<link rel="icon" href="/favicon.png" type="image/png" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 <noscript><style>.reveal,.triad-grid .dao.reveal{opacity:1;transform:none}</style></noscript>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -85,8 +86,12 @@
   }
   nav a, nav button { pointer-events: auto; }
   .logo { display: inline-flex; align-items: center; gap: 12px; justify-self: start; min-height: 44px; }
+  .logo .brand-mark {
+    width: 40px; height: 40px; flex: none; display: block; border-radius: 50%; overflow: hidden;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, .24));
+  }
   .logo .seal-mini {
-    width: 38px; height: 38px; border-radius: 9px;
+    width: 38px; height: 38px; border-radius: 50%; overflow: hidden;
     background: linear-gradient(150deg, #B24936, #9A3826); color: #F7F3EA;
     font-family: var(--serif); font-size: 17px; font-weight: 700; display: grid; place-items: center;
     border: 0; box-shadow: inset 0 0 0 1.5px rgba(247, 243, 234, .35), 0 6px 14px -8px rgba(122, 32, 18, .6);
@@ -426,7 +431,8 @@
   @media (max-width: 860px) {
     nav { margin-bottom: -70px; }
     nav .container { height: 70px; padding: 0 18px; grid-template-columns: auto 1fr auto; }
-    .logo .seal-mini { width: 32px; height: 32px; font-size: 15px; border-radius: 8px; }
+    .logo .brand-mark { width: 34px; height: 34px; border-radius: 50%; overflow: hidden; }
+    .logo .seal-mini { width: 32px; height: 32px; font-size: 15px; border-radius: 50%; overflow: hidden; }
     .logo .lt { font-size: 18px; letter-spacing: 4px; }
     .nav-links { display: none; }
     .nav-login { display: none; }
@@ -602,7 +608,7 @@
 
 <nav class="nav-frost">
   <div class="container">
-    <a class="logo" href="/"><span class="seal-mini">易</span><span class="lt">心易</span></a>
+    <a class="logo" href="/"><img class="brand-mark" src="/brand-mark.png" alt="" aria-hidden="true"><span class="lt">心易</span></a>
     <div class="nav-links" aria-label="主导航">
       <a href="/app" data-i18n="nav.tianming" data-tip="tip.tianming">天命</a>
       <a href="/diyun" data-i18n="nav.diyun" data-tip="tip.diyun">地运</a>

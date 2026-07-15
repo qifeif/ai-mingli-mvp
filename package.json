@@ -3,17 +3,19 @@
   "version": "0.1.0",
   "description": "八字排盘引擎(真太阳时校正)+ 结构化白话输出,供 LLM 解读层使用",
   "type": "module",
-  "main": "server.js",
+  "main": "src/bazi.js",
   "scripts": {
-    "start": "node server.js",
+    "demo": "node example.js",
+    "test": "node --test",
+    "consult": "node --env-file-if-exists=.env run.js",
     "web": "node --env-file-if-exists=.env server.js"
-  },
-  "engines": {
-    "node": "22.x"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.69.0",
     "iztro": "^2.5.8",
     "lunar-javascript": "^1.6.12"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.1"
   }
 }

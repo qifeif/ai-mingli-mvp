@@ -1,0 +1,16 @@
+.git
+.claude
+.DS_Store
+.env
+.env.*
+node_modules
+versions
+docs
+design-system
+tests
+WORKLOG.md
+prompts.md
+_*.cjs
+_*.mjs
+server.before-*.js
+动态背景设计

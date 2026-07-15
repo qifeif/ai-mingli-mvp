@@ -4,6 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>心易 · 登录</title>
+<link rel="icon" href="/favicon.png" type="image/png"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet"/>
@@ -89,6 +91,7 @@ form{padding:26px 28px 28px;}
 .vbrand{display:flex;flex-direction:column;align-items:flex-end;gap:2px;opacity:.85;}
 .vbrand .vb-seal{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;
   background:linear-gradient(150deg,#B24936,#9A3826);color:#F7F3EA;font-family:var(--kai);font-size:12px;}
+.vbrand .vb-mark{width:24px;height:24px;display:block;border-radius:50%;overflow:hidden;filter:drop-shadow(0 4px 8px rgba(31,43,49,.16));}
 .vbrand .vb-t{font-size:9px;letter-spacing:1.5px;color:var(--faint);}
 .vbrand a{color:var(--faint);text-decoration:underline;}
 
@@ -194,7 +197,7 @@ form{padding:26px 28px 28px;}
         </div>
         <span class="vtext" id="vtext">请验证您是真人</span>
         <div class="vbrand" aria-hidden="true">
-          <div class="vb-seal">易</div>
+          <img class="vb-mark" src="/brand-mark.png" alt="">
           <div class="vb-t">心易验证</div>
         </div>
       </div>
