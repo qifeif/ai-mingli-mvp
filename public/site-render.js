@@ -1,5 +1,5 @@
 (() => {
-  if (!document.body || (!document.body.classList.contains('xy-yang-preview') && !document.body.classList.contains('xy-cloud-preview'))) return;
+  if (!document.body || !document.body.classList.contains('xy-yang-preview')) return;
   if (document.querySelector('.xy-yang-bg')) return;
 
   const bg = document.createElement('div');

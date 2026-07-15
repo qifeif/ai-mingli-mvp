@@ -721,59 +721,50 @@ body.xy-home-taiji .cf-bubble.usr {
   }
 }
 
-/* 工具页专用:复用首页太极动态背景,移除旧云雾图,避免进页时闪旧背景。 */
+/* 工具页专用:内页使用云层背景,太极动效只保留在首页。 */
 body.xy-cloud-preview {
   --xy-font-sans: "Geist", "Noto Sans SC", -apple-system, "PingFang SC", system-ui, sans-serif;
   --xy-font-serif: "Instrument Serif", "Noto Serif SC", "Songti SC", serif;
   --sans: var(--xy-font-sans);
   --serif: var(--xy-font-serif);
-  background: #07070a !important;
+  background: #dde4e2 !important;
   color: rgba(255, 253, 247, .90);
   isolation: isolate;
 }
 
 body.xy-cloud-preview::before {
-  display: none !important;
+  content: "" !important;
+  display: block !important;
+  position: fixed;
+  inset: -14%;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .38;
+  background:
+    radial-gradient(46% 34% at 24% 26%, rgba(255, 255, 255, .70), transparent 68%),
+    radial-gradient(34% 30% at 78% 22%, rgba(197, 210, 213, .58), transparent 72%),
+    radial-gradient(44% 36% at 72% 78%, rgba(255, 255, 255, .52), transparent 70%),
+    radial-gradient(38% 34% at 18% 80%, rgba(165, 182, 185, .48), transparent 74%),
+    linear-gradient(180deg, rgba(255, 255, 255, .18), rgba(221, 228, 226, .08));
+  filter: blur(30px) saturate(1.04);
+  animation: xyCloudMistDrift 58s ease-in-out infinite alternate;
 }
 
 body.xy-cloud-preview::after {
-  display: none !important;
-}
-
-body.xy-cloud-preview .xy-yang-bg {
+  content: "" !important;
+  display: block !important;
   position: fixed;
-  inset: 0;
+  inset: -4%;
   z-index: -2;
-  overflow: hidden;
   pointer-events: none;
-  background: #07070a url("/nebula-taiji.jpg") center center / cover no-repeat;
-  opacity: 0;
-  transition: opacity 900ms ease;
-}
-
-body.xy-cloud-preview .xy-yang-bg.is-ready {
-  opacity: 1;
-}
-
-body.xy-cloud-preview .xy-yang-bg video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 55%;
-  filter: brightness(1.06) contrast(1.03) saturate(.94);
-  transform: scale(1.01);
-}
-
-body.xy-cloud-preview .xy-yang-bg.is-paused video {
-  display: none;
-}
-
-body.xy-cloud-preview .xy-yang-scrim {
-  position: absolute;
-  inset: 0;
   background:
-    radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0) 42%, rgba(0, 0, 0, .18) 88%),
-    linear-gradient(180deg, rgba(0, 0, 0, .20) 0%, rgba(0, 0, 0, .08) 36%, rgba(0, 0, 0, .16) 100%);
+    radial-gradient(ellipse at 50% 18%, rgba(255, 255, 255, .10), transparent 48%),
+    radial-gradient(ellipse at 50% 58%, transparent 42%, rgba(31, 43, 49, .14) 100%),
+    linear-gradient(180deg, rgba(245, 248, 247, .10) 0%, rgba(221, 228, 226, .24) 54%, rgba(221, 228, 226, .44) 100%),
+    #dde4e2 url("/cloud-sea-motion-bg.png") center center / cover no-repeat;
+  filter: saturate(.98) contrast(1.12) brightness(.86);
+  transform-origin: center;
+  animation: xyCloudImageDrift 82s ease-in-out infinite alternate;
 }
 
 /* 非首页顶栏统一为首页同款大胶囊:品牌在左,功能入口在右,保持工具页内容不被重排。 */
