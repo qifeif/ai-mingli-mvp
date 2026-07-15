@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "八字排盘引擎(真太阳时校正)+ 结构化白话输出,供 LLM 解读层使用",
   "type": "module",
-  "main": "src/bazi.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "web": "node --env-file-if-exists=.env server.js"
