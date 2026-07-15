@@ -102,7 +102,7 @@ body.xy-yang-preview .xy-yang-bg {
   z-index: -2;
   overflow: hidden;
   pointer-events: none;
-  background: #07070a url("/bg-xinyi-product.webp") center top / cover no-repeat;
+  background: #07070a url("/nebula-taiji.jpg") center center / cover no-repeat;
   opacity: 0;
   transition: opacity 900ms ease;
 }
@@ -279,7 +279,7 @@ body.xy-yang-preview #ink-canvas {
 
 @media (max-width: 680px) {
   body.xy-yang-preview .xy-yang-bg video {
-    object-position: center center;
+    object-position: center 50%;
   }
 }
 
@@ -942,6 +942,14 @@ body.xy-cloud-preview :where(.cardx h3, .cardx h4, .ml-card h3, .dy-card h3, .zw
 }
 
 @media (max-width: 760px) {
+  body.xy-home-taiji {
+    background: #07070a !important;
+  }
+
+  body.xy-home-taiji .xy-yang-bg {
+    background-position: center center;
+  }
+
   body.xy-cloud-preview .shell > .top.nav-frost {
     top: 14px !important;
     width: calc(100vw - 28px);
@@ -992,24 +1000,152 @@ body.xy-cloud-preview :where(.cardx h3, .cardx h4, .ml-card h3, .dy-card h3, .zw
 
   body.xy-home-taiji nav.nav-frost .container {
     height: 58px;
-    padding: 0 16px;
-    gap: 12px;
+    padding: 0 14px;
+    gap: 10px;
+    grid-template-columns: auto 1fr auto;
   }
 
   body.xy-home-taiji .nav-links {
     display: none;
   }
 
+  body.xy-home-taiji .logo {
+    min-width: 0;
+  }
+
+  body.xy-home-taiji .logo .seal-mini {
+    width: 34px;
+    height: 34px;
+    font-size: 17px;
+  }
+
   body.xy-home-taiji .logo .lt {
     font-size: 18px;
+    letter-spacing: 3px;
   }
 
   body.xy-home-taiji .nav-actions {
-    gap: 10px;
+    justify-self: end;
+    gap: 8px;
+  }
+
+  body.xy-home-taiji .langtog {
+    height: 42px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  body.xy-home-taiji .nav-cta {
+    min-width: 74px;
+    height: 42px;
+    padding: 0 18px;
+    font-size: 13px;
   }
 
   body.xy-home-taiji .hero {
-    padding-top: 108px;
+    min-height: 100svh;
+    padding: 104px 18px 48px;
+    align-items: center;
+  }
+
+  body.xy-home-taiji .hero .container {
+    max-width: 100%;
+  }
+
+  body.xy-home-taiji .hero-copy {
+    width: 100%;
+  }
+
+  body.xy-home-taiji .hero .kicker {
+    margin-bottom: 18px;
+    font-size: 12px;
+    line-height: 1.4;
+    letter-spacing: .34em;
+    text-indent: .34em;
+    white-space: nowrap;
+  }
+
+  body.xy-home-taiji .home-title {
+    margin-bottom: 24px;
+    font-size: clamp(68px, 23vw, 104px);
+    letter-spacing: .12em;
+    text-indent: .12em;
+  }
+
+  body.xy-home-taiji .hero .lead {
+    max-width: 9.5em;
+    margin-bottom: 26px;
+    font-size: clamp(25px, 7.2vw, 34px);
+    line-height: 1.42;
+    letter-spacing: .01em;
+  }
+
+  body.xy-home-taiji .home-askbar {
+    width: min(100%, 430px);
+    min-height: 62px;
+    margin-bottom: 24px;
+    padding: 7px 7px 7px 22px;
+  }
+
+  body.xy-home-taiji .home-askbar input {
+    height: 48px;
+    font-size: 16px;
+  }
+
+  body.xy-home-taiji .home-submit {
+    width: 50px;
+    height: 50px;
+  }
+
+  body.xy-home-taiji .home-submit svg {
+    width: 29px;
+    height: 29px;
+  }
+
+  body.xy-home-taiji .home-note {
+    max-width: 19.5em;
+    margin-bottom: 28px;
+    font-size: 15px;
+    line-height: 1.78;
+  }
+
+  body.xy-home-taiji .hero-cta {
+    width: 100%;
+    max-width: 340px;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 56px;
+  }
+
+  body.xy-home-taiji .hero-cta .btn {
+    min-width: 0;
+    flex: 1;
+    min-height: 56px;
+    padding: 0 18px;
+    font-size: 16px;
+  }
+
+  body.xy-home-taiji :where(#triad, #chat-feat, #why, #pts, #pricing, #faq, .cta-band, .band, footer) {
+    background: rgba(7, 7, 10, .26) !important;
+  }
+
+  body.xy-home-taiji #chat-feat {
+    padding: 56px 0 70px;
+  }
+
+  body.xy-home-taiji .cf-inner {
+    border-radius: 14px;
+    padding: 26px 18px;
+  }
+
+  body.xy-home-taiji .cf-h {
+    font-size: 30px;
+    line-height: 1.25;
+  }
+
+  body.xy-home-taiji .cf-p {
+    font-size: 15px;
+    line-height: 1.9;
   }
 }
 
